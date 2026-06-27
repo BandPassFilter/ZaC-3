@@ -1,0 +1,18 @@
+jmp _main
+
+_main:
+addi sp, sp, -2
+add fp, r0, sp
+
+addi r3, r0, 1 ;GET
+addi r4, r0, 2 ;GET
+add r2, r0, r4
+add r1, r0, r3
+add r1, r1, r2
+add r3, r0, r1 ;ADD
+
+movi [fp + 0], r3 ;SET
+
+halt
+
+halt

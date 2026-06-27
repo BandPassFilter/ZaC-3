@@ -1,0 +1,4 @@
+int main() {
+	int *ptr_test = 1024;
+	*ptr_test = 1;
+}

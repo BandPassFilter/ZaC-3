@@ -1,0 +1,143 @@
+jmp _main
+
+_print:
+addi sp, sp, -2
+movi [sp + 0], ra
+addi sp, sp, -6
+addi r1, r0, 0
+movi [sp + 0], r1
+
+
+
+0_start:
+movi r7, [sp + 8]
+addi i1, r0, 4
+mov i0, r7
+mvbi r1, [i0 + 0]
+addi r3, r0, 0
+sub r1, r3, r1
+jc 0_true
+jz 0_false
+addi r1, r0, 0
+jmp 0_end
+0_true:
+addi r1, r0, 1
+jmp 0_false
+0_end:
+movi r7, [sp + 8]
+addi i1, r0, 4
+mov i0, r7
+mvbi r1, [i0 + 0]
+movi r7, [sp + 0]
+addi i1, r0, 19
+mov i0, r7
+mvbi [i0 + 0], r1
+
+movi r1, [sp + 8]
+addi r3, r0, 1
+add r1, r3, r1
+movi [sp + 8], r1
+
+jmp 0_start
+0_false:
+
+addi sp, sp, 6
+movi ra, [sp + 0]
+addi sp, sp, 2
+jr ra
+
+_printChar:
+addi sp, sp, -2
+movi [sp + 0], ra
+addi sp, sp, -2
+addi r1, r0, 0
+movi [sp + 0], r1
+
+mvbi r1, [sp + 4]
+movi r7, [sp + 0]
+addi i1, r0, 19
+mov i0, r7
+mvbi [i0 + 0], r1
+
+addi sp, sp, 2
+movi ra, [sp + 0]
+addi sp, sp, 2
+jr ra
+
+_getChar:
+addi sp, sp, -2
+movi [sp + 0], ra
+addi sp, sp, -2
+addi r1, r0, 0
+movi [sp + 0], r1
+
+movi r7, [sp + 0]
+addi i1, r0, 19
+mov i0, r7
+mvbi r1, [i0 + 0]
+addi sp, sp, 2
+movi ra, [sp + 0]
+addi sp, sp, 2
+jr ra
+
+addi sp, sp, 2
+movi ra, [sp + 0]
+addi sp, sp, 2
+jr ra
+
+_main:
+addi sp, sp, -10
+.asciiz string_0 = "ZaC-2 OS\n"
+addi r1, r0, string_0
+movi [sp + 0], r1
+
+addi sp, sp, -2
+movi r1, [sp + 2]
+movi [sp + 0], r1
+jal _print
+addi sp, sp, 2
+
+.asciiz string_1 = ">"
+addi r1, r0, string_1
+movi [sp + 2], r1
+
+.asciiz string_2 = "test "
+addi r1, r0, string_2
+movi [sp + 4], r1
+
+addi sp, sp, -2
+movi r1, [sp + 4]
+movi [sp + 0], r1
+jal _print
+addi sp, sp, 2
+
+addi r1, r0, 1
+movi [sp + 6], r1
+
+1_start:
+movi r1, [sp + 6]
+addi r3, r0, 1
+sub r1, r3, r1
+jz 1_true
+addi r1, r0, 0
+jmp 1_end
+1_true:
+addi r1, r0, 1
+jmp 1_end
+jmp 1_false
+1_end:
+jal _getChar
+mvbi [sp + 8], r1
+
+addi sp, sp, -2
+mvbi r1, [sp + 10]
+movi [sp + 0], r1
+jal _printChar
+addi sp, sp, 2
+
+jmp 1_start
+1_false:
+
+halt
+
+halt

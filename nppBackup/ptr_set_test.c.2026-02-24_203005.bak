@@ -1,0 +1,4 @@
+char main() {
+	int x;
+	x = 1;
+}

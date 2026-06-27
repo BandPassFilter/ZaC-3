@@ -1,0 +1,60 @@
+void print(char _data *str) {
+    char _io *uart = 0;
+    char test;
+    char another_test;
+    while (*str > 0) {
+        *uart = *str;
+        str = str + 1;
+    }
+}
+
+void printChar(char value) {
+    char _io *uart = 0;
+    *uart = value;
+}
+
+char getChar() {
+    char _io *uart = 0;
+    return *uart;
+}
+
+int compareString(char *str_a, char *str_b) {
+    int i = 0;
+    while (*(str_a + i) == *(str_b + i)) {
+        i = i + 1;
+    }
+    if (*(str_a + i) == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+void reset_shell() {
+    char _data *prompt = ">";
+    print(prompt);
+}
+
+void main() {
+    char _data *x = "ZaC-2 OS\n";
+	char _data *dump = "dump";
+    print(x);
+    
+    char _data *test = "test ";
+    char _data *cr = "\ncarriage return\n";
+	char *shell_buf = 1024;
+	int SHELL_BUF_SIZE = 256;
+	
+    int do_loop = 1;
+    reset_shell();
+    while (do_loop == 1) {
+        char temp = getChar();
+		*shell_buf = temp;
+        printChar(*shell_buf);
+        if (temp == 13) {
+            print(cr);
+			print(shell_buf);
+            reset_shell();
+        }
+    }
+}
+

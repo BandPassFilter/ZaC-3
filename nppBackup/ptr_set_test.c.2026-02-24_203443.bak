@@ -1,0 +1,5 @@
+void main() {
+	char _io uart = 0;
+	int *ptrtest = 1024;
+	*ptrtest = 1;
+}

@@ -1,0 +1,4 @@
+void main() {
+	int *ptrtest = 1024;
+	*ptrtest = 1;
+}

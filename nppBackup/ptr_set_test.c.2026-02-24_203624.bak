@@ -1,0 +1,9 @@
+void main() {
+	char _io *uart = 0;
+	int *ptrtest = 1024;
+	*ptrtest = 65;
+	while (1) {
+		*uart = *ptrtest;
+		*ptrtest = *ptrtest + 1;
+	}
+}
