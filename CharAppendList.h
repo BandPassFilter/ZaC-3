@@ -28,21 +28,21 @@ void _CharAppendList_build(CharAppendList *self) {
 void _CharAppendList_append(CharAppendList *self, char *string) {
     int string_size = strlen(string);
     long new_size = (self->array_size + string_size) * 2 * sizeof(char);
-    printf("CharAppendList realloc attempt %p\n", self);
-    printf("    array size: %d, string size %d\n", self->array_size, strlen(string));
-    printf("    new array size: %d, new list size: %d\n", new_size, self->size);
+    //printf("CharAppendList realloc attempt %p\n", self);
+    //printf("    array size: %d, string size %d\n", self->array_size, strlen(string));
+    //printf("    new array size: %d, new list size: %d\n", new_size, self->size);
     if (self->size + string_size >= (self->array_size / 2)) {
         char *new_array = (char *)realloc(self->array, new_size);
-        printf("realloaction\n");
+        //printf("realloaction\n");
         if (!new_array) {
             printf("CharAppendList Reallocation Error! Size: %d\n", new_size);
             exit(1);
         }
         self->array = new_array;
         self->array_size = new_size;
-        printf("CharAppendList reallocation success\n");
+        //printf("CharAppendList reallocation success\n");
     }
-    printf("CharAppendList append success %p\n", self);
+    //printf("CharAppendList append success %p\n", self);
     
     //strcpy(&self->array[self->size], string);
     for (int i = 0; i < string_size+1; i++) {

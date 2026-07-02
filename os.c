@@ -1,15 +1,15 @@
 void print_char(char value) {
-    char _io *uart = 0;
+    char *uart = 1245184;
     *uart = value;
 }
 
 char get_char() {
-    char _io *uart = 0;
+    char *uart = 1245184;
     return *uart;
 }
 
-void print(char _data *str) {
-    char _io *uart = 0;
+void print(char *str) {
+    char *uart = 1245184;
     char current_char;
     while (*str > 0) {
         current_char = *str;
@@ -18,7 +18,7 @@ void print(char _data *str) {
     }
 }
 
-int compare_string(char _data *str_a, char _data *str_b) {
+int compare_string(char *str_a, char *str_b) {
     int i = 0;
     while (*(str_a + i) == *(str_b + i)) {
         if (*(str_a + i) == 0) {
@@ -32,32 +32,32 @@ int compare_string(char _data *str_a, char _data *str_b) {
     return 0;
 }
 
-void reset_shell(char _data *shell_buf) {
+void reset_shell(char *shell_buf) {
     int shell_buf_offset = 0;
     while (shell_buf_offset < 256) {
         *(shell_buf + shell_buf_offset) = 0;
         shell_buf_offset = shell_buf_offset + 1;
     }
-    char _data *prompt = ">";
+    char *prompt = ">";
     print(prompt);
 }
 
 void dump_command() {
-    char _data *dump_success = "dump command detected\n";
+    char *dump_success = "dump command detected\n";
     print(dump_success);
 
 }
 
 void main() {
-    char _data *x = "Z\n";
-	char _data *dump = "dump";
+    char *x = "Z\n";
+	char *dump = "dump";
     
     print(x);
 
-    char _data *output_str = "Typed string is: ";
-    char _data *cr_string = "\ncarriage return\n";
-	char _data *shell_buf = 1024;
-    char _data *cr = "\n";
+    char *output_str = "Typed string is: ";
+    char *cr_string = "\ncarriage return\n";
+	char *shell_buf = 1024;
+    char *cr = "\n";
     char space = 32;
     char bs = 8;
 

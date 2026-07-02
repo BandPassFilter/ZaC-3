@@ -1610,7 +1610,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, "lui r7, 4\n");*/
             asm_list->append(asm_list, "lui fp, 18\n");
             asm_list->append(asm_list, "lui sp, 18\n");
+            asm_list->append(asm_list, "ori sp, sp, 65532\n");
             asm_list->append(asm_list, "lui ssp, 17\n");
+            asm_list->append(asm_list, "ori ssp, ssp, 65532\n");
             asm_list->append(asm_list, "lui dp, 4\n");
             asm_list->append(asm_list, "lui io, 19\n\n");
             
@@ -2602,14 +2604,16 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "movi r%d, [fp + %d] ;GET_32\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+                        sprintf(buffer+strlen(buffer), "movi r%d, [fp + %d] ;GET_32\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
                         sprintf(buffer+strlen(buffer), "movi r%d, [fp + %d] ;GET_32\n", extra_stuff->operator_stack_offset+1, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string)+1);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 2;
                     } else {
                         
                         //sprintf(buffer, "movi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "movi r%d, [dp + %s_0] ;GET_32\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+                        sprintf(buffer+strlen(buffer), "movi r%d, [dp + %s_0] ;GET_32\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
                         sprintf(buffer+strlen(buffer), "movi r%d, [dp + %s_1] ;GET_32\n", extra_stuff->operator_stack_offset+1, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 2;
@@ -2706,12 +2710,14 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         char buffer[300] = {0};
         
         if (status == ASM_GET) {
-            sprintf(buffer, "lui r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
+            sprintf(buffer, "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+            sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
             sprintf(buffer+strlen(buffer), "ori r%d, r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
             //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
             extra_stuff->operator_stack_offset += 2;
         } else if (status == ASM_GET_MEMORY) {
             //sprintf(buffer, "addi r1, r0, %s\n", current_node->ast_string);
+            sprintf(buffer+strlen(buffer), "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
             sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
             sprintf(buffer+strlen(buffer), "ori r%d, r%d, %d ;GET_32\n",  extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
             extra_stuff->operator_stack_offset += 2;
@@ -2807,7 +2813,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         } else {
-            sprintf(buffer+strlen(buffer), "subi sp, sp, 2\n");
+            sprintf(buffer+strlen(buffer), "subi sp, sp, 4\n");
             sprintf(buffer+strlen(buffer), "movi [sp + 0], ra\n");
             if (symbol_tables[2]->get(symbol_tables[2], current_node->ast_string) > 0) {
                 sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
@@ -2825,7 +2831,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         } else {
             sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             sprintf(buffer_b+strlen(buffer_b), "movi ra, [sp + 0]\n");
-            sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 2\n");
+            sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 4\n");
             //sprintf(buffer_b+strlen(buffer_b), "add fp, r0, sp\n");
             sprintf(buffer_b+strlen(buffer_b), "jr ra\n");
         }
@@ -2841,7 +2847,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         sprintf(buffer+strlen(buffer), "add r%d, r0, r1\n", extra_stuff->operator_stack_offset);
         AST_Node *callparam_node = current_node->getItem(current_node, 0);
         if (callparam_node->getItem(callparam_node, 0)->type != AST_VOID) {
-            sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 2*callparam_node->getSize(callparam_node));
+            sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
         }
         sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         asm_list->append(asm_list, buffer);
@@ -2867,7 +2873,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         if (current_node->getItem(current_node, 0)->type != AST_VOID) {
             for (int i = current_node->getSize(current_node) - 1; i >= 0; i--) { // output params in reverse order, since stack works in LIFO (last in first out).
                 int cancel_stack = 0;
-                sprintf(buffer, "subi sp, sp, 2\n");
+                sprintf(buffer, "subi sp, sp, 4\n");
                 if (symbol_tables[0]->in(symbol_tables[0], current_node->getItem(current_node, i)->ast_string) != -1) {
                     // function call in function param
                     cancel_stack = -symbol_tables[0]->get(symbol_tables[0], current_node->getItem(current_node, i)->ast_string);
@@ -2905,7 +2911,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset-1);
         sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_function));
         sprintf(buffer+strlen(buffer), "movi ra, [sp + 0]\n");
-        sprintf(buffer+strlen(buffer), "addi sp, sp, 2\n");
+        sprintf(buffer+strlen(buffer), "addi sp, sp, 4\n");
         sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         sprintf(buffer+strlen(buffer), "jr ra\n");
         asm_list->append(asm_list, buffer);
@@ -3529,7 +3535,11 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             //sprintf(buffer, "addi r1, r0, %s\n", current_node->ast_string);
             sprintf(buffer+strlen(buffer), "addi r%d, r0, %s ;GET\n",  extra_stuff->operator_stack_offset, current_node->ast_string);
             extra_stuff->operator_stack_offset += 1;
+        } else if (status == ASM_SET) {
+            extra_stuff->operator_stack_offset += -1;
+            sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;SET\n", 0, extra_stuff->operator_stack_offset);
         }
+
         
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_IF) {
@@ -3621,7 +3631,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         } else {
-            sprintf(buffer+strlen(buffer), "subi sp, sp, 2\n");
+            sprintf(buffer+strlen(buffer), "subi sp, sp, 4\n");
             sprintf(buffer+strlen(buffer), "movi [sp + 0], ra\n");
             if (symbol_tables[2]->get(symbol_tables[2], current_node->ast_string) > 0) {
                 sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
@@ -3639,7 +3649,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         } else {
             sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             sprintf(buffer_b+strlen(buffer_b), "movi ra, [sp + 0]\n");
-            sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 2\n");
+            sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 4\n");
             //sprintf(buffer_b+strlen(buffer_b), "add fp, r0, sp\n");
             sprintf(buffer_b+strlen(buffer_b), "jr ra\n");
         }
@@ -3655,7 +3665,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         sprintf(buffer+strlen(buffer), "add r%d, r0, r1\n", extra_stuff->operator_stack_offset);
         AST_Node *callparam_node = current_node->getItem(current_node, 0);
         if (callparam_node->getItem(callparam_node, 0)->type != AST_VOID) {
-            sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 2*callparam_node->getSize(callparam_node));
+            sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
         }
         sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         asm_list->append(asm_list, buffer);
@@ -3681,7 +3691,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         if (current_node->getItem(current_node, 0)->type != AST_VOID) {
             for (int i = current_node->getSize(current_node) - 1; i >= 0; i--) { // output params in reverse order, since stack works in LIFO (last in first out).
                 int cancel_stack = 0;
-                sprintf(buffer, "subi sp, sp, 2\n");
+                sprintf(buffer, "subi sp, sp, 4\n");
                 if (symbol_tables[0]->in(symbol_tables[0], current_node->getItem(current_node, i)->ast_string) != -1) {
                     // function call in function param
                     cancel_stack = -symbol_tables[0]->get(symbol_tables[0], current_node->getItem(current_node, i)->ast_string);
@@ -3719,7 +3729,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset-1);
         sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_function));
         sprintf(buffer+strlen(buffer), "movi ra, [sp + 0]\n");
-        sprintf(buffer+strlen(buffer), "addi sp, sp, 2\n");
+        sprintf(buffer+strlen(buffer), "addi sp, sp, 4\n");
         sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         sprintf(buffer+strlen(buffer), "jr ra\n");
         asm_list->append(asm_list, buffer);
@@ -4274,7 +4284,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
             sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
         } else {
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
-            sprintf(buffer+strlen(buffer), "subi sp, sp, 2\n");
+            sprintf(buffer+strlen(buffer), "subi sp, sp, 4\n");
             sprintf(buffer+strlen(buffer), "movi [sp + 0], ra\n");
             sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
         }
@@ -4289,7 +4299,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         } else {
             sprintf(buffer_b, "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             sprintf(buffer_b+strlen(buffer_b), "movi ra, [sp + 0]\n");
-            sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 2\n");
+            sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 4\n");
             sprintf(buffer_b+strlen(buffer_b), "jr ra\n");
         }
         asm_list->append(asm_list, buffer_b);

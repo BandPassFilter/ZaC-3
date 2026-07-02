@@ -11,6 +11,8 @@ maintain simplicity.
 
 TODO:
 Implement a 640x480 frame buffer using SDL.
+
+Implement sign extension for 16-bit immediates (-32768 to 32767)
 */
 
 #include <stdio.h>
@@ -132,13 +134,13 @@ int ALU(uint32_t a, uint32_t b, int opcode, int *flags) {
         case(0x00): {
             // ADD
             res = (a + b);
-            carry = ((res >> 32) & 1) == 1;
+            carry = res > a;
             break;
         }
         case(0x01): {
             // SUB
             res = (a - b);
-            carry = ((res >> 32) & 1) == 0;
+            carry = res <= a;
             break;
         }
         case(0x02): {
@@ -182,9 +184,9 @@ uint32_t load_memory(uint32_t *memory, int index) {
             return io_in(index);
         }
         if (index % 2 == 0) { // even address, load the 16-bit word
-            return *(memory + (index >> 2)); 
+            return memory[index >> 2];
         } else { // odd address, access the next 8-bits
-            return *(memory + (index >> 2));
+            return memory[index >> 2];
         }
     } else {
         printf("Memory index out of bounds!\n");
@@ -199,9 +201,12 @@ void store_memory(uint32_t *memory, int index, uint32_t data) {
             io_out(index, data);
         }
         if (index % 2 == 0) { // even address, load the 16-bit word
-            *(memory + (index >> 2)) = data;
+            //*(memory + (index >> 2)) = data;
+
+            memory[index >> 2] = data;
         } else { // odd address, access the next 8-bits
-            *(memory + (index >> 2)) = data;
+            //*(memory + (index >> 2)) = data;
+            memory[index >> 2] = data;
         }
     } else {
         printf("Memory index out of bounds!\n");
@@ -210,13 +215,12 @@ void store_memory(uint32_t *memory, int index, uint32_t data) {
 }  
 
 uint8_t load_memory_byte(uint32_t *memory, int index) {
-    uint8_t *byte_ptr = (uint8_t*)memory + index;
     if (index < MEMORY_SIZE) {
         if ((index >> 16) == 0x13) {
             // memory-mapped I/O
             return io_in(index);
         } else {
-            return *byte_ptr;
+            return *((uint8_t*)memory + index);
         }
     } else {
         printf("Memory index out of bounds!\n");
@@ -230,8 +234,7 @@ void store_memory_byte(uint32_t *memory, int index, uint8_t data) {
             // memory-mapped I/O
             io_out(index, data);
         }
-        uint8_t *byte_ptr = (uint8_t*)memory + index;
-        *byte_ptr = data;
+        *((uint8_t*)memory + index) = data;
     } else {
         printf("Memory index out of bounds!\n");
         exit(1);
@@ -419,7 +422,7 @@ int main(int argc, char** argv) {
         registers[i] = 0;
     }
 
-    SP = 0xffff;
+    SP = 0;
 
     
     PC = 0;
@@ -439,6 +442,7 @@ int main(int argc, char** argv) {
     int reg_b_eval = 0;
     int reg_c_eval = 0;
     int offset_eval = 0;
+    int imm_eval = 0;
 
     int debug_mode = 0;
     
@@ -515,13 +519,21 @@ int main(int argc, char** argv) {
                     }
                     case 0b00111: {
                         // ADD a = b + i
-                        registers[reg_a_sel] = ALU(registers[reg_b_sel], imm16_sel, 0, &FLAGS);
+                        imm_eval = imm16_sel;
+                        if (imm_eval & 0x8000) {
+                            //imm_eval |= 0xFFFF0000; // sign extension on negative numbers
+                        }
+                        registers[reg_a_sel] = ALU(registers[reg_b_sel], imm_eval, 0, &FLAGS);
                         ring = 0;
                         break;
                     }
                     case 0b01000: {
                         // SUB a = b + i
-                        registers[reg_a_sel] = ALU(registers[reg_b_sel], imm16_sel, 1, &FLAGS);
+                        imm_eval = imm16_sel;
+                        if (imm_eval & 0x8000) {
+                            //imm_eval |= 0xFFFF0000; // sign extension on negative numbers
+                        }
+                        registers[reg_a_sel] = ALU(registers[reg_b_sel], imm_eval, 1, &FLAGS);
                         ring = 0;
                         break;
                     }
@@ -567,9 +579,12 @@ int main(int argc, char** argv) {
                         }
                         reg_a_eval = registers[reg_a_sel];
                         reg_b_eval = registers[reg_b_sel];
-                        offset_eval = 0;
+                        offset_eval = imm16_sel;
+                        if (offset_eval & 0x8000) {
+                            offset_eval |= 0xFFFF0000; // sign extension on negative numbers
+                        }
                         address_calc = (seg_eval << 16) + (reg_b_eval + offset_eval);
-                        registers[reg_a_sel] = load_memory(memory, reg_b_eval);
+                        registers[reg_a_sel] = load_memory(memory, reg_b_eval + offset_eval);
                         ring = 0;
                         break;
                     }
@@ -582,9 +597,12 @@ int main(int argc, char** argv) {
                         }
                         reg_a_eval = registers[reg_a_sel];
                         reg_b_eval = registers[reg_b_sel];
-                        offset_eval = 0;
+                        offset_eval = imm16_sel;
+                        if (offset_eval & 0x8000) {
+                            offset_eval |= 0xFFFF0000; // sign extension on negative numbers
+                        }
                         address_calc = (seg_eval << 16) + (reg_b_eval + offset_eval);
-                        store_memory(memory, reg_b_eval, reg_a_eval);
+                        store_memory(memory, reg_b_eval + offset_eval, reg_a_eval);
                         ring = 0;
                         break;
                     }
@@ -651,8 +669,11 @@ int main(int argc, char** argv) {
                         reg_a_eval = registers[reg_a_sel];
                         reg_b_eval = registers[reg_b_sel];
                         offset_eval = imm16_sel;
+                        if (offset_eval & 0x8000) {
+                            offset_eval |= 0xFFFF0000; // sign extension on negative numbers
+                        }
                         address_calc = (seg_eval << 16) + (reg_b_eval + offset_eval);
-                        registers[reg_a_sel] = load_memory_byte(memory, reg_b_eval);
+                        registers[reg_a_sel] = load_memory_byte(memory, reg_b_eval + offset_eval);
                         ring = 0;
                         break;
                     }
@@ -662,8 +683,11 @@ int main(int argc, char** argv) {
                         reg_a_eval = registers[reg_a_sel];
                         reg_b_eval = registers[reg_b_sel];
                         offset_eval = imm16_sel;
+                        if (offset_eval & 0x8000) {
+                            offset_eval |= 0xFFFF0000; // sign extension on negative numbers
+                        }
                         address_calc = (seg_eval << 16) + (reg_b_eval + offset_eval);
-                        store_memory_byte(memory, reg_b_eval, reg_a_eval);
+                        store_memory_byte(memory, reg_b_eval + offset_eval, reg_a_eval);
                         ring = 0;
                         break;
                     }
@@ -685,7 +709,7 @@ int main(int argc, char** argv) {
             }
         }
 
-        debug_mode = 1;
+        debug_mode = 0;
         if (debug_mode) {
             printf("IR: ");
             print_binary((IR_1<<16)+IR_0);
