@@ -83,6 +83,7 @@ typedef struct TokenList {
     int (*isEmpty)(struct TokenList*);
     int (*isNotEmpty)(struct TokenList*);
     void (*destroy)(struct TokenList*);
+    void (*print)(struct TokenList*);
 } TokenList;
 
 void _TokenList_New(TokenList *self, int size) {
@@ -207,6 +208,25 @@ AST_Node *getFunctionTree(TokenList *self, int index) {
     }
 }
 
+void _TokenList_Print(TokenList *self) {
+    int size = self->getSize(self);
+    FILE * file_ptr;
+    file_ptr = fopen("lexer_log.txt", "w");
+    if (file_ptr == NULL) {
+        printf("File open error\n");
+        exit(1);
+    }
+    fprintf(file_ptr, "\n---- TOKEN LIST START ----\n");
+    for (int i = 0; i < size; i++) {
+        fprintf(file_ptr, "%s ", self->getStringReference(self, i));
+        if (self->getStringReference(self, i)[0] == ';') {
+            fprintf(file_ptr, "\n", self->getStringReference(self, i));
+        }
+    }
+    fprintf(file_ptr, "\n---- TOKEN LIST END ----\n");
+    fclose(file_ptr);
+}
+
 void _TokenList_Destroy(TokenList *self) {
     for (int i = 0; i < self->size; i++) {
         self->array[i].function_tree_valid = 0;
@@ -221,6 +241,8 @@ void _TokenList_Destroy(TokenList *self) {
     self->valid = 0;
 }
 
+
+
 void TokenListInit(TokenList *self, int size) {
     self->build = &_TokenList_New;
     self->append = &_TokenList_Append;
@@ -234,6 +256,7 @@ void TokenListInit(TokenList *self, int size) {
     self->push = &_TokenList_Push;
     self->pop = &_TokenList_Pop;
     self->peek = &_TokenList_Peek;
+    self->print = &_TokenList_Print;
     self->build(self, size); // make new TokenList size 5
 }
 
@@ -242,3 +265,4 @@ TokenList *generateTokenList() {
     TokenListInit(newTokenList, 0);
     return newTokenList;
 }
+

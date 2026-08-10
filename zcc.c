@@ -93,7 +93,11 @@ FAR TODO:
     support 32-bit A/D.
 
 PROBLEMS:
-    - C compiler breaks after about 200 lines of source code.
+    - (FIXED) C compiler breaks after about 200 lines of source code.
+        What happens is that the AST gen seems to loop back to the start of the tokenList after finishing with main().
+        I think the problem is in the lexer, the lexer is very hacky and "taped together" and i think it needs a proper re-build.
+        * The problem was that C by default interpets "\n" as just 0xA, but the actual file had 0xA and 0xD so the file sizes were wrong.
+            This was fixed by doing "rb" in fread instead of "r", "rb" is "read binary" which doesn't remove the 0xD from 0xA 0xD.
 
     - Nested function calls don't work, so printChar(getChar()); doesn't work. you have to go:
         ...
@@ -280,15 +284,15 @@ int getPrecedence (char *operator) {
     } else if (strcmp(operator, "~&") == 0) {
         return 4;
     } else if (strcmp(operator, "==") == 0) {
-        return 0;
+        return 4;
     } else if (strcmp(operator, "<=") == 0) {
-        return 0;
+        return 4;
     } else if (strcmp(operator, ">=") == 0) {
-        return 0;
+        return 4;
     } else if (strcmp(operator, "<") == 0) {
-        return 0;
+        return 4;
     } else if (strcmp(operator, ">") == 0) {
-        return 0;
+        return 4;
     } else if (strcmp(operator, "<<") == 0) {
         return 1;
     } else if (strcmp(operator, ">>") == 0) {
@@ -1227,116 +1231,119 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
     return local_idx;
 }
 
-void print_AST_type(AST_Node *node) {
+void print_AST_type(FILE *file, AST_Node *node) {
+    
     if (node->type == AST_DECLARATION) {
-        printf("Declaration");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Declaration");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_EXPRESSION) {
-        printf("Expression");
+        fprintf(file, "Expression");
     } else if (node->type == AST_SET_VARIABLE) {
-        printf("SetVariable");
+        fprintf(file, "SetVariable");
     } else if (node->type == AST_IDENT) {
-        printf("Identifier");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Identifier");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_OPERATOR) {
-        printf("Operator");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Operator");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_LITERAL) {
-        printf("Literal");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Literal");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_LITERAL_32) {
-        printf("Literal32");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Literal32");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_IDENT_32) {
-        printf("Ident32");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Ident32");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_OPERATOR_32) {
-        printf("Operator32");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Operator32");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_SET_VARIABLE_32) {
-        printf("SetVariable32");
-        printf(" %s", node->ast_string);
+        fprintf(file, "SetVariable32");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_MAIN) {
-        printf("Main");
+        fprintf(file, "Main");
     } else if (node->type == AST_FUNCTION) {
-        printf("Function");
-        printf(" %s", node->ast_string);
+        fprintf(file, "Function");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_FUNCTION_CALL) {
-        printf("FunctionCall");
-        printf(" %s", node->ast_string);
+        fprintf(file, "FunctionCall");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_IF) {
-        printf("If");
+        fprintf(file, "If");
     } else if (node->type == AST_WHILE) {
-        printf("While");
+        fprintf(file, "While");
     } else if (node->type == AST_FOR) {
-        printf("For");
+        fprintf(file, "For");
     } else if (node->type == AST_BODY) {
-        printf("Body");
+        fprintf(file, "Body");
     } else if (node->type == AST_PARAMS) {
-        printf("Parameters");
+        fprintf(file, "Parameters");
     } else if (node->type == AST_CALL_PARAMS) {
-        printf("CallParameters");
+        fprintf(file, "CallParameters");
     } else if (node->type == AST_FUNCTION_DECLARATION) {
-        printf("FunctionDeclaration");
-        printf(" %s", node->ast_string);
+        fprintf(file, "FunctionDeclaration");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_RETURN) {
-        printf("Return");
+        fprintf(file, "Return");
     } else if (node->type == AST_VOID) {
-        printf("Void");
+        fprintf(file, "Void");
     } else if (node->type == AST_STRING) {
-        printf("String ");
-        printf("%s: ", node->ast_string_name);
-        printf("\"%s\"", node->ast_string);
+        fprintf(file, "String ");
+        fprintf(file, "%s: ", node->ast_string_name);
+        fprintf(file, "\"%s\"", node->ast_string);
     } else if (node->type == AST_MODIFIER) {
-        printf("Modifier ");
+        fprintf(file, "Modifier ");
     }
     if (node->subtype == AST_DEREFERENCE) {
-        printf(" Dereference");
+        fprintf(file, " Dereference");
     } else if (node->subtype == AST_REFERENCE) {
-        printf(" Reference");
+        fprintf(file, " Reference");
     }
     if (node->visibility == AST_STATIC) {
-        printf(" Static");
+        fprintf(file, " Static");
     } else if (node->visibility == AST_LOCAL) {
-        printf(" Local");
+        fprintf(file, " Local");
     }
     if (node->modifier == AST_IO) {
-        printf(" I/O");
+        fprintf(file, " I/O");
     }
     if (node->modifier == AST_NEAR) {
-        printf(" near");
+        fprintf(file, " near");
     }
     if (node->modifier == AST_FAR) {
-        printf(" far");
+        fprintf(file, " far");
     }
     if (node->modifier == AST_CODE) {
-        printf(" code");
+        fprintf(file, " code");
     }
     if (node->modifier == AST_DATA) {
-        printf(" data");
+        fprintf(file, " data");
     }
     if (node->type == AST_CAST) {
-        printf(" Cast");
+        fprintf(file, " Cast");
     }
 }
 
-void print_AST_tree_aux(AST_Node *node, int tab_level) {
+void print_AST_tree_aux(FILE *file, AST_Node *node, int tab_level) {
     for (int i = 0; i < tab_level; i++) {
-        printf("\t");
+        fprintf(file, "\t");
     }
-    printf("* ");
-    print_AST_type(node);
+    fprintf(file, "* ");
+    print_AST_type(file, node);
     
-    printf("\n");
+    fprintf(file, "\n");
     for (int i = 0; i < node->getSize(node); i++) {
-        print_AST_tree_aux(node->getItem(node, i), tab_level + 1);
+        print_AST_tree_aux(file, node->getItem(node, i), tab_level + 1);
     }
 }
 
 void print_AST_tree(AST_Node *node) {
-    printf("\n");
-    print_AST_tree_aux(node, 0);
-    printf("* End\n");
+    FILE *file = fopen("AST_log.txt", "w");
+    fprintf(file, "\n");
+    print_AST_tree_aux(file, node, 0);
+    fprintf(file, "* End\n");
+    fclose(file);
 }
 
 
@@ -1609,10 +1616,10 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, "lui r6, 4\n");
             asm_list->append(asm_list, "lui r7, 4\n");*/
             asm_list->append(asm_list, "lui fp, 18\n");
+            asm_list->append(asm_list, "addi sp, r0, 65532\n");
             asm_list->append(asm_list, "lui sp, 18\n");
-            asm_list->append(asm_list, "ori sp, sp, 65532\n");
+            asm_list->append(asm_list, "addi ssp, r0, 65532\n");
             asm_list->append(asm_list, "lui ssp, 17\n");
-            asm_list->append(asm_list, "ori ssp, ssp, 65532\n");
             asm_list->append(asm_list, "lui dp, 4\n");
             asm_list->append(asm_list, "lui io, 19\n\n");
             
@@ -2710,16 +2717,18 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         char buffer[300] = {0};
         
         if (status == ASM_GET) {
-            sprintf(buffer, "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+            //sprintf(buffer, "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+            sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
             sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
-            sprintf(buffer+strlen(buffer), "ori r%d, r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
+            
             //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
             extra_stuff->operator_stack_offset += 2;
         } else if (status == ASM_GET_MEMORY) {
             //sprintf(buffer, "addi r1, r0, %s\n", current_node->ast_string);
-            sprintf(buffer+strlen(buffer), "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+            //sprintf(buffer+strlen(buffer), "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+            sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
             sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
-            sprintf(buffer+strlen(buffer), "ori r%d, r%d, %d ;GET_32\n",  extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
+            
             extra_stuff->operator_stack_offset += 2;
         }
         
@@ -4407,8 +4416,12 @@ TokenList *lexer(char *input_file_buf, long fsize) {
     int start_i = 0;
     int parse_finish = 0;
     // first check for keywords
-    while (i < fsize) {
+    while (input_file_buf[i] != 0xFF && i < fsize) {
         parse_finish = 0;
+        char current_char = input_file_buf[i];
+        if (input_file_buf[i] == -1) {
+            return tokenList;
+        }
         start_i = i;
         while (check_letter_is_alphabet(input_file_buf[i])) {
             sub_string[j] = input_file_buf[i];
@@ -4465,6 +4478,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
                 i++;
                 j++;
             }
+            /*
             // now check modifiers (_io, near, far, code, etc.)
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
@@ -4500,7 +4514,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             clear_string(50, sub_string);
             j = 0;
             i++;
-            }
+            }*/
         }
         clear_string(50, sub_string);
         j = 0;
@@ -4542,7 +4556,6 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             if (check_string_is_operator(input_file_buf+i, &operator_string_idx, &new_index_offset)) {
                 strcpy(sub_string, OPERATORS[operator_string_idx]);
             }
-            // now check separators
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
                 //printf("sub_string = %s\n", sub_string);
@@ -4598,6 +4611,9 @@ TokenList *lexer(char *input_file_buf, long fsize) {
                 } else if (j > 0) {
                     // identifiers
                     printf("identifier detected: %s\n", sub_string);
+                    if (!strcmp(sub_string, "main")) {
+                        printf("main\n");
+                    }
                     char *ident_string = (char *) malloc((j) * sizeof(char) + 1);
                     if (ident_string == NULL) {
                         printf("Memory allocation fail!\n");
@@ -4703,6 +4719,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             }
         }
     }
+    tokenList->print(tokenList);
     return tokenList;
 }
 
@@ -4976,7 +4993,7 @@ int main(int argc, char* argv[]) {
     FILE *input_file, *output_file;
     
 
-    input_file = fopen(input_file_str, "r");
+    input_file = fopen(input_file_str, "rb");
     output_file = fopen("c_program.asm", "wb");
     //printf("input_file = %p\n", input_file);
     //printf("output_file = %p\n", output_file);
@@ -5003,8 +5020,8 @@ int main(int argc, char* argv[]) {
     }
 
     // initialise input file buffer
-    for (int i = 0; i < (fsize); i++) {
-        input_file_buf[i] = ' ';
+    for (int i = 0; i < (fsize+padding); i++) {
+        input_file_buf[i] = 0xFF;
     }
 
     // read input file into buffer

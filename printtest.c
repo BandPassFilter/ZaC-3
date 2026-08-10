@@ -95,7 +95,7 @@ void print_bcd(int x) {
         }
         if ((bcd_a & 32768) == 0) {
             bcd_b_carry = 0;
-        }
+        }       
         temp_x = temp_x << 1;
         bcd_a = bcd_a << 1;
         bcd_a = bcd_a | bcd_a_carry;
@@ -104,18 +104,38 @@ void print_bcd(int x) {
         
 
     }
+
+    int non_zero = 0;
+
+     
         
     char temp_print = 0;
-    temp_print = (bcd_b & 15) + 48;
-    print_char(temp_print);
-    temp_print = (bcd_a >> 12) + 48;
-    print_char(temp_print);
-    temp_print = ((bcd_a >> 8) & 15) + 48;
-    print_char(temp_print);
-    temp_print = ((bcd_a >> 4) & 15) + 48;
-    print_char(temp_print);
-    temp_print = (bcd_a & 15) + 48;
-    print_char(temp_print);
+    int temp_print_a = (bcd_b & 15) + 48;
+    int temp_print_b = ((bcd_a >> 12) & 15) + 48;
+    int temp_print_c = ((bcd_a >> 8) & 15) + 48;
+    int temp_print_d = ((bcd_a >> 4) & 15) + 48;
+    int temp_print_e = (bcd_a & 15) + 48;
+
+    if (temp_print_a > 48) {
+        non_zero = 1;
+        print_char(temp_print_a);
+    }
+    if (non_zero == 1 || temp_print_b > 48) {
+        non_zero = 1;
+        print_char(temp_print_b);
+    }
+    if (non_zero == 1 || temp_print_c > 48) {
+        non_zero = 1;
+        print_char(temp_print_c);
+    }
+    if (non_zero == 1 || temp_print_d > 48) {
+        non_zero = 1;
+        print_char(temp_print_d);
+    }
+    if ((non_zero == 1) || (temp_print_e > 48)) {
+        non_zero = 1;
+        print_char(temp_print_e);
+    }
 
 
 }
@@ -189,4 +209,9 @@ void main() {
     cr();
 
     primes();
+}
+
+void test() {
+    int var;
+    var = var + 1;
 }
