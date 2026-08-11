@@ -114,6 +114,12 @@ PROBLEMS:
     - immediate values doesn't work in function (divide(5, 2)), you have to go (divide(a, b)) and make sure a and b have 5 and 2 respectfully.
 
     - expressions doesn't work on return (return a + b; doesn't work, only return a;).
+
+    - Expressions don't work on compare operators, like "if *(str_a_base + i) == *(str_b_base + i)".
+        You have to go 
+        char a = *(str_a_base + i);
+        char b = *(str_b_base + i);
+        if (a == b) { ... }
 */
 
 #include <stdio.h>
