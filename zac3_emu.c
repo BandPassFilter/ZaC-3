@@ -719,7 +719,7 @@ int main(int argc, char** argv) {
             printf("R8: %d, R9: %d, R10: %d, R11: %d, R12: %d, R13: %d, R14: %d, R15: %d, R16: %d, R17: %d\n", registers[8], registers[9], registers[10], registers[11], registers[12], registers[13], registers[14], registers[15], registers[16], registers[17]);
             printf("fp: %d, sp: %d, ra: %d, flags: %d\n", FP, SP, RA, FLAGS);
             printf("sp[%d]: %d\n", SP, load_memory(memory, SP));
-            //getchar();
+            getchar();
         }
     }
     fclose(program_file);

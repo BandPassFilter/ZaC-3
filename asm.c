@@ -8,6 +8,8 @@
 #define PARSE_LENGTH 64
 
 /*
+Assembler for ZaC-3
+
 TODO:
 Implement libraries.
 .include "library.asm"
@@ -389,7 +391,7 @@ enum inst_type {
 };
 
 int main(int argc, char** argv) {
-    printf("ZaC-2 Assembler\n");
+    printf("ZaC-3 Assembler\n");
 
     /*
     if (argc != 2) {
@@ -541,7 +543,8 @@ int main(int argc, char** argv) {
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             input_buf_ptr++;
             grab_quoted_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "Hello, World!\n"
-            push_labels(labels, directive_string, adrs_offset_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
+            int STRING_BASE = 262144;
+            push_labels(labels, directive_string, STRING_BASE + adrs_offset_value, STRING_BASE + adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
             int temp_str_i = 0;
             while (temp_str_i < strlen(temp_string)+1) {
                 data_segment_output[adrs_offset_value + temp_str_i] = temp_string[temp_str_i];

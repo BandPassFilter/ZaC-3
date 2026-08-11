@@ -49,14 +49,14 @@ void dump_command() {
 }
 
 void main() {
-    char *x = "Z\n";
+    char *x = "ZAC\n";
 	char *dump = "dump";
     
     print(x);
 
     char *output_str = "Typed string is: ";
     char *cr_string = "\ncarriage return\n";
-	char *shell_buf = 1024;
+	char *shell_buf = 400000;
     char *cr = "\n";
     char space = 32;
     char bs = 8;
@@ -88,7 +88,7 @@ void main() {
         }
         if (temp == 13) {
             print(cr_string);
-            shell_buf = 1024;
+            shell_buf = 400000;
             shell_buf_offset = 0;
             print(output_str);
             print(shell_buf);

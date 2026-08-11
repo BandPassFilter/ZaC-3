@@ -132,7 +132,7 @@ void print_bcd(int x) {
         non_zero = 1;
         print_char(temp_print_d);
     }
-    if ((non_zero == 1) || (temp_print_e > 48)) {
+    if (non_zero == 1 || temp_print_e > 48) {
         non_zero = 1;
         print_char(temp_print_e);
     }
