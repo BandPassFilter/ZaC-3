@@ -21,12 +21,12 @@
 	* FunctionDeclaration char
 		* Function get_char
 			* Parameters
-			* Body Local
-				* Declaration char
+			* Body
+				* Declaration char Local
 					* Operator ~* Dereference
 						* Identifier get_char_uart Local
 					* Operator =
-						* Operator ~* Dereference Local
+						* Operator ~* Dereference
 							* Identifier get_char_uart
 						* Literal32 1245184
 				* Return
@@ -40,12 +40,12 @@
 						* Identifier print_str Local
 			* Body
 				* Declaration char
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier print_uart Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier print_uart
-						* Literal32 1245184
+						* Literal32 1245184 Local
 				* Declaration char
 					* Identifier print_current_char Local
 				* While
@@ -177,6 +177,34 @@
 					* CallParameters
 						* Identifier dump_command_dump_success
 	* FunctionDeclaration void
+		* Function write_command
+			* Parameters
+			* Body
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier write_command_write_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier write_command_write_str
+						* String string_2: "write command detected\n" Static
+				* FunctionCall print
+					* CallParameters
+						* Identifier write_command_write_str
+	* FunctionDeclaration void
+		* Function run_command
+			* Parameters
+			* Body
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier run_command_run_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier run_command_run_str
+						* String string_3: "run command detected\n" Static
+				* FunctionCall print
+					* CallParameters
+						* Identifier run_command_run_str
+	* FunctionDeclaration void
 		* Function main
 			* Parameters
 			* Body
@@ -186,31 +214,45 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_x
-						* String string_2: "ZAC\n" Static
+						* String string_4: "ZAC\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_dump Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier main_dump
-						* String string_3: "dump" Static
+							* Identifier main_dump Local
+						* String string_5: "dump" Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier main_write Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier main_write
+						* String string_6: "write" Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier main_run Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier main_run
+						* String string_7: "run" Static
 				* FunctionCall print
 					* CallParameters
 						* Identifier main_x
 				* Declaration char
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier main_output_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_output_str
-						* String string_4: "Typed string is: " Static
+						* String string_8: "Typed string is: " Static
 				* Declaration char
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier main_cr_string Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_cr_string
-						* String string_5: "\ncarriage return\n" Static
+						* String string_9: "\ncarriage return\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_shell_buf Local
@@ -224,7 +266,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_cr
-						* String string_6: "\n" Static
+						* String string_10: "\n" Static
 				* Declaration char
 					* Identifier main_space Local
 					* Operator =
@@ -372,6 +414,36 @@
 										* FunctionCall dump_command
 											* CallParameters
 												* Void
+								* SetVariable
+									* Operator =
+										* Identifier main_result
+										* FunctionCall compare_string
+											* CallParameters
+												* Identifier main_shell_buf
+												* Identifier main_write
+								* If
+									* Operator ==
+										* Identifier main_result
+										* Literal 1
+									* Body
+										* FunctionCall write_command
+											* CallParameters
+												* Void
+								* SetVariable
+									* Operator =
+										* Identifier main_result
+										* FunctionCall compare_string
+											* CallParameters
+												* Identifier main_shell_buf
+												* Identifier main_run
+								* If
+									* Operator ==
+										* Identifier main_result
+										* Literal 1
+									* Body
+										* FunctionCall run_command
+											* CallParameters
+												* Void
 								* FunctionCall reset_shell
 									* CallParameters
 										* Identifier main_shell_buf
@@ -381,7 +453,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_end
-						* String string_7: "end\n" Static
+						* String string_11: "end\n" Static
 				* FunctionCall print
 					* CallParameters
 						* Identifier main_end

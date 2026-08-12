@@ -50,9 +50,21 @@ void dump_command() {
 
 }
 
+void write_command() {
+    char *write_str = "write command detected\n";
+    print(write_str);
+}
+
+void run_command() {
+    char *run_str = "run command detected\n";
+    print(run_str);
+}
+
 void main() {
     char *x = "ZAC\n";
 	char *dump = "dump";
+    char *write = "write";
+    char *run = "run";
     
     print(x);
 
@@ -100,6 +112,14 @@ void main() {
             result = compare_string(shell_buf, dump);
             if (result == 1) {
                 dump_command();
+            }
+            result = compare_string(shell_buf, write);
+            if (result == 1) {
+                write_command();
+            }
+            result = compare_string(shell_buf, run);
+            if (result == 1) {
+                run_command();
             }
             reset_shell(shell_buf);
         }
