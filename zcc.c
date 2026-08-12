@@ -120,6 +120,13 @@ PROBLEMS:
         char a = *(str_a_base + i);
         char b = *(str_b_base + i);
         if (a == b) { ... }
+    
+    - you can only write results to a variable from a function if you go "int result = function(...);"
+        if you go:
+        int result = 0;
+        result = function(...);
+
+        it doesn't work, the return result registers are wrong.
 */
 
 #include <stdio.h>
@@ -143,12 +150,12 @@ void pause() {
 }
 
 
-#define KEYWORDS_SIZE 16
+#define KEYWORDS_SIZE 15
 #define SEPARATORS_SIZE 6
 #define OPERATORS_SIZE 24
 #define WHITE_SPACE_SIZE 3
 #define MODIFIERS_SIZE 4
-char *KEYWORDS[KEYWORDS_SIZE] = {"void", "int", "char", "uint8_t", "uint16_t", "int8_t", "int16_t", "static", "if", "while", "for", "else", "asm", "struct", "return", "debug"};
+char *KEYWORDS[KEYWORDS_SIZE] = {"void", "int", "char", "uint8_t", "uint16_t", "int8_t", "int16_t", "static", "if", "while", "for", "else", "asm", "struct", "return"};
 char *SEPARATORS[SEPARATORS_SIZE] = {"{", "}", "(", ")", ";", ","};
 char *OPERATORS[OPERATORS_SIZE] = {"++", "--", "==", ">=", "<=", "!=", "&&", "<<", ">>", "||", "->", ".", "+", "-", "<", "*", "/", ">", "!", "=", "&", "|", "[", "]"};
 char *WHITE_SPACE[WHITE_SPACE_SIZE] = {" ", "\n", "\t"};
@@ -1360,6 +1367,8 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
                 asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             }
         } else if (current_node->type == AST_FUNCTION_DECLARATION) {
+
+            //symbol_table[FUNCTION_RETURN_TYPE]->set(symbol_tables[FUNCTION_RETURN_TYPE], *
             asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, pointer_symbol_table, stack, heap, current_function);
         } else if (current_node->type == AST_FUNCTION) {
             //*stack = 2;
@@ -1475,6 +1484,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
             }
         } else if (current_node->type == AST_FUNCTION_DECLARATION) {
             *stack = 0;
+            symbol_tables[9]->set(symbol_tables[9], (int)current_node->ast_string[0], current_node->getItem(current_node, 0)->ast_string);
             asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, pointer_symbol_table, stack, heap, current_function);
         } else if (current_node->type == AST_FUNCTION) {
             *stack = 0;
@@ -1697,9 +1707,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         if (strcmp(current_node->ast_string, "=") == 0) {
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
+            
             asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            
             
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operand_a->array);
@@ -2864,12 +2874,20 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
     } else if (current_node->type == AST_FUNCTION_CALL) {
         CharAppendList *function_parameters = generateCharAppendList();
         char buffer[300] = {0};
+        int old_operator_stack_offset = extra_stuff->operator_stack_offset;
         if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
             asm_generator_code_gen(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             asm_list->append(asm_list, function_parameters->array);
         }
         sprintf(buffer, "jal _%s\n", current_node->ast_string);
-        sprintf(buffer+strlen(buffer), "add r%d, r0, r1\n", extra_stuff->operator_stack_offset);
+        //extra_stuff->operator_stack_offset = old_operator_stack_offset;
+        
+        sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;RETURN_SET\n", extra_stuff->operator_stack_offset);
+        if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) != 'v') {
+            printf("Non void function detected\n");
+            extra_stuff->operator_stack_offset += 1;
+        }
+        
         AST_Node *callparam_node = current_node->getItem(current_node, 0);
         if (callparam_node->getItem(callparam_node, 0)->type != AST_VOID) {
             sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
@@ -3758,6 +3776,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         sprintf(buffer+strlen(buffer), "addi sp, sp, 4\n");
         sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         sprintf(buffer+strlen(buffer), "jr ra\n");
+        
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_VOID) {
         // do nothing
@@ -4745,10 +4764,10 @@ Dictionary **symbol_pass(AST_Node *start_node) {
     CharAppendList *asm_list = (CharAppendList*) malloc(sizeof(CharAppendList));
     CharAppendListInit(asm_list);
 
-    Dictionary *symbol_table = (Dictionary *) malloc(9*sizeof(Dictionary));
-    Dictionary **symbol_tables = (Dictionary **) malloc(9*sizeof(Dictionary*));
+    Dictionary *symbol_table = (Dictionary *) malloc(10*sizeof(Dictionary));
+    Dictionary **symbol_tables = (Dictionary **) malloc(10*sizeof(Dictionary*));
 
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 10; i++) {
         symbol_tables[i] = &(symbol_table[i]);
     }
 
@@ -4761,6 +4780,7 @@ Dictionary **symbol_pass(AST_Node *start_node) {
     #define SYMBOL_POINTER_LAYER 6
     #define SYMBOL_DEREFERNCE_SIZE 7
     #define SYMBOL_MODIFIER 8
+    #define FUNCTION_RETURN_TYPE 9
     
     DictionaryInit(symbol_tables[0]); // local variables
     DictionaryInit(symbol_tables[1]); // static variables
@@ -4771,6 +4791,7 @@ Dictionary **symbol_pass(AST_Node *start_node) {
     DictionaryInit(symbol_tables[6]); // variable pointer layers (int = 0, int* = 1, int** = 2, etc.)
     DictionaryInit(symbol_tables[7]); // variable pointer dereferenced byte-size (INT: 2, CHAR: 1, UINT8_T: 1, Struct: 2^n bytes)
     DictionaryInit(symbol_tables[8]); // modifier (no modifier, near, far, etc.)
+    DictionaryInit(symbol_tables[9]); // function return type (void, char, int, char*, int*, etc.)
     
 
     int jmp_label = 0;

@@ -37,6 +37,7 @@ HANDLE hSerial;
 char szBuff[n] = {0};
 DCB dcbSerialParams = {0};
 DWORD dwBytesRead = 0;
+int debug_mode = 0;
 
 int InitialiseSerialPort() {
     printf("Serial port program\n");
@@ -189,7 +190,7 @@ uint32_t load_memory(uint32_t *memory, int index) {
             return memory[index >> 2];
         }
     } else {
-        printf("Memory index out of bounds!\n");
+        printf("Memory load word index out of bounds!\n");
         exit(1);
     }
 }
@@ -208,8 +209,11 @@ void store_memory(uint32_t *memory, int index, uint32_t data) {
             //*(memory + (index >> 2)) = data;
             memory[index >> 2] = data;
         }
+        if (index > 9000000) {
+            debug_mode = 1;
+        }
     } else {
-        printf("Memory index out of bounds!\n");
+        printf("Memory store word index out of bounds!\n");
         exit(1);
     }
 }  
@@ -223,7 +227,7 @@ uint8_t load_memory_byte(uint32_t *memory, int index) {
             return *((uint8_t*)memory + index);
         }
     } else {
-        printf("Memory index out of bounds!\n");
+        printf("Memory load byte index out of bounds!\n");
         exit(1);
     }
 }
@@ -234,9 +238,12 @@ void store_memory_byte(uint32_t *memory, int index, uint8_t data) {
             // memory-mapped I/O
             io_out(index, data);
         }
+        if (index == 9000000) {
+            debug_mode = 1;
+        }
         *((uint8_t*)memory + index) = data;
     } else {
-        printf("Memory index out of bounds!\n");
+        printf("Memory store byte index out of bounds!\n");
         exit(1);
     }
 }  
@@ -444,7 +451,7 @@ int main(int argc, char** argv) {
     int offset_eval = 0;
     int imm_eval = 0;
 
-    int debug_mode = 0;
+    
     
     while (run) {
         // instruction fetch-execute cycle
@@ -709,7 +716,7 @@ int main(int argc, char** argv) {
             }
         }
 
-        debug_mode = 0;
+        //debug_mode = 0;
         if (debug_mode) {
             printf("IR: ");
             print_binary((IR_1<<16)+IR_0);

@@ -21,26 +21,26 @@
 	* FunctionDeclaration char
 		* Function get_char
 			* Parameters
-			* Body
+			* Body Local
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier get_char_uart Local
 					* Operator =
-						* Operator ~* Dereference
+						* Operator ~* Dereference Local
 							* Identifier get_char_uart
 						* Literal32 1245184
 				* Return
 					* Operator ~* Dereference
 						* Identifier get_char_uart
 	* FunctionDeclaration void
-		* Function print Local
+		* Function print
 			* Parameters
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier print_str Local
 			* Body
 				* Declaration char
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier print_uart Local
 					* Operator =
 						* Operator ~* Dereference
@@ -94,6 +94,12 @@
 								* Identifier compare_string_str_b
 								* Identifier compare_string_i
 					* Body
+						* SetVariable
+							* Operator =
+								* Identifier compare_string_i
+								* Operator +
+									* Identifier compare_string_i
+									* Literal 1
 						* If
 							* Operator ==
 								* Operator ~* Dereference
@@ -103,12 +109,6 @@
 								* Literal 0
 							* Body
 								* Return
-									* Literal 1
-						* SetVariable
-							* Operator =
-								* Identifier compare_string_i
-								* Operator +
-									* Identifier compare_string_i
 									* Literal 1
 						* If
 							* Operator ==
@@ -198,7 +198,7 @@
 					* CallParameters
 						* Identifier main_x
 				* Declaration char
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier main_output_str Local
 					* Operator =
 						* Operator ~* Dereference
@@ -217,7 +217,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_shell_buf
-						* Literal32 400000 Local
+						* Literal32 400000
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_cr Local
@@ -332,6 +332,11 @@
 								* Identifier main_temp
 								* Literal 13
 							* Body
+								* Declaration int
+									* Identifier main_result Local
+									* Operator =
+										* Identifier main_result
+										* Literal 0
 								* FunctionCall print
 									* CallParameters
 										* Identifier main_cr_string
@@ -352,11 +357,6 @@
 								* FunctionCall print
 									* CallParameters
 										* Identifier main_cr
-								* Declaration char
-									* Identifier main_result Local
-									* Operator =
-										* Identifier main_result
-										* Literal 0
 								* SetVariable
 									* Operator =
 										* Identifier main_result

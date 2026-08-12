@@ -20,11 +20,13 @@ void print(char *str) {
 
 int compare_string(char *str_a, char *str_b) {
     int i = 0;
+
     while (*(str_a + i) == *(str_b + i)) {
+        i = i + 1;
         if (*(str_a + i) == 0) {
             return 1;
         }
-        i = i + 1;
+        
         if (*(str_a + i) == 32) {
             return 1;
         }
@@ -87,6 +89,7 @@ void main() {
             }
         }
         if (temp == 13) {
+            int result = 0;
             print(cr_string);
             shell_buf = 400000;
             shell_buf_offset = 0;
@@ -94,7 +97,6 @@ void main() {
             print(shell_buf);
             print(cr);
             
-            char result = 0;
             result = compare_string(shell_buf, dump);
             if (result == 1) {
                 dump_command();
