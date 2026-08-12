@@ -19,6 +19,7 @@ Implement sign extension for 16-bit immediates (-32768 to 32767)
 #include <stdlib.h>
 #include <stdint.h>
 #include <windows.h>
+#include <conio.h>
 
 #define PC registers[15]
 #define RA registers[24]
@@ -97,16 +98,30 @@ int InitialiseSerialPort() {
     }
 }
 
+int serial_port_mode = 0;
+
 uint8_t ReadSerialPort() {
-    while (ReadFile(hSerial, szBuff, n, &dwBytesRead, NULL)) {
-        if (dwBytesRead != 0) {
-            return szBuff[0];
+    if (!serial_port_mode) {
+        char input = (char)_getch();
+        if (input == 0x03) {
+            exit(1);
         }
-    } 
+        return input;
+    } else {
+        while (ReadFile(hSerial, szBuff, n, &dwBytesRead, NULL)) {
+            if (dwBytesRead != 0) {
+                return szBuff[0];
+            }
+        }
+    }
 }
 
 void WriteSerialPort(uint8_t c) {
-    WriteFile(hSerial, &c, 1, &dwBytesRead, NULL);
+    if (!serial_port_mode) {
+        printf("%c", c);
+    } else {
+        WriteFile(hSerial, &c, 1, &dwBytesRead, NULL);
+    }
 }
 
 // I/O emulation

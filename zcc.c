@@ -5021,7 +5021,7 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-2 C Compiler\n");
     // Part 0 - initialisation
-    input_file_str = "os.c";
+    input_file_str = "printtest.c";
     /*
     if (argc < 2) {
         printf("Not enough arguments!\n");
