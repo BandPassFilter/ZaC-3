@@ -132,10 +132,7 @@ void print_bcd(int x) {
         non_zero = 1;
         print_char(temp_print_d);
     }
-    if (non_zero == 1 || temp_print_e > 48) {
-        non_zero = 1;
-        print_char(temp_print_e);
-    }
+    print_char(temp_print_e);
 
 
 }
@@ -151,7 +148,7 @@ int multiply(int a, int b) {
 int divide(int a, int b) {
     int result = 0;
     int diff = a;
-    while (diff < 32768) {
+    while (diff < 2147483647) {
         diff = diff - b;
         result = result + 1;
     }
@@ -161,7 +158,7 @@ int divide(int a, int b) {
 int mod(int a, int b) {
     int result = 0;
     int diff = a;
-    while (diff < 32768) {
+    while (diff < 2147483647) {
         diff = diff - b;
         result = result + 1;
     }
@@ -176,7 +173,7 @@ void primes() {
     cr();
     int not_prime = 0;
 
-    while (a < 32768) {
+    while (a < 2147483647) {
         not_prime = 0;
         while (b < ((a >> 1) + 1)) {
             c = mod(a, b);

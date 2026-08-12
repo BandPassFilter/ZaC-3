@@ -103,10 +103,55 @@ void reset_shell(char *shell_buf) {
 }
 
 void dump_command(char *shell_buf, int shell_buf_offset) {
+    char *cr = "\n";
+    char *space = " ";
     char *dump_success = "dump command detected\n";
-    print(dump_success);
+    char *offset_str = "shell_buf_offset: ";
+    char *debug = 9000000;
+    //print(dump_success);
+    //print(offset_str);
+    //print_hex(shell_buf_offset);
+    //print(cr);
+    shell_buf_offset = shell_buf_offset + 1;
+    int input_a = 0;
     char current_char = *(shell_buf + shell_buf_offset);
-    print_hex_byte(current_char);
+    input_a = (*(shell_buf + shell_buf_offset) - 48) << 12;
+    shell_buf_offset = shell_buf_offset + 1;
+    input_a = input_a + ((*(shell_buf + shell_buf_offset) - 48) << 8);
+    shell_buf_offset = shell_buf_offset + 1;
+    input_a = input_a + ((*(shell_buf + shell_buf_offset) - 48) << 4);
+    shell_buf_offset = shell_buf_offset + 1;
+    input_a = input_a + (*(shell_buf + shell_buf_offset) - 48);
+    shell_buf_offset = shell_buf_offset + 1;
+    //print_hex(input_a);
+    int input_b = 0;
+    shell_buf_offset = shell_buf_offset + 1;
+    input_b = (*(shell_buf + shell_buf_offset) - 48) << 12;
+    shell_buf_offset = shell_buf_offset + 1;
+    input_b = input_b + ((*(shell_buf + shell_buf_offset) - 48) << 8);
+    shell_buf_offset = shell_buf_offset + 1;
+    input_b = input_b + ((*(shell_buf + shell_buf_offset) - 48) << 4);
+    shell_buf_offset = shell_buf_offset + 1;
+    input_b = input_b + (*(shell_buf + shell_buf_offset) - 48);
+    //print_char(32);
+    //print_hex(input_b);
+    //print(cr);
+    char *dump_ptr = input_a;
+    int col_ctr = 0;
+    while (dump_ptr < input_b) {
+        if ((col_ctr - 1) & 15 == 15) {
+            print(cr);
+            col_ctr = 0;
+            print_hex(dump_ptr);
+            print_char(58);
+            print_char(32);
+        }
+        print_hex_byte(*dump_ptr);
+        print_char(32);
+        col_ctr = col_ctr + 1;
+        dump_ptr = dump_ptr + 1;
+    }
+    print(cr);
 }
 
 void write_command() {
@@ -167,19 +212,22 @@ void main() {
             
             print(cr);
             if (shell_buf_offset > 0) {
-                shell_buf_offset = 0;
+                
                 result = compare_string(shell_buf, dump);
                 if (result == 1) {
+                    shell_buf_offset = 4;
                     dump_command(shell_buf, shell_buf_offset);
                     command_success = 1;
                 }
                 result = compare_string(shell_buf, write);
                 if (result == 1) {
+                    shell_buf_offset = 5;
                     write_command();
                     command_success = 1;
                 }
                 result = compare_string(shell_buf, run);
                 if (result == 1) {
+                    shell_buf_offset = 3;
                     run_command();
                     command_success = 1;
                 }
@@ -187,6 +235,7 @@ void main() {
                     print(invalid_command_str);
                 }
             }
+            shell_buf_offset = 0;
             reset_shell(shell_buf);
         }
     }

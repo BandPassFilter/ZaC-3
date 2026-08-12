@@ -291,21 +291,21 @@ void set_variable(Token *token_array, AST_Node *current_node) {
 int getPrecedence (char *operator) {
     // cheap precedence map without using a hashmap
     if (strcmp(operator, "=") == 0) {
-        return 0;
+        return -1;
     } else if (strcmp(operator, "~*") == 0) {
         return 5;
     } else if (strcmp(operator, "~&") == 0) {
         return 4;
     } else if (strcmp(operator, "==") == 0) {
-        return 4;
+        return 0;
     } else if (strcmp(operator, "<=") == 0) {
-        return 4;
+        return 0;
     } else if (strcmp(operator, ">=") == 0) {
-        return 4;
+        return 0;
     } else if (strcmp(operator, "<") == 0) {
-        return 4;
+        return 0;
     } else if (strcmp(operator, ">") == 0) {
-        return 4;
+        return 0;
     } else if (strcmp(operator, "<<") == 0) {
         return 1;
     } else if (strcmp(operator, ">>") == 0) {
@@ -1708,7 +1708,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         if (strcmp(current_node->ast_string, "=") == 0) {
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
-            //extra_stuff->operator_stack_offset = 4;
+            extra_stuff->operator_stack_offset = 4;
             asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             
@@ -2035,18 +2035,18 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
          
             if (status == ASM_GET) {
                 if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
-                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
+                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
-                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
+                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_GET_MEMORY) {
                 if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
-                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
+                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
-                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
+                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_SET) {
@@ -2058,7 +2058,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     sprintf(buffer+strlen(buffer), "movi [r%d + 0], r%d ;SET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
                 }
             }
-            //extra_stuff->operator_stack_offset -= 1;
+            extra_stuff->operator_stack_offset -= 1;
         //}
         asm_list->append(asm_list, buffer);
         *pointer_layer_dereference--;
@@ -3361,18 +3361,18 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         } else {*/
             if (status == ASM_GET) {
                 if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
-                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset - 1);
+                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset - 1, extra_stuff->operator_stack_offset - 1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
-                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset - 1);
+                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset - 1, extra_stuff->operator_stack_offset - 1);
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_GET_MEMORY) {
                 if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
-                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset - 1);
+                    sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset - 1, extra_stuff->operator_stack_offset - 1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
-                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset - 1);
+                    sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset - 1, extra_stuff->operator_stack_offset - 1);
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_SET) {
@@ -3384,7 +3384,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                     sprintf(buffer+strlen(buffer), "movi [r%d + 0], r%d ;SET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset - 1);
                 }
             }
-            //extra_stuff->operator_stack_offset += -1;
+            extra_stuff->operator_stack_offset += -1;
         //}
         asm_list->append(asm_list, buffer);
         *pointer_layer_dereference--;
@@ -4761,6 +4761,23 @@ TokenList *lexer(char *input_file_buf, long fsize) {
     return tokenList;
 }
 
+char *pre_processor(char *input_file_buf, int size) {
+    // pre processor
+    // for now it'll just remove comments
+
+    int i = 0;
+    while (i < size) {
+        if (input_file_buf[i] == '/' && input_file_buf[i+1] == '/') {
+            while (i < size && input_file_buf[i] != '\n') {
+                input_file_buf[i] = ' ';
+                i++;
+            }
+        }
+        i++;
+    }
+    return input_file_buf;
+}
+
 Dictionary **symbol_pass(AST_Node *start_node) {
     CharAppendList *asm_list = (CharAppendList*) malloc(sizeof(CharAppendList));
     CharAppendListInit(asm_list);
@@ -5021,7 +5038,13 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-2 C Compiler\n");
     // Part 0 - initialisation
-    input_file_str = "printtest.c";
+    if (argc < 2) {
+        input_file_str = "os.c"; // default filename for testing
+    } else if (argc == 2) {
+        input_file_str = argv[1];
+    } else {
+        input_file_str = "os.c";
+    }
     /*
     if (argc < 2) {
         printf("Not enough arguments!\n");
@@ -5035,6 +5058,14 @@ int main(int argc, char* argv[]) {
 
     input_file = fopen(input_file_str, "rb");
     output_file = fopen("c_program.asm", "wb");
+    if (!input_file) {
+        printf("Invalid input file\n");
+        exit(1);
+    }
+    if (!output_file) {
+        printf("Invalid output file\n");
+        exit(1);
+    }
     //printf("input_file = %p\n", input_file);
     //printf("output_file = %p\n", output_file);
 
@@ -5078,6 +5109,7 @@ int main(int argc, char* argv[]) {
     
     // Part 1 - Pre-processor
     // Evalulates macros, defines, includes and removes comments
+    input_file_buf = pre_processor(input_file_buf, fsize);
 
     // Part 2 and 3 - Lexer and tokenList modifier
     // Lexer will be just a static struct array
