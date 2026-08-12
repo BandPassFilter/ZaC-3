@@ -2,7 +2,7 @@
 * Main
 	* FunctionDeclaration void
 		* Function print_char
-			* Parameters
+			* Parameters Local
 				* Declaration char
 					* Identifier print_char_value Local
 			* Body
@@ -22,14 +22,14 @@
 		* Function get_char
 			* Parameters
 			* Body
-				* Declaration char Local
+				* Declaration char
 					* Operator ~* Dereference
 						* Identifier get_char_uart Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier get_char_uart
 						* Literal32 1245184
-				* Return
+				* Return Local
 					* Operator ~* Dereference
 						* Identifier get_char_uart
 	* FunctionDeclaration void
@@ -40,25 +40,25 @@
 						* Identifier print_str Local
 			* Body
 				* Declaration char
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier print_uart Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier print_uart
-						* Literal32 1245184 Local
+						* Literal32 1245184
 				* Declaration char
 					* Identifier print_current_char Local
 				* While
-					* Operator >
+					* Operator > Local
 						* Operator ~* Dereference
 							* Identifier print_str
-						* Literal 0
+						* Literal 0 Local
 					* Body
 						* SetVariable
 							* Operator =
 								* Identifier print_current_char
 								* Operator ~* Dereference
-									* Identifier print_str
+									* Identifier print_str Local
 						* FunctionCall print_char
 							* CallParameters
 								* Identifier print_current_char
@@ -68,6 +68,238 @@
 								* Operator +
 									* Identifier print_str
 									* Literal 1
+	* FunctionDeclaration void
+		* Function print_hex_byte
+			* Parameters
+				* Declaration char
+					* Identifier print_hex_byte_x Local
+			* Body
+				* Declaration char
+					* Identifier print_hex_byte_temp Local
+				* Declaration char
+					* Identifier print_hex_byte_temp_b Local
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Operator >> Local
+							* Identifier print_hex_byte_x
+							* Literal 4 Local
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Operator &
+							* Identifier print_hex_byte_temp
+							* Literal 15
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp_b
+						* Identifier print_hex_byte_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Operator +
+							* Identifier print_hex_byte_temp_b
+							* Literal 48
+				* If
+					* Operator >
+						* Identifier print_hex_byte_temp_b
+						* Literal 9
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_byte_temp
+								* Operator +
+									* Identifier print_hex_byte_temp_b
+									* Literal 55
+				* FunctionCall print_char
+					* CallParameters
+						* Identifier print_hex_byte_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Identifier print_hex_byte_x
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Operator &
+							* Identifier print_hex_byte_temp
+							* Literal 15
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp_b
+						* Identifier print_hex_byte_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Operator +
+							* Identifier print_hex_byte_temp_b
+							* Literal 48
+				* If
+					* Operator >
+						* Identifier print_hex_byte_temp_b
+						* Literal 9
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_byte_temp
+								* Operator +
+									* Identifier print_hex_byte_temp_b
+									* Literal 55
+				* FunctionCall print_char
+					* CallParameters
+						* Identifier print_hex_byte_temp
+	* FunctionDeclaration void
+		* Function print_hex
+			* Parameters
+				* Declaration int
+					* Identifier print_hex_x Local
+			* Body
+				* Declaration char
+					* Identifier print_hex_temp Local
+				* Declaration char
+					* Identifier print_hex_temp_b Local
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator >>
+							* Identifier print_hex_x
+							* Literal 12
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator &
+							* Identifier print_hex_temp
+							* Literal 15
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp_b
+						* Identifier print_hex_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator +
+							* Identifier print_hex_temp_b
+							* Literal 48
+				* If
+					* Operator >
+						* Identifier print_hex_temp_b
+						* Literal 9
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_temp
+								* Operator +
+									* Identifier print_hex_temp_b
+									* Literal 55
+				* FunctionCall print_char
+					* CallParameters
+						* Identifier print_hex_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator >>
+							* Identifier print_hex_x
+							* Literal 8
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator &
+							* Identifier print_hex_temp
+							* Literal 15
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp_b
+						* Identifier print_hex_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator +
+							* Identifier print_hex_temp_b
+							* Literal 48
+				* If
+					* Operator >
+						* Identifier print_hex_temp_b
+						* Literal 9
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_temp
+								* Operator +
+									* Identifier print_hex_temp_b
+									* Literal 55
+				* FunctionCall print_char
+					* CallParameters
+						* Identifier print_hex_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator >>
+							* Identifier print_hex_x
+							* Literal 4
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator &
+							* Identifier print_hex_temp
+							* Literal 15
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp_b
+						* Identifier print_hex_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator +
+							* Identifier print_hex_temp_b
+							* Literal 48
+				* If
+					* Operator >
+						* Identifier print_hex_temp_b
+						* Literal 9
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_temp
+								* Operator +
+									* Identifier print_hex_temp_b
+									* Literal 55
+				* FunctionCall print_char
+					* CallParameters
+						* Identifier print_hex_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Identifier print_hex_x
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator &
+							* Identifier print_hex_temp
+							* Literal 15
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp_b
+						* Identifier print_hex_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_temp
+						* Operator +
+							* Identifier print_hex_temp_b
+							* Literal 48
+				* If
+					* Operator >
+						* Identifier print_hex_temp_b
+						* Literal 9
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_temp
+								* Operator +
+									* Identifier print_hex_temp_b
+									* Literal 55
+				* FunctionCall print_char
+					* CallParameters
+						* Identifier print_hex_temp
 	* FunctionDeclaration int
 		* Function compare_string
 			* Parameters
@@ -104,7 +336,7 @@
 							* Operator ==
 								* Operator ~* Dereference
 									* Operator +
-										* Identifier compare_string_str_a
+										* Identifier compare_string_str_b
 										* Identifier compare_string_i
 								* Literal 0
 							* Body
@@ -165,6 +397,11 @@
 	* FunctionDeclaration void
 		* Function dump_command
 			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier dump_command_shell_buf Local
+				* Declaration int
+					* Identifier dump_command_shell_buf_offset Local
 			* Body
 				* Declaration char
 					* Operator ~* Dereference
@@ -176,6 +413,17 @@
 				* FunctionCall print
 					* CallParameters
 						* Identifier dump_command_dump_success
+				* Declaration char
+					* Identifier dump_command_current_char Local
+					* Operator =
+						* Identifier dump_command_current_char
+						* Operator ~* Dereference
+							* Operator +
+								* Identifier dump_command_shell_buf
+								* Identifier dump_command_shell_buf_offset
+				* FunctionCall print_hex_byte
+					* CallParameters
+						* Identifier dump_command_current_char
 	* FunctionDeclaration void
 		* Function write_command
 			* Parameters
@@ -214,13 +462,13 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_x
-						* String string_4: "ZAC\n" Static
+						* String string_4: "\nZaC-3 OS\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_dump Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier main_dump Local
+							* Identifier main_dump
 						* String string_5: "dump" Static
 				* Declaration char
 					* Operator ~* Dereference
@@ -247,12 +495,19 @@
 							* Identifier main_output_str
 						* String string_8: "Typed string is: " Static
 				* Declaration char
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
+						* Identifier main_invalid_command_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier main_invalid_command_str
+						* String string_9: "Invalid command\n" Static
+				* Declaration char
+					* Operator ~* Dereference
 						* Identifier main_cr_string Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_cr_string
-						* String string_9: "\ncarriage return\n" Static
+						* String string_10: "\ncarriage return\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_shell_buf Local
@@ -266,7 +521,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_cr
-						* String string_10: "\n" Static
+						* String string_11: "\n" Static
 				* Declaration char
 					* Identifier main_space Local
 					* Operator =
@@ -379,71 +634,93 @@
 									* Operator =
 										* Identifier main_result
 										* Literal 0
-								* FunctionCall print
-									* CallParameters
-										* Identifier main_cr_string
+								* Declaration int
+									* Identifier main_command_success Local
+									* Operator =
+										* Identifier main_command_success
+										* Literal 0
 								* SetVariable
 									* Operator =
 										* Identifier main_shell_buf
 										* Literal32 400000
-								* SetVariable
-									* Operator =
-										* Identifier main_shell_buf_offset
-										* Literal 0
-								* FunctionCall print
-									* CallParameters
-										* Identifier main_output_str
-								* FunctionCall print
-									* CallParameters
-										* Identifier main_shell_buf
 								* FunctionCall print
 									* CallParameters
 										* Identifier main_cr
-								* SetVariable
-									* Operator =
-										* Identifier main_result
-										* FunctionCall compare_string
-											* CallParameters
-												* Identifier main_shell_buf
-												* Identifier main_dump
 								* If
-									* Operator ==
-										* Identifier main_result
-										* Literal 1
+									* Operator >
+										* Identifier main_shell_buf_offset
+										* Literal 0
 									* Body
-										* FunctionCall dump_command
-											* CallParameters
-												* Void
-								* SetVariable
-									* Operator =
-										* Identifier main_result
-										* FunctionCall compare_string
-											* CallParameters
-												* Identifier main_shell_buf
-												* Identifier main_write
-								* If
-									* Operator ==
-										* Identifier main_result
-										* Literal 1
-									* Body
-										* FunctionCall write_command
-											* CallParameters
-												* Void
-								* SetVariable
-									* Operator =
-										* Identifier main_result
-										* FunctionCall compare_string
-											* CallParameters
-												* Identifier main_shell_buf
-												* Identifier main_run
-								* If
-									* Operator ==
-										* Identifier main_result
-										* Literal 1
-									* Body
-										* FunctionCall run_command
-											* CallParameters
-												* Void
+										* SetVariable
+											* Operator =
+												* Identifier main_shell_buf_offset
+												* Literal 0
+										* SetVariable
+											* Operator =
+												* Identifier main_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier main_shell_buf
+														* Identifier main_dump
+										* If
+											* Operator ==
+												* Identifier main_result
+												* Literal 1
+											* Body
+												* FunctionCall dump_command
+													* CallParameters
+														* Identifier main_shell_buf
+														* Identifier main_shell_buf_offset
+												* SetVariable
+													* Operator =
+														* Identifier main_command_success
+														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier main_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier main_shell_buf
+														* Identifier main_write
+										* If
+											* Operator ==
+												* Identifier main_result
+												* Literal 1
+											* Body
+												* FunctionCall write_command
+													* CallParameters
+														* Void
+												* SetVariable
+													* Operator =
+														* Identifier main_command_success
+														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier main_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier main_shell_buf
+														* Identifier main_run
+										* If
+											* Operator ==
+												* Identifier main_result
+												* Literal 1
+											* Body
+												* FunctionCall run_command
+													* CallParameters
+														* Void
+												* SetVariable
+													* Operator =
+														* Identifier main_command_success
+														* Literal 1
+										* If
+											* Operator ==
+												* Identifier main_command_success
+												* Literal 0
+											* Body
+												* FunctionCall print
+													* CallParameters
+														* Identifier main_invalid_command_str
 								* FunctionCall reset_shell
 									* CallParameters
 										* Identifier main_shell_buf
@@ -453,7 +730,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_end
-						* String string_11: "end\n" Static
+						* String string_12: "end\n" Static
 				* FunctionCall print
 					* CallParameters
 						* Identifier main_end

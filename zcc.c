@@ -1693,8 +1693,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 }
                 CharAppendList *operand_a = generateCharAppendList();
                 CharAppendList *operand_b = generateCharAppendList();
-                asm_generator_code_gen(node_a, operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                 asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                
+                asm_generator_code_gen(node_a, operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                 
                 asm_list->append(asm_list, operand_b->array);
                 asm_list->append(asm_list, operand_a->array);
@@ -1707,7 +1708,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         if (strcmp(current_node->ast_string, "=") == 0) {
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
-            
+            //extra_stuff->operator_stack_offset = 4;
             asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             
@@ -5116,7 +5117,7 @@ int main(int argc, char* argv[]) {
     char *asm_output;
     
     asm_output = asm_generator(start_node, pointer_symbol_table, symbol_table);
-    printf("%s\n", asm_output);
+    //printf("%s\n", asm_output);
     
     // Part 6 - Machine code generator
     printf("input_file = %p\n", input_file);

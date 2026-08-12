@@ -18,12 +18,70 @@ void print(char *str) {
     }
 }
 
+void print_hex_byte(char x) {
+    char temp;
+    char temp_b;
+    temp = x >> 4;
+    temp = temp & 15;
+    temp_b = temp;
+    temp = temp_b + 48;
+    if (temp_b > 9) {
+        temp = temp_b + 55;
+    }
+    print_char(temp);
+    temp = x;
+    temp = temp & 15;
+    temp_b = temp;
+    temp = temp_b + 48;
+    if (temp_b > 9) {
+        temp = temp_b + 55;
+    }
+    print_char(temp);
+}
+
+void print_hex(int x) {
+    char temp;
+    char temp_b;
+    temp = x >> 12;
+    temp = temp & 15;
+    temp_b = temp;
+    temp = temp_b + 48;
+    if (temp_b > 9) {
+        temp = temp_b + 55;
+    }
+    print_char(temp);
+    temp = x >> 8;
+    temp = temp & 15;
+    temp_b = temp;
+    temp = temp_b + 48;
+    if (temp_b > 9) {
+        temp = temp_b + 55;
+    }
+    print_char(temp);
+    temp = x >> 4;
+    temp = temp & 15;
+    temp_b = temp;
+    temp = temp_b + 48;
+    if (temp_b > 9) {
+        temp = temp_b + 55;
+    }
+    print_char(temp);
+    temp = x;
+    temp = temp & 15;
+    temp_b = temp;
+    temp = temp_b + 48;
+    if (temp_b > 9) {
+        temp = temp_b + 55;
+    }
+    print_char(temp);
+}
+
 int compare_string(char *str_a, char *str_b) {
     int i = 0;
 
     while (*(str_a + i) == *(str_b + i)) {
         i = i + 1;
-        if (*(str_a + i) == 0) {
+        if (*(str_b + i) == 0) {
             return 1;
         }
         
@@ -44,10 +102,11 @@ void reset_shell(char *shell_buf) {
     print(prompt);
 }
 
-void dump_command() {
+void dump_command(char *shell_buf, int shell_buf_offset) {
     char *dump_success = "dump command detected\n";
     print(dump_success);
-
+    char current_char = *(shell_buf + shell_buf_offset);
+    print_hex_byte(current_char);
 }
 
 void write_command() {
@@ -61,7 +120,7 @@ void run_command() {
 }
 
 void main() {
-    char *x = "ZAC\n";
+    char *x = "\nZaC-3 OS\n";
 	char *dump = "dump";
     char *write = "write";
     char *run = "run";
@@ -69,6 +128,7 @@ void main() {
     print(x);
 
     char *output_str = "Typed string is: ";
+    char *invalid_command_str = "Invalid command\n";
     char *cr_string = "\ncarriage return\n";
 	char *shell_buf = 400000;
     char *cr = "\n";
@@ -102,24 +162,30 @@ void main() {
         }
         if (temp == 13) {
             int result = 0;
-            print(cr_string);
+            int command_success = 0;
             shell_buf = 400000;
-            shell_buf_offset = 0;
-            print(output_str);
-            print(shell_buf);
-            print(cr);
             
-            result = compare_string(shell_buf, dump);
-            if (result == 1) {
-                dump_command();
-            }
-            result = compare_string(shell_buf, write);
-            if (result == 1) {
-                write_command();
-            }
-            result = compare_string(shell_buf, run);
-            if (result == 1) {
-                run_command();
+            print(cr);
+            if (shell_buf_offset > 0) {
+                shell_buf_offset = 0;
+                result = compare_string(shell_buf, dump);
+                if (result == 1) {
+                    dump_command(shell_buf, shell_buf_offset);
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, write);
+                if (result == 1) {
+                    write_command();
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, run);
+                if (result == 1) {
+                    run_command();
+                    command_success = 1;
+                }
+                if (command_success == 0) {
+                    print(invalid_command_str);
+                }
             }
             reset_shell(shell_buf);
         }

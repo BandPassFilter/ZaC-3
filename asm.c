@@ -620,7 +620,7 @@ int main(int argc, char** argv) {
         }
         skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
         grab_string(input_file_buf, fsize, instruction_string, &input_buf_ptr);
-        printf("Instruction: %s\n", instruction_string);
+        //printf("Instruction: %s\n", instruction_string);
         input_buf_ptr++;
         parse_string_ptr = 0;
 
@@ -871,9 +871,9 @@ int main(int argc, char** argv) {
             }
         }
         if (!check_string_is_non_inst(instruction_string, PARSE_LENGTH)) {
-            printf("MACHINE CODE: ");
-            print_binary(machine_code);
-            printf(" Address: %d\n", code_pointer);
+            //printf("MACHINE CODE: ");
+            //print_binary(machine_code);
+            //printf(" Address: %d\n", code_pointer);
             output_array[code_pointer] = (uint32_t)machine_code;
             code_pointer++;
         }
