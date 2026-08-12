@@ -139,17 +139,37 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
     char *dump_ptr = input_a;
     int col_ctr = 0;
     while (dump_ptr < input_b) {
+        if ((col_ctr - 1) & 7 == 7) {
+            print_char(32);
+        }
         if ((col_ctr - 1) & 15 == 15) {
             print(cr);
-            col_ctr = 0;
             print_hex(dump_ptr);
             print_char(58);
             print_char(32);
+            print_char(32);
+            
         }
         print_hex_byte(*dump_ptr);
         print_char(32);
         col_ctr = col_ctr + 1;
         dump_ptr = dump_ptr + 1;
+        if (dump_ptr > input_a) {
+            if ((col_ctr - 1) & 15 == 15) {
+                //print(cr);
+                col_ctr = 0;
+                while (col_ctr < 16) {
+                    char dump_char = *(dump_ptr + col_ctr - 16);
+                    if (dump_char > 20 && dump_char < 127) {
+                        print_char(dump_char);
+                    }
+                    if (dump_char < 21 || dump_char > 126) {
+                        print_char(46);
+                    }
+                    col_ctr = col_ctr + 1;
+                }
+            }
+        }
     }
     print(cr);
 }

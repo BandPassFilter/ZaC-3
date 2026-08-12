@@ -25,17 +25,17 @@
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier get_char_uart Local
-					* Operator = Local
+					* Operator =
 						* Operator ~* Dereference
 							* Identifier get_char_uart
-						* Literal32 1245184 Local
-				* Return
+						* Literal32 1245184
+				* Return Local
 					* Operator ~* Dereference
 						* Identifier get_char_uart
 	* FunctionDeclaration void
 		* Function print
 			* Parameters
-				* Declaration char
+				* Declaration char Local
 					* Operator ~* Dereference
 						* Identifier print_str Local
 			* Body
@@ -57,18 +57,18 @@
 						* SetVariable
 							* Operator =
 								* Identifier print_current_char
-								* Operator ~* Dereference Local
+								* Operator ~* Dereference
 									* Identifier print_str
 						* FunctionCall print_char
 							* CallParameters
 								* Identifier print_current_char
-						* SetVariable
+						* SetVariable Local
 							* Operator =
 								* Identifier print_str
 								* Operator +
-									* Identifier print_str Local
+									* Identifier print_str
 									* Literal 1
-	* FunctionDeclaration void
+	* FunctionDeclaration void Local
 		* Function print_hex_byte
 			* Parameters
 				* Declaration char
@@ -78,29 +78,29 @@
 					* Identifier print_hex_byte_temp Local
 				* Declaration char
 					* Identifier print_hex_byte_temp_b Local
-				* SetVariable
+				* SetVariable Local
 					* Operator =
 						* Identifier print_hex_byte_temp
 						* Operator >>
 							* Identifier print_hex_byte_x
 							* Literal 4
-				* SetVariable Local
+				* SetVariable
 					* Operator =
-						* Identifier print_hex_byte_temp Local
+						* Identifier print_hex_byte_temp
 						* Operator &
 							* Identifier print_hex_byte_temp
 							* Literal 15
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp_b
-						* Identifier print_hex_byte_temp
+						* Identifier print_hex_byte_temp Local
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
 						* Operator +
 							* Identifier print_hex_byte_temp_b
-							* Literal 48 Local
-				* If
+							* Literal 48
+				* If Local
 					* Operator >
 						* Identifier print_hex_byte_temp_b
 						* Literal 9
@@ -629,22 +629,33 @@
 									* Operator -
 										* Identifier dump_command_col_ctr
 										* Literal 1
+									* Literal 7
+								* Literal 7
+							* Body
+								* FunctionCall print_char
+									* CallParameters
+										* Literal 32
+						* If
+							* Operator ==
+								* Operator &
+									* Operator -
+										* Identifier dump_command_col_ctr
+										* Literal 1
 									* Literal 15
 								* Literal 15
 							* Body
 								* FunctionCall print
 									* CallParameters
 										* Identifier dump_command_cr
-								* SetVariable
-									* Operator =
-										* Identifier dump_command_col_ctr
-										* Literal 0
 								* FunctionCall print_hex
 									* CallParameters
 										* Identifier dump_command_dump_ptr
 								* FunctionCall print_char
 									* CallParameters
 										* Literal 58
+								* FunctionCall print_char
+									* CallParameters
+										* Literal 32
 								* FunctionCall print_char
 									* CallParameters
 										* Literal 32
@@ -667,6 +678,69 @@
 								* Operator +
 									* Identifier dump_command_dump_ptr
 									* Literal 1
+						* If
+							* Operator >
+								* Identifier dump_command_dump_ptr
+								* Identifier dump_command_input_a
+							* Body
+								* If
+									* Operator ==
+										* Operator &
+											* Operator -
+												* Identifier dump_command_col_ctr
+												* Literal 1
+											* Literal 15
+										* Literal 15
+									* Body
+										* SetVariable
+											* Operator =
+												* Identifier dump_command_col_ctr
+												* Literal 0
+										* While
+											* Operator <
+												* Identifier dump_command_col_ctr
+												* Literal 16
+											* Body
+												* Declaration char
+													* Identifier dump_command_dump_char Local
+													* Operator =
+														* Identifier dump_command_dump_char
+														* Operator ~* Dereference
+															* Operator -
+																* Operator +
+																	* Identifier dump_command_dump_ptr
+																	* Identifier dump_command_col_ctr
+																* Literal 16
+												* If
+													* Operator &&
+														* Operator >
+															* Identifier dump_command_dump_char
+															* Literal 20
+														* Operator <
+															* Identifier dump_command_dump_char
+															* Literal 127
+													* Body
+														* FunctionCall print_char
+															* CallParameters
+																* Identifier dump_command_dump_char
+												* If
+													* Operator ||
+														* Operator <
+															* Identifier dump_command_dump_char
+															* Literal 21
+														* Operator >
+															* Identifier dump_command_dump_char
+															* Literal 126
+													* Body
+														* FunctionCall print_char
+															* CallParameters
+																* Literal 46
+												* SetVariable
+													* Operator =
+														* Identifier dump_command_col_ctr
+														* Operator +
+															* Identifier dump_command_col_ctr
+															* Literal 1
 				* FunctionCall print
 					* CallParameters
 						* Identifier dump_command_cr
