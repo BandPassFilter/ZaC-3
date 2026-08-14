@@ -170,6 +170,7 @@ void primes() {
     int a = 3;
     int b = 2;
     int c = 1;
+    char tab = 9;
     cr();
     int not_prime = 0;
 
@@ -184,7 +185,7 @@ void primes() {
         }
         if (not_prime == 0) {
             print_bcd(a);
-            cr();
+            print_char(tab);
         }
         a = a + 1;
         b = 2;

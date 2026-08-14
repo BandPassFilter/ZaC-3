@@ -98,7 +98,7 @@ int InitialiseSerialPort() {
     }
 }
 
-int serial_port_mode = 0;
+int serial_port_mode = 1;
 
 uint8_t ReadSerialPort() {
     if (!serial_port_mode) {

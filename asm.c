@@ -499,7 +499,7 @@ int main(int argc, char** argv) {
         // evaluate assembler directives (.byte, .word, .asciiz, etc.)
         if (compare_string(instruction_string, ".byte")) {
             // ".byte byte_name = 0x01"
-            printf(".byte detected\n");
+            //printf(".byte detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             grab_string(input_file_buf, fsize, directive_string, &input_buf_ptr); // "byte_name"
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
@@ -512,7 +512,7 @@ int main(int argc, char** argv) {
             adrs_offset_value = adrs_offset_value + 1;
         } else if (compare_string(instruction_string, ".word")) {
             // ".word word_name = 0x0001"
-            printf(".word detected\n");
+            //printf(".word detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             grab_string(input_file_buf, fsize, directive_string, &input_buf_ptr); // "word_name"
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
@@ -526,7 +526,7 @@ int main(int argc, char** argv) {
             adrs_offset_value = adrs_offset_value + 2;
         } else if (compare_string(instruction_string, ".define")) {
             // ".define define_name 01234"
-            printf(".define detected\n");
+            //printf(".define detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             grab_string(input_file_buf, fsize, directive_string, &input_buf_ptr); // "word_name"
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
@@ -535,7 +535,7 @@ int main(int argc, char** argv) {
             push_labels(labels, directive_string, directive_value, directive_value, &dummy_idx, &label_idx, LABEL_NUMBER);
         } else if (compare_string(instruction_string, ".asciiz")) {
             // ".asciiz string_namme = "Hello, World!\n"
-            printf(".asciiz detected\n");
+            //printf(".asciiz detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             grab_string(input_file_buf, fsize, directive_string, &input_buf_ptr); // "word_name"
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
@@ -553,16 +553,16 @@ int main(int argc, char** argv) {
             adrs_offset_value = adrs_offset_value + strlen(temp_string)+1;
         } else if (compare_string(instruction_string, ".include")) {
             // ".include "include_file.asm"
-            printf(".include detected\n");
+            //printf(".include detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             //push_labels(labels, instruction_string, 0, &input_buf_ptr, &label_idx);
         } else if (compare_string(instruction_string, ".global")) {
             // ".global global_name"
-            printf(".global detected\n");
+            //printf(".global detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             //push_labels(labels, instruction_string, 0, &input_buf_ptr, &label_idx);
         } else if (check_string_is_non_inst(instruction_string, PARSE_LENGTH)) {
-            printf("%s %d\n", &instruction_string, current_address);
+            //printf("%s %d\n", &instruction_string, current_address);
             push_labels(labels, instruction_string, 0, current_address, &input_buf_ptr, &label_idx, LABEL_NUMBER);
         }
 
@@ -592,12 +592,12 @@ int main(int argc, char** argv) {
     char whitespace[64] = {' ', ',', '\t', '\n', '\0'}; // always have null-terminating character
 
     uint32_t *output_array = (int *) malloc(256*1024 * sizeof(uint8_t) + 65536*sizeof(uint8_t));
-    printf("Code output array malloc\n");
+    //printf("Code output array malloc\n");
     if (output_array == NULL) {
         printf("Memory allocation fail!\n");
         exit(1);
     } else {
-        printf("Memory allocation successful at %p\n", output_array);
+        //printf("Memory allocation successful at %p\n", output_array);
     }
     for (int i = 0; i < 65536; i++) {
         output_array[i] = 0;
@@ -671,7 +671,7 @@ int main(int argc, char** argv) {
             i++;
         }
         if (check_string_is_jmp_label(instruction_string, PARSE_LENGTH)) {
-            printf("jmp label detected\n");
+            //printf("jmp label detected\n");
         }
         if (inst_type == NONE && !check_string_is_jmp_label(instruction_string, PARSE_LENGTH) && instruction_string[0] != '.' && instruction_string[0] != '\0') {
             printf("Invalid opcode at offset: %d", input_buf_ptr);
@@ -728,7 +728,7 @@ int main(int argc, char** argv) {
                     skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                     if (compare_string(instruction_string, "movi")) {
                         if (input_file_buf[input_buf_ptr] == '[') {
-                            printf("bracket detected, memory store instruction\n");
+                            //printf("bracket detected, memory store instruction\n");
                             input_buf_ptr++; // skip '[' character
                             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                             grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
@@ -745,7 +745,7 @@ int main(int argc, char** argv) {
                             imm16 = eval_imm16(imm16_string, labels);
                         } else {
                             // r0, [r1 + offset] format for input
-                            printf("non bracket detected, memory load instruction\n");
+                            //printf("non bracket detected, memory load instruction\n");
                             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                             grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
                             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
@@ -768,7 +768,7 @@ int main(int argc, char** argv) {
                     skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                     if (compare_string(instruction_string, "mvbi")) {
                         if (input_file_buf[input_buf_ptr] == '[') {
-                            printf("bracket detected, memory store instruction\n");
+                            //printf("bracket detected, memory store instruction\n");
                             input_buf_ptr++; // skip '[' character
                             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                             grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
@@ -785,7 +785,7 @@ int main(int argc, char** argv) {
                             imm16 = eval_imm16(imm16_string, labels);
                         } else {
                             // r0, [r1 + offset] format for input
-                            printf("non bracket detected, memory load instruction\n");
+                            //printf("non bracket detected, memory load instruction\n");
                             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                             grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
                             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);

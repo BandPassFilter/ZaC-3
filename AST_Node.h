@@ -151,7 +151,7 @@ void _AST_List_append(AST_Node *self, AST_Node *node) {
             printf("ASTList Allocation Error! Size: %d\n", self->list->size);
             exit(1);
         }
-        printf("Reallocated ASTList\n");
+        //printf("Reallocated ASTList\n");
         self->list->array = new_array;
         self->list->array_size = new_size;
     }

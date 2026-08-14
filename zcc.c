@@ -144,9 +144,9 @@ PROBLEMS:
 #include "CharAppendList.h"
 
 void pause() {
-    printf("Press any key to continue . . .");
+    //printf("Press any key to continue . . .");
     while (!kbhit()) {}
-    printf("\n");
+    //printf("\n");
 }
 
 
@@ -386,23 +386,23 @@ TokenList *convertInfixToPrefix(TokenList *localTokenList) {
     while (tokenStack.isNotEmpty(&tokenStack)) {
         outputTokenList.push(&outputTokenList, tokenStack.pop(&tokenStack));
     }
-    printf("Prefix notation: ");
+    //printf("Prefix notation: ");
     // now reverse the output string
     TokenList *outputReverseTokenList = malloc(sizeof(TokenList)); // create the output object
     TokenListInit(outputReverseTokenList, 0);
     while (outputTokenList.isNotEmpty(&outputTokenList)) {
         outputReverseTokenList->push(outputReverseTokenList, outputTokenList.pop(&outputTokenList));
-        printf("%s ", outputReverseTokenList->peek(outputReverseTokenList).token_string);
+        //printf("%s ", outputReverseTokenList->peek(outputReverseTokenList).token_string);
     }
 
-    printf("\n");
+    //printf("\n");
     tokenStack.destroy(&tokenStack);
     outputTokenList.destroy(&outputTokenList);
     return outputReverseTokenList;
 }
 
 AST_Node *createTreeAux(TokenList *localTokenList, int *token_list_idx, AST_Node *current_node) {
-    //printf("%s ", localTokenList->getItem(localTokenList, *token_list_idx).token_string);
+    ////printf("%s ", localTokenList->getItem(localTokenList, *token_list_idx).token_string);
     if (*token_list_idx > localTokenList->getSize(localTokenList)) {
         printf("Expression syntax tree error!\n");
         exit(1);
@@ -500,7 +500,7 @@ AST_Node *expression(TokenList *localTokenList, AST_Node *current_node) {
         if (localTokenList->getItem(localTokenList, i).token_type == IDENT) {
             if (localTokenList->getSize(localTokenList) - i > 1) {
                 if (localTokenList->getItem(localTokenList, i+1).token_string[0] == '(') {
-                    printf("Function parameter expression: ");
+                    //printf("Function parameter expression: ");
                     int function_i_start = i;
                     // function call
                     AST_Node *function_node = generate_ast_node();
@@ -521,10 +521,10 @@ AST_Node *expression(TokenList *localTokenList, AST_Node *current_node) {
                             bracket_count--;
                         }
                         if (localTokenList->getItem(localTokenList, i).token_string[0] == ',' && bracket_count == 1) {
-                            printf("\n");
+                            //printf("\n");
                             
                             AST_Node *param = expression(paramTokenList, param);
-                            printf("Function parameter expression: ");
+                            //printf("Function parameter expression: ");
                             params->append(params, param);
                             //paramTokenList->destroy(paramTokenList);
                             paramTokenList = generateTokenList();
@@ -532,13 +532,13 @@ AST_Node *expression(TokenList *localTokenList, AST_Node *current_node) {
                         else if (bracket_count > 0) {
                             if (localTokenList->getItem(localTokenList, i).token_type != MODIFIER) {
                                 paramTokenList->append(paramTokenList, localTokenList->getItem(localTokenList, i));
-                                printf("%s ", localTokenList->getItem(localTokenList, i).token_string);
+                                //printf("%s ", localTokenList->getItem(localTokenList, i).token_string);
                             }
                         }
                         localTokenList->getItemReference(localTokenList, i)->token_type = INVALID;
                         i++;
                     }
-                    printf("\n");
+                    //printf("\n");
                     AST_Node *param = expression(paramTokenList, param);
                     params->append(params, param);
                     function_node->append(function_node, params);
@@ -605,10 +605,10 @@ int declaration(TokenList *tokenList, int tokenList_idx, AST_Node *current_node,
                 break;
             }
             TokenList *ParamList = generateTokenList(); // generate token list for parameters and then evaluate declaration
-            printf("Function parameter: ");
+            //printf("Function parameter: ");
             while (tokenList->getItem(tokenList, local_idx+2).token_string[0] != ',' && tokenList->getItem(tokenList, local_idx+2).token_string[0] != ')') {
                 ParamList->append(ParamList, tokenList->getItem(tokenList, local_idx+2));
-                printf("%s ", tokenList->getItem(tokenList, local_idx+2).token_string);
+                //printf("%s ", tokenList->getItem(tokenList, local_idx+2).token_string);
                 local_idx++;
             }
             if (tokenList->getItem(tokenList, local_idx+2).token_string[0] == ')') {
@@ -616,7 +616,7 @@ int declaration(TokenList *tokenList, int tokenList_idx, AST_Node *current_node,
             }
             ParamList->append(ParamList, tokenList->getItem(tokenList, local_idx+2));
             ParamList->append(ParamList, *endOfLineToken);
-            printf("\n");
+            //printf("\n");
             AST_Node *AST_param = generate_ast_node();
             statement(ParamList, 0, AST_param, 0);
             AST_params->append(AST_params, AST_param->getItem(AST_param, 0));
@@ -650,7 +650,7 @@ int declaration(TokenList *tokenList, int tokenList_idx, AST_Node *current_node,
             }
             
             if (if_brace_balance > 0) {
-                printf("%s ", tokenList->getStringReference(tokenList, body_i));
+                //printf("%s ", tokenList->getStringReference(tokenList, body_i));
                 tokenList_func_body.append(&tokenList_func_body, tokenList->getItem(tokenList, body_i));
             }
             body_i++;
@@ -675,7 +675,7 @@ int declaration(TokenList *tokenList, int tokenList_idx, AST_Node *current_node,
         current_node->ast_string = tokenList->getStringReference(tokenList, tokenList_idx);
         current_node->token_value = tokenList->getItem(tokenList, tokenList_idx).token_value;
         local_idx = body_i;
-        printf("\n");
+        //printf("\n");
     } else if (tokenList->getItem(tokenList, tokenList_idx).token_type == KEYWORD) {
         current_node->token_value = tokenList->getItem(tokenList, tokenList_idx).token_value;
         current_node->modifier = tokenList->getItem(tokenList, tokenList_idx).token_modifier;
@@ -758,7 +758,7 @@ int declaration(TokenList *tokenList, int tokenList_idx, AST_Node *current_node,
 
     if (local_idx < tokenList->getSize(tokenList)) {
         if (strcmp(tokenList->getItem(tokenList, local_idx).token_string, "=") == 0) {
-            printf("DeclareVariable expression: ");
+            //printf("DeclareVariable expression: ");
             // declaration with variable set
             // now create local token list
             TokenList inputExpressionList;
@@ -766,11 +766,11 @@ int declaration(TokenList *tokenList, int tokenList_idx, AST_Node *current_node,
             // now create expession until ";" character
             int i = tokenList_idx+1;
             while (tokenList->getItem(tokenList, i).token_string[0] != ';') { // create local expression list
-                printf("%s", tokenList->getItem(tokenList, i).token_string);
+                //printf("%s", tokenList->getItem(tokenList, i).token_string);
                 inputExpressionList.append(&inputExpressionList, tokenList->getItem(tokenList, i));
                 i++;
             }
-            printf("\n");
+            //printf("\n");
             AST_Node *variableValue = generate_ast_node();
             variableValue = expression(&inputExpressionList, current_node->getItem(current_node, 0));
             current_node->append(current_node, variableValue);
@@ -851,7 +851,7 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
             current_node->append(current_node, ast_declaration_node);
             local_idx = declaration(tokenList, tokenList_idx, ast_declaration_node, AST_LOCAL);
         } else if (strcmp(current_token.token_string, "if") == 0) {
-            printf("if statement: ");
+            //printf("if statement: ");
             // the condition in the if statement takes two expressions, and then compares them via the compare operator (==, <, >, <=, >=, !=)
             local_idx += 2; // skip the '(' of the if statement
             int bracket_count = 1;
@@ -883,10 +883,10 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
                 }
             }
             for (int i = 0; i < token_operand_a.getSize(&token_operand_a); i++) {
-                printf("%s ", token_operand_a.getItem(&token_operand_a, i).token_string);
+                //printf("%s ", token_operand_a.getItem(&token_operand_a, i).token_string);
             }
             local_idx++;
-            printf("\n");
+            //printf("\n");
             // now we have the 2 operand token lists ready to be evaluated as an expression
             AST_Node *AST_if_node = generate_ast_node();
             AST_Node *AST_if_condition = generate_ast_node();
@@ -916,7 +916,7 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
                 }
                 
                 if (if_brace_balance > 0) {
-                    printf("%s ", tokenList->getStringReference(tokenList, body_i));
+                    //printf("%s ", tokenList->getStringReference(tokenList, body_i));
                     tokenList_if_body.append(&tokenList_if_body, tokenList->getItem(tokenList, body_i));
                 }
                 body_i++;
@@ -934,9 +934,9 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
             AST_if_node->append(AST_if_node, AST_statement);
             current_node->append(current_node, AST_if_node);
             local_idx = body_i;
-            printf("\n");
+            //printf("\n");
         } else if (strcmp(current_token.token_string, "while") == 0) {
-            printf("while\n");
+            //printf("while\n");
             // the condition in the if statement takes two expressions, and then compares them via the compare operator (==, <, >, <=, >=, !=)
             local_idx += 2; // skip the '(' of the if statement
             int bracket_count = 1;
@@ -968,10 +968,10 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
                 }
             }
             for (int i = 0; i < token_operand_a.getSize(&token_operand_a); i++) {
-                printf("%s ", token_operand_a.getItem(&token_operand_a, i).token_string);
+                //printf("%s ", token_operand_a.getItem(&token_operand_a, i).token_string);
             }
             local_idx++;
-            printf("\n");
+            //printf("\n");
             // now we have the 2 operand token lists ready to be evaluated as an expression
             AST_Node *AST_if_node = generate_ast_node();
             AST_Node *AST_if_condition = generate_ast_node();
@@ -1001,7 +1001,7 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
                 }
                 
                 if (if_brace_balance > 0) {
-                    printf("%s ", tokenList->getStringReference(tokenList, body_i));
+                    //printf("%s ", tokenList->getStringReference(tokenList, body_i));
                     tokenList_if_body.append(&tokenList_if_body, tokenList->getItem(tokenList, body_i));
                 }
                 body_i++;
@@ -1020,7 +1020,7 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
             current_node->append(current_node, AST_if_node);
             local_idx = body_i;
         } else if (strcmp(current_token.token_string, "for") == 0) {
-            printf("for\n");
+            //printf("for\n");
             // the condition in the if statement takes two expressions, and then compares them via the compare operator (==, <, >, <=, >=, !=)
             local_idx += 2; // skip the '(' of the if statement
             int bracket_count = 1;
@@ -1061,21 +1061,21 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
                     bracket_count++;
                 }
             }
-            printf("for init: ");
+            //printf("for init: ");
             for (int i = 0; i < token_operands[0].getSize(&token_operands[0]); i++) {
-                printf("%s ", token_operands[0].getItem(&token_operands[0], i).token_string);
+                //printf("%s ", token_operands[0].getItem(&token_operands[0], i).token_string);
             }
-            printf("\nfor condition: ");
+            //printf("\nfor condition: ");
             for (int i = 0; i < token_operands[1].getSize(&token_operands[1]); i++) {
-                printf("%s ", token_operands[1].getItem(&token_operands[1], i).token_string);
+                //printf("%s ", token_operands[1].getItem(&token_operands[1], i).token_string);
             }
-            printf("\nfor iter: ");
+            //printf("\nfor iter: ");
             for (int i = 0; i < token_operands[2].getSize(&token_operands[2]); i++) {
-                printf("%s ", token_operands[2].getItem(&token_operands[2], i).token_string);
+                //printf("%s ", token_operands[2].getItem(&token_operands[2], i).token_string);
             }
-            printf("\n");
+            //printf("\n");
             local_idx++;
-            printf("\n");
+            //printf("\n");
             // now we have the 2 operand token lists ready to be evaluated as an expression
             AST_Node *AST_for_node = generate_ast_node();
             AST_Node *AST_for_init = generate_ast_node();
@@ -1112,7 +1112,7 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
                 }
                 
                 if (if_brace_balance > 0) {
-                    printf("%s ", tokenList->getStringReference(tokenList, body_i));
+                    //printf("%s ", tokenList->getStringReference(tokenList, body_i));
                     tokenList_if_body.append(&tokenList_if_body, tokenList->getItem(tokenList, body_i));
                 }
                 body_i++;
@@ -1131,7 +1131,7 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
             current_node->append(current_node, AST_for_node);
             local_idx = body_i;
         } else if (strcmp(current_token.token_string, "return") == 0) {
-            printf("return\n");
+            //printf("return\n");
             AST_Node *AST_statement = generate_ast_node();
             AST_statement->type = AST_RETURN;
             AST_statement->subtype = AST_NOSUBTYPE;
@@ -1144,7 +1144,7 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
                 local_idx++;
             }
             for (int i = 0; i < token_operands.getSize(&token_operands); i++) {
-                printf("%s ", token_operands.getItem(&token_operands, i).token_string);
+                //printf("%s ", token_operands.getItem(&token_operands, i).token_string);
             }
             AST_Node *AST_return_operand = generate_ast_node();
             AST_return_operand = expression(&token_operands, AST_return_operand);
@@ -1162,9 +1162,9 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
         TokenListInit(&inputExpressionList, 0);
         // now create expession until ";" character
         int i = tokenList_idx;
-        printf("FunctionCall expression: ");
+        //printf("FunctionCall expression: ");
         while (tokenList->getItem(tokenList, i).token_string[0] != ';') { // create local expression list
-            printf("%s", tokenList->getItem(tokenList, i).token_string);
+            //printf("%s", tokenList->getItem(tokenList, i).token_string);
             inputExpressionList.append(&inputExpressionList, tokenList->getItem(tokenList, i));
             i++;
         }
@@ -1200,13 +1200,13 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
         TokenListInit(&inputExpressionList, 0);
         // now create expession until ";" character
         int i = tokenList_idx;
-        printf("SetVariable expression: ");
+        //printf("SetVariable expression: ");
         while (tokenList->getItem(tokenList, i).token_string[0] != ';') { // create local expression list
-            printf("%s", tokenList->getItem(tokenList, i).token_string);
+            //printf("%s", tokenList->getItem(tokenList, i).token_string);
             inputExpressionList.append(&inputExpressionList, tokenList->getItem(tokenList, i));
             i++;
         }
-        printf("\n");
+        //printf("\n");
         AST_Node *ast_set_variable = generate_ast_node();
         ast_set_variable->type = AST_SET_VARIABLE;
         
@@ -1221,19 +1221,19 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
     } else {
         // expression
         // "x + 5;"
-        printf("Syntax error\n");
+        //printf("Syntax error\n");
         
         TokenList inputExpressionList;
         TokenListInit(&inputExpressionList, 0);
         // now create expession until ";" character
         int i = 0;
-        printf("expression: ");
+        //printf("expression: ");
         while (tokenList->getItem(tokenList, i).token_string[0] != ';') { // create local expression list
-            printf("%s", tokenList->getItem(tokenList, i).token_string);
+            //printf("%s", tokenList->getItem(tokenList, i).token_string);
             inputExpressionList.append(&inputExpressionList, tokenList->getItem(tokenList, i));
             i++;
         }
-        printf("\n");
+        //printf("\n");
         AST_Node *variableValue = generate_ast_node();
         variableValue = expression(&inputExpressionList, current_node->getItem(current_node, 0));
         current_node->append(current_node, variableValue);
@@ -1372,7 +1372,7 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
             asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, pointer_symbol_table, stack, heap, current_function);
         } else if (current_node->type == AST_FUNCTION) {
             //*stack = 2;
-            printf("Function %s:\n", current_node->ast_string);
+            //printf("Function %s:\n", current_node->ast_string);
             current_function = current_node->ast_string;
             int *dummy_stack = 0;
             asm_generator_symbol_table(current_node->getItem(current_node, 1), symbol_tables, pointer_symbol_table, stack, heap, current_function);
@@ -1381,8 +1381,8 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
             
             
             symbol_tables[2]->set(symbol_tables[2], *stack, current_node->ast_string);
-            printf("function size: %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
-            printf("\n");
+            //printf("function size: %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
+            //printf("\n");
             return;
         } else if (current_node->type == AST_BODY) {
             for (int i = 0; i < current_node->getSize(current_node); i++) {
@@ -1400,7 +1400,7 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
             char *var_string = calloc(100, sizeof(char));
             sprintf(var_string, "%s_%s", current_function, current_node->ast_string);
             current_node->ast_string = var_string;
-            printf("changed identifier \"%s\"\n", current_node->ast_string);
+            //printf("changed identifier \"%s\"\n", current_node->ast_string);
         } else {
             // walk the AST-tree DFS syle and find variable declarations
             for (int i = 0; i < current_node->getSize(current_node); i++) {
@@ -1449,7 +1449,7 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
             for (int i = 0; i < current_node->getSize(current_node); i++) {
                 asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             }
-            printf("Call Parameters local variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *stack+call_overhead, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
+            //printf("Call Parameters local variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *stack+call_overhead, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[0]->set(symbol_tables[0], *stack+call_overhead, declare_node->ast_string);
             symbol_tables[3]->set(symbol_tables[3], AST_LOCAL, declare_node->ast_string);
             symbol_tables[4]->set(symbol_tables[4], current_node->token_value, declare_node->ast_string);
@@ -1463,7 +1463,7 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
             for (int i = 0; i < current_node->getSize(current_node); i++) {
                 asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             }
-            printf("Call Parameters static variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *heap, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
+            //printf("Call Parameters static variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *heap, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[1]->set(symbol_tables[1], *heap, declare_node->ast_string);
             symbol_tables[3]->set(symbol_tables[3], AST_STATIC, declare_node->ast_string);
             symbol_tables[4]->set(symbol_tables[4], current_node->token_value, declare_node->ast_string);
@@ -1488,14 +1488,14 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
             asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, pointer_symbol_table, stack, heap, current_function);
         } else if (current_node->type == AST_FUNCTION) {
             *stack = 0;
-            printf("Function %s:\n", current_node->ast_string);
+            //printf("Function %s:\n", current_node->ast_string);
             current_function = current_node->ast_string;
             
             asm_generator_symbol_table_call_params(current_node->getItem(current_node, 1), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             symbol_tables[2]->set(symbol_tables[2], *stack, current_node->ast_string);
-            printf("size: %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
-            printf("\n");
+            //printf("size: %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
+            //printf("\n");
             return;
         } else if (current_node->type == AST_BODY) {
             for (int i = 0; i < current_node->getSize(current_node); i++) {
@@ -1521,7 +1521,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
             char *var_string = calloc(100, sizeof(char));
             sprintf(var_string, "%s_%s", current_function, current_node->ast_string);
             current_node->ast_string = var_string;
-            printf("changed identifier \"%s\"\n", current_node->ast_string);
+            //printf("changed identifier \"%s\"\n", current_node->ast_string);
         } else {
             // walk the AST-tree DFS syle and find variable declarations
             for (int i = 0; i < current_node->getSize(current_node); i++) {
@@ -1569,7 +1569,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
             for (int i = 0; i < current_node->getSize(current_node); i++) {
                 asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             }
-            printf("local variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *stack, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
+            //printf("local variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *stack, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[0]->set(symbol_tables[0], *stack, declare_node->ast_string);
             symbol_tables[3]->set(symbol_tables[3], AST_LOCAL, declare_node->ast_string);
             symbol_tables[4]->set(symbol_tables[4], current_node->token_value, declare_node->ast_string);
@@ -1583,7 +1583,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
             for (int i = 0; i < current_node->getSize(current_node); i++) {
                 asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             }
-            printf("static variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *heap, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
+            //printf("static variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *heap, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[1]->set(symbol_tables[1], *heap, declare_node->ast_string);
             symbol_tables[3]->set(symbol_tables[3], AST_STATIC, declare_node->ast_string);
             symbol_tables[4]->set(symbol_tables[4], current_node->token_value, declare_node->ast_string);
@@ -1715,7 +1715,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operand_a->array);
         } else if (strcmp(current_node->ast_string, "<") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -1742,7 +1742,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, ">") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -1769,7 +1769,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, "==") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -1798,7 +1798,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, "!=") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -1840,11 +1840,11 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
 
             if (*operand_a_modifier != AST_NO_MODIFIER) { // sets final pointer modifier if adding a modified pointer with an integer
                 *ast_modifier = *operand_a_modifier;
-                printf("Set operator pointer modifier\n");
+                //printf("Set operator pointer modifier\n");
             }
             if (*operand_b_modifier != AST_NO_MODIFIER) {
                 *ast_modifier = *operand_b_modifier;
-                printf("Set operator pointer modifier\n");
+                //printf("Set operator pointer modifier\n");
             }
             free(new_modifier_a);
             free(new_modifier_b);
@@ -2005,7 +2005,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             } else if (*visibility == AST_STATIC) {
                 sprintf(buffer, "addi i1, r0, %d\n", STATIC_BASE); // use 32-bit index register to point anywhere in memory
             } else {
-                printf("Invalid visibility\n");
+                //printf("Invalid visibility\n");
                 exit(1);
             }
         } else if (modifier == IO) {
@@ -2090,7 +2090,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operand_a->array);
         } else if (strcmp(current_node->ast_string, "<") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -2117,7 +2117,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, ">") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -2144,7 +2144,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, "==") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -2173,7 +2173,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, "!=") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -2215,11 +2215,11 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
 
             if (*operand_a_modifier != AST_NO_MODIFIER) { // sets final pointer modifier if adding a modified pointer with an integer
                 *ast_modifier = *operand_a_modifier;
-                printf("Set operator pointer modifier\n");
+                //printf("Set operator pointer modifier\n");
             }
             if (*operand_b_modifier != AST_NO_MODIFIER) {
                 *ast_modifier = *operand_b_modifier;
-                printf("Set operator pointer modifier\n");
+                //printf("Set operator pointer modifier\n");
             }
             free(new_modifier_a);
             free(new_modifier_b);
@@ -2757,7 +2757,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_IF) {
-        //printf("If\n");
+        ////printf("If\n");
         char buffer[300] = {0};
         CharAppendList *if_condition = generateCharAppendList();
         CharAppendList *if_body = generateCharAppendList();
@@ -2885,7 +2885,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         
         sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;RETURN_SET\n", extra_stuff->operator_stack_offset);
         if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) != 'v') {
-            printf("Non void function detected\n");
+            //printf("Non void function detected\n");
             extra_stuff->operator_stack_offset += 1;
         }
         
@@ -2940,7 +2940,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             }
         }
         else {
-            printf("void detected");
+            //printf("void detected");
         }
     } else if (current_node->type == AST_STRING) {
         char buffer[300] = {0};
@@ -3058,7 +3058,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operand_a->array);
         } else if (strcmp(current_node->ast_string, "<") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -3085,7 +3085,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, ">") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -3112,7 +3112,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, "==") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -3138,7 +3138,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             asm_list->append(asm_list, operator->array);
             extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, "!=") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -3180,11 +3180,11 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
 
             if (*operand_a_modifier != AST_NO_MODIFIER) { // sets final pointer modifier if adding a modified pointer with an integer
                 *ast_modifier = *operand_a_modifier;
-                printf("Set operator pointer modifier\n");
+                //printf("Set operator pointer modifier\n");
             }
             if (*operand_b_modifier != AST_NO_MODIFIER) {
                 *ast_modifier = *operand_b_modifier;
-                printf("Set operator pointer modifier\n");
+                //printf("Set operator pointer modifier\n");
             }
             free(new_modifier_a);
             free(new_modifier_b);
@@ -3332,7 +3332,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             } else if (*visibility == AST_STATIC) {
                 sprintf(buffer, "lui i1, r0, %d\n", STATIC_BASE); // use 32-bit index register to point anywhere in memory
             } else {
-                printf("Invalid visibility\n");
+                //printf("Invalid visibility\n");
                 exit(1);
             }
         } else if (modifier == IO) {
@@ -3588,7 +3588,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_IF) {
-        //printf("If\n");
+        ////printf("If\n");
         char buffer[300] = {0};
         CharAppendList *if_condition = generateCharAppendList();
         CharAppendList *if_body = generateCharAppendList();
@@ -3759,7 +3759,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             }
         }
         else {
-            printf("void detected");
+            //printf("void detected");
         }
     } else if (current_node->type == AST_STRING) {
         char buffer[300] = {0};
@@ -3870,7 +3870,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operand_a->array);
         } else if (strcmp(current_node->ast_string, "<") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -3894,7 +3894,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, buffer);
         } else if (strcmp(current_node->ast_string, ">") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -3919,7 +3919,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operator->array);
         } else if (strcmp(current_node->ast_string, "==") == 0) {
-            //printf("== operator\n");
+            ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
@@ -4257,7 +4257,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         }
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_IF) {
-        //printf("If\n");
+        ////printf("If\n");
         CharAppendList *if_condition = generateCharAppendList();
         CharAppendList *if_body = generateCharAppendList();
         int start_jmp_label = *jmp_label;
@@ -4426,7 +4426,7 @@ char *asm_generator(AST_Node *start_node, DictionaryPointer *pointer_symbol_tabl
     int register_select = 0;
     //asm_generator_symbol_table(start_node, symbol_tables, pointer_symbol_table, &local_stack, &heap, "");
     //print_AST_tree(start_node);
-    printf("starting asm gen\n");
+    //printf("starting asm gen\n");
     int pointer_layer_dereference = 0;
     string_number = 0;
     int ast_modifier = 0;
@@ -4475,7 +4475,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
                 j++;
             }
             strcpy(nextToken.token_string, sub_string);
-            printf("string detected: %s\n", sub_string);
+            //printf("string detected: %s\n", sub_string);
 
             nextToken.token_valid = 1;
             nextToken.token_type = STRING;
@@ -4488,12 +4488,12 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             parse_finish = 1;
         } else if (check_letter_is_not_alphabet(input_file_buf[i])) {
             // now to lexical analysis on sub_string
-            //printf("sub_string = %s\n", sub_string);
+            ////printf("sub_string = %s\n", sub_string);
             if (check_string_in_strings(MODIFIERS_SIZE, MODIFIERS, sub_string) != -1) {
                 
             }
             else if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
-                printf("keyword detected: %s\n", sub_string);
+                //printf("keyword detected: %s\n", sub_string);
                 Token nextToken;
                 TokenInit(&nextToken);
                 nextToken.token_valid = 1;
@@ -4520,9 +4520,9 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             // now check modifiers (_io, near, far, code, etc.)
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
-                //printf("sub_string = %s\n", sub_string);
+                ////printf("sub_string = %s\n", sub_string);
                 if (check_string_in_strings(MODIFIERS_SIZE, MODIFIERS, sub_string) != -1) {
-                    printf("modifier detected: %s\n", sub_string);
+                    //printf("modifier detected: %s\n", sub_string);
                     Token nextToken;
                     TokenInit(&nextToken);
                     nextToken.token_valid = 1;
@@ -4565,9 +4565,9 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             // now check separators
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
-                //printf("sub_string = %s\n", sub_string);
+                ////printf("sub_string = %s\n", sub_string);
                 if (check_string_in_strings(SEPARATORS_SIZE, SEPARATORS, sub_string) != -1) {
-                    printf("separator detected: %s\n", sub_string);
+                    //printf("separator detected: %s\n", sub_string);
                     Token nextToken;
                     TokenInit(&nextToken);
                     nextToken.token_valid = 1;
@@ -4596,9 +4596,9 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             }
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
-                //printf("sub_string = %s\n", sub_string);
+                ////printf("sub_string = %s\n", sub_string);
                 if (check_string_in_strings(OPERATORS_SIZE, OPERATORS, sub_string) != -1) {
-                    printf("operator detected: %s\n", sub_string);
+                    //printf("operator detected: %s\n", sub_string);
                     Token nextToken;
                     TokenInit(&nextToken);
                     nextToken.token_valid = 1;
@@ -4639,7 +4639,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             // now check identifiers
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
-                //printf("sub_string = %s\n", sub_string);
+                ////printf("sub_string = %s\n", sub_string);
                 if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
                     parse_finish = 1;
                 } else if (check_string_in_strings(SEPARATORS_SIZE, SEPARATORS, sub_string) != -1) {
@@ -4648,9 +4648,9 @@ TokenList *lexer(char *input_file_buf, long fsize) {
                     parse_finish = 1;
                 } else if (j > 0) {
                     // identifiers
-                    printf("identifier detected: %s\n", sub_string);
+                    //printf("identifier detected: %s\n", sub_string);
                     if (!strcmp(sub_string, "main")) {
-                        printf("main\n");
+                        //printf("main\n");
                     }
                     char *ident_string = (char *) malloc((j) * sizeof(char) + 1);
                     if (ident_string == NULL) {
@@ -4690,7 +4690,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             // now check literals
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
-                //printf("sub_string = %s\n", sub_string);
+                ////printf("sub_string = %s\n", sub_string);
                 if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
                     parse_finish = 1;
                 } else if (check_string_in_strings(SEPARATORS_SIZE, SEPARATORS, sub_string) != -1) {
@@ -4699,7 +4699,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
                     parse_finish = 1;
                 } else if (j > 0) {
                     // literals
-                    printf("literal detected: %s\n", sub_string);
+                    //printf("literal detected: %s\n", sub_string);
                     char *ident_string = (char *) malloc((j) * sizeof(char));
                     if (input_file_buf == NULL) {
                         printf("Memory allocation fail!\n");
@@ -4735,25 +4735,25 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             if (tokenList->getItem(tokenList, i - 1).token_type == TOKEN_IDENT || tokenList->getItem(tokenList, i - 1).token_type == TOKEN_LITERAL || tokenList->getItem(tokenList, i - 1).token_string[0] == ')') {
                 // '*' is a multiplication operator
                 tokenList->getItemReference(tokenList, i)->token_subtype = TOKEN_MULTIPLICATION;
-                printf("Multiplication operator set\n");
+                //printf("Multiplication operator set\n");
             } else {
                 // else it's a derefernce operator
                 sprintf(tokenList->getItemReference(tokenList, i)->token_string, "~*");
                 tokenList->getItemReference(tokenList, i)->token_subtype = TOKEN_DEREFERENCE;
                 tokenList->getItemReference(tokenList, i)->operator_single_child = 1;
-                printf("Dereference operator set\n");
+                //printf("Dereference operator set\n");
             }
         } else if (strcmp(tokenList->getItem(tokenList, i).token_string, "&") == 0) {
             if (tokenList->getItem(tokenList, i - 1).token_type == TOKEN_IDENT || tokenList->getItem(tokenList, i - 1).token_type == TOKEN_LITERAL || tokenList->getItem(tokenList, i - 1).token_string[0] == ')') {
                 // '*' is a multiplication operator
                 tokenList->getItemReference(tokenList, i)->token_subtype = TOKEN_AND;
-                printf("Multiplication operator set\n");
+                //printf("Multiplication operator set\n");
             } else {
                 // else it's a derefernce operator
                 sprintf(tokenList->getItemReference(tokenList, i)->token_string, "~&");
                 tokenList->getItemReference(tokenList, i)->token_subtype = TOKEN_REFERENCE;
                 tokenList->getItemReference(tokenList, i)->operator_single_child = 1;
-                printf("Reference operator set\n");
+                //printf("Reference operator set\n");
             }
         }
     }
@@ -4839,7 +4839,7 @@ AST_Node *ast_adjust(AST_Node *current_node, Dictionary **symbol_tables) {
             // far ptr are 32-bit
             // convert operand_b to 32-bit
             current_node->type = AST_LITERAL_32;
-            printf("Converted 16-bit literal to 32-bit");
+            //printf("Converted 16-bit literal to 32-bit");
                 
         }
         return current_node;
@@ -4852,14 +4852,14 @@ AST_Node *ast_adjust(AST_Node *current_node, Dictionary **symbol_tables) {
                     // far ptr are 32-bit
                     // convert operand_b to 32-bit
                     //operand_b->type = AST_LITERAL_32;
-                    //printf("Converted 16-bit literal to 32-bit");
+                    ////printf("Converted 16-bit literal to 32-bit");
                     //current_node->type = AST_OPERATOR_32;
                 }
                 //operand_a->type = AST_IDENT_32;
             } else if (operand_b->type == AST_IDENT) {
                 if (atoi(operand_b->ast_string) > 65535 & operand_a->type == AST_LITERAL) {
                     //operand_a->type = AST_LITERAL_32;
-                    //printf("Converted 16-bit literal to 32-bit");
+                    ////printf("Converted 16-bit literal to 32-bit");
                     //current_node->type = AST_OPERATOR_32;
                 }
                 //operand_b->type = AST_IDENT_32;
@@ -4873,7 +4873,7 @@ AST_Node *ast_adjust(AST_Node *current_node, Dictionary **symbol_tables) {
                     // far ptr are 32-bit
                     // convert operand_b to 32-bit
                     operand_b->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                     
                 }
                 operand_a->type = AST_IDENT_32;
@@ -4881,7 +4881,7 @@ AST_Node *ast_adjust(AST_Node *current_node, Dictionary **symbol_tables) {
             } else if (operand_b->type == AST_IDENT) {
                 if (atoi(operand_a->ast_string) > 65535 & operand_a->type == AST_LITERAL) {
                     operand_a->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_b->type = AST_IDENT_32;
                 current_node->type = AST_OPERATOR_32;
@@ -4924,13 +4924,13 @@ AST_Node *ast_adjust_2_idle(AST_Node *current_node, Dictionary **symbol_tables) 
                     // far ptr are 32-bit
                     // convert operand_b to 32-bit
                     operand_b->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_a->type = AST_IDENT_32;
             } else if (operand_b->type == AST_IDENT) {
                 if (symbol_tables[SYMBOL_MODIFIER]->get(symbol_tables[SYMBOL_MODIFIER], operand_b->ast_string) == FAR && operand_a->type == AST_LITERAL) {
                     operand_a->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_b->type = AST_IDENT_32;
             }
@@ -4943,13 +4943,13 @@ AST_Node *ast_adjust_2_idle(AST_Node *current_node, Dictionary **symbol_tables) 
                     // far ptr are 32-bit
                     // convert operand_b to 32-bit
                     operand_b->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_a->type = AST_IDENT_32;
             } else if (operand_b->type == AST_IDENT) {
                 if (symbol_tables[SYMBOL_MODIFIER]->get(symbol_tables[SYMBOL_MODIFIER], operand_b->ast_string) == FAR && operand_a->type == AST_LITERAL) {
                     operand_a->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_b->type = AST_IDENT_32;
             }
@@ -4990,13 +4990,13 @@ AST_Node *ast_adjust_2_active(AST_Node *current_node, Dictionary **symbol_tables
                     // far ptr are 32-bit
                     // convert operand_b to 32-bit
                     operand_b->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_a->type = AST_IDENT_32;
             } else if (operand_b->type == AST_IDENT) {
                 if (symbol_tables[SYMBOL_MODIFIER]->get(symbol_tables[SYMBOL_MODIFIER], operand_b->ast_string) == FAR && operand_a->type == AST_LITERAL) {
                     operand_a->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_b->type = AST_IDENT_32;
             }
@@ -5009,13 +5009,13 @@ AST_Node *ast_adjust_2_active(AST_Node *current_node, Dictionary **symbol_tables
                     // far ptr are 32-bit
                     // convert operand_b to 32-bit
                     operand_b->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_a->type = AST_IDENT_32;
             } else if (operand_b->type == AST_IDENT) {
                 if (symbol_tables[SYMBOL_MODIFIER]->get(symbol_tables[SYMBOL_MODIFIER], operand_b->ast_string) == FAR && operand_a->type == AST_LITERAL) {
                     operand_a->type = AST_LITERAL_32;
-                    printf("Converted 16-bit literal to 32-bit");
+                    //printf("Converted 16-bit literal to 32-bit");
                 }
                 operand_b->type = AST_IDENT_32;
             }
@@ -5036,7 +5036,7 @@ AST_Node *ast_adjust_2_active(AST_Node *current_node, Dictionary **symbol_tables
 
 int main(int argc, char* argv[]) {
     char *input_file_str;
-    printf("ZaC-2 C Compiler\n");
+    printf("ZaC-3 C Compiler\n");
     // Part 0 - initialisation
     if (argc < 2) {
         input_file_str = "os.c"; // default filename for testing
@@ -5047,7 +5047,7 @@ int main(int argc, char* argv[]) {
     }
     /*
     if (argc < 2) {
-        printf("Not enough arguments!\n");
+        //printf("Not enough arguments!\n");
         input_file_str = "far_ptr_test.c";
     } else {
         input_file_str = argv[1];
@@ -5066,8 +5066,8 @@ int main(int argc, char* argv[]) {
         printf("Invalid output file\n");
         exit(1);
     }
-    //printf("input_file = %p\n", input_file);
-    //printf("output_file = %p\n", output_file);
+    ////printf("input_file = %p\n", input_file);
+    ////printf("output_file = %p\n", output_file);
 
 
     // ------------------------------
@@ -5087,7 +5087,7 @@ int main(int argc, char* argv[]) {
         printf("Memory allocation fail!\n");
         exit(1);
     } else {
-        printf("Memory allocation successful at %p\n", input_file_buf);
+        //printf("Memory allocation successful at %p\n", input_file_buf);
     }
 
     // initialise input file buffer
@@ -5128,12 +5128,12 @@ int main(int argc, char* argv[]) {
         iter++;
     }
     if (iter >= iter_end) {
-        printf("Iteration end\n");
+        //printf("Iteration end\n");
         exit(1);
     }
     //print_AST_tree(start_node);
     
-    printf("AST Iter count: %d\n", iter);
+    //printf("AST Iter count: %d\n", iter);
 
     // Part 6 - AST adjuster
     // Examples: inserts type casts when necessary (i.e. converts 16-bit immediates to 32-bit for 32-bit operations).
@@ -5145,11 +5145,11 @@ int main(int argc, char* argv[]) {
 
     // Part 5 - AST parser / ASM generator
     // Generates asm code for assembler.
-    printf("\nAssembly output:\n");
+    //printf("\nAssembly output:\n");
     char *asm_output;
     
     asm_output = asm_generator(start_node, pointer_symbol_table, symbol_table);
-    //printf("%s\n", asm_output);
+    ////printf("%s\n", asm_output);
     
     // Part 6 - Machine code generator
     printf("input_file = %p\n", input_file);

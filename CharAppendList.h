@@ -50,7 +50,7 @@ void _CharAppendList_append(CharAppendList *self, char *string) {
         self->array[self->size + i] = string[i];
     }
     self->size += string_size;
-    printf("    String copy success\n");
+    //printf("    String copy success\n");
 }
 
 char *_CharAppendList_getList(CharAppendList *self) {
