@@ -1,0 +1,13 @@
+int func_b(int a) {
+	return a;
+}
+
+int func_a(int a) {
+	int b;
+	b = func_b(a);
+	return bb;
+}
+
+void main() {
+	func_a(5);
+}

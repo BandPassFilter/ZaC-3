@@ -1,6 +1,15 @@
 /*
 C Compiler for ZaC-3, 32-bit CPU with 32-bit address bus.
 
+C lowerer, outputs "simpler" C for the C->ASM compiler.
+This makes the C->ASM compiler much more simple in the asm-gen phase.
+E.g.
+	a = i++;
+	becomes
+	
+	a = i;
+	i = i + 1;
+
 ZaC-3 supports 1 types of pointer, 32-bit.
 
 NEAR TODO:

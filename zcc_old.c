@@ -5,34 +5,6 @@ ZaC-3 supports 1 types of pointer, 32-bit.
 
 NEAR TODO:
 
-- Make a "C lowering" stage where this takes in the source C and outputs more simpler C that performs operations in explicit verbose tasks.
-    An example is taking i++; and converting it to i = i + 1;
-    This would be done exactly the same way as the AST/ASM code gen, but instead of outputting ASM codegen, it's outputing "lowered C"
-    or "simpler C" codegen.
-    Then the compiler takes in the "simpler C" and then outputs the ASM in the normal way.
-
-    Example is function parameters
-    Source C:
-        void main() {
-            func_a(func_b(5));
-        }
-    
-    Lowered C:
-        int func_var_0 = func_b(5);
-        func_a(func_var_0);
-
-    Example is complicated expressions:
-        a = (1 + (2 / 3)) - (6 - 1);
-    
-    Lowered C:
-        temp_var_0 = 2 / 3;
-        temp_var_1 = 1 + temp_var_0;
-        temp_var_2 = 6 - 1;
-        a = temp_var_1 - temp_var_2
-    
-    In the "complicated expression" exmaple, this also makes the memory allocation (register or stack) much easier since they're layed out
-    in explicit verbose operations, rather than hacking it out all in a single function.
-
 - Implement casting node. This would be needed to convert 16-bit into 32-bit immediate integers when adding an immediate to a 32-bit integer variable.
     e.g.
     ...
@@ -157,8 +129,6 @@ PROBLEMS:
         it doesn't work, the return result registers are wrong.
 
     - Bracket balance checking doesn't work yet, it doens't detect if "Expected ')'" or "Missing '('" etc.
-
-    - Functions calls about 3 deep doesn't work, the 3rd function doesn't work.
 */
 
 #include <stdio.h>
@@ -2908,28 +2878,22 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         CharAppendList *function_parameters = generateCharAppendList();
         char buffer[300] = {0};
         int old_operator_stack_offset = extra_stuff->operator_stack_offset;
-        if (1) {
-            if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
-                asm_generator_code_gen(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                asm_list->append(asm_list, function_parameters->array);
-            }
-            sprintf(buffer, "jal _%s\n", current_node->ast_string);
-            //extra_stuff->operator_stack_offset = old_operator_stack_offset;
+        if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
+            asm_generator_code_gen(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            asm_list->append(asm_list, function_parameters->array);
+        }
+        sprintf(buffer, "jal _%s\n", current_node->ast_string);
+        //extra_stuff->operator_stack_offset = old_operator_stack_offset;
+        
+        sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;RETURN_SET\n", extra_stuff->operator_stack_offset);
+        if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) != 'v') {
+            //printf("Non void function detected\n");
+            extra_stuff->operator_stack_offset += 1;
         }
         
-        if (1) {
-            sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;RETURN_SET\n", extra_stuff->operator_stack_offset);
-            if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) != 'v') {
-                //printf("Non void function detected\n");
-                extra_stuff->operator_stack_offset += 1;
-            }
-            
-            AST_Node *callparam_node = current_node->getItem(current_node, 0);
-            if (callparam_node->getItem(callparam_node, 0)->type != AST_VOID) {
-                sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
-            }
-            
-            
+        AST_Node *callparam_node = current_node->getItem(current_node, 0);
+        if (callparam_node->getItem(callparam_node, 0)->type != AST_VOID) {
+            sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
         }
         sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         asm_list->append(asm_list, buffer);
@@ -3738,8 +3702,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         }
         asm_list->append(asm_list, buffer_b);
     } else if (current_node->type == AST_FUNCTION_CALL) {
-        /*
-        CharAppendList *function_parameters = generateCharAppendList();
+        /*CharAppendList *function_parameters = generateCharAppendList();
         char buffer[300] = {0};
         if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
             asm_generator_code_gen(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
@@ -3752,10 +3715,9 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
         }
         sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
-        asm_list->append(asm_list, buffer);
-        */
-        
-        CharAppendList *function_parameters = generateCharAppendList();
+        asm_list->append(asm_list, buffer);*/
+
+                CharAppendList *function_parameters = generateCharAppendList();
         char buffer[300] = {0};
         int old_operator_stack_offset = extra_stuff->operator_stack_offset;
         if (status == ASM_NONE || status == ASM_GET_MEMORY) {
@@ -3782,10 +3744,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
             
         }
-        
         asm_list->append(asm_list, buffer);
-
-
     } else if (current_node->type == AST_PARAMS) {
         CharAppendList *function_param_code = generateCharAppendList();
         char buffer[300] = {0};
@@ -5110,13 +5069,12 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-3 C Compiler\n");
     // Part 0 - initialisation
-    char *default_file = "functest.c";
     if (argc < 2) {
-        input_file_str = default_file; // default filename for testing
+        input_file_str = "os.c"; // default filename for testing
     } else if (argc == 2) {
         input_file_str = argv[1];
     } else {
-        input_file_str = default_file;
+        input_file_str = "os.c";
     }
     /*
     if (argc < 2) {
@@ -5235,4 +5193,3 @@ int main(int argc, char* argv[]) {
     system("asm.exe");
     return 0;
 }
-

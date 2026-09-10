@@ -1,3 +1,11 @@
+// OS for ZaC-3
+
+// Todo:
+// - When in the write command, only accept number-letter inputs, if it's a space or enter or whatever, then skip it. This is to allow simple
+//   copy-pasting of HEX files into the terminal if you want to quickly load programs and data.
+//
+// - Change the "exit" key from write command from an enter to esc.
+
 void print_char(char value) {
     char *uart = 1245184;
     *uart = value;

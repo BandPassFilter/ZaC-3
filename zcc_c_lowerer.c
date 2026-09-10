@@ -1,5 +1,20 @@
 /*
-C Compiler for ZaC-3, 32-bit CPU with 32-bit address bus.
+C to C-lower compiler for ZaC-3, 32-bit CPU with 32-bit address bus.
+
+C lowerer, outputs "simpler" C for the C->ASM compiler.
+This makes the C->ASM compiler much more simple in the asm-gen phase.
+E.g.
+	a = i++;
+	becomes
+	
+	a = i;
+	i = i + 1;
+
+e.g. a = ++i;
+	becomes
+	
+	i = i + 1;
+	a = i;
 
 ZaC-3 supports 1 types of pointer, 32-bit.
 
@@ -1714,6 +1729,15 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 //sprintf(buffer, "addi sp, sp, -2\n");
             }
         }
+        #define SYMBOL_DATATYPE 4
+        AST_Node *datatype_node = current_node->getItem(current_node, 0);
+        if (symbol_tables[SYMBOL_DATATYPE]->get(symbol_tables[SYMBOL_DATATYPE], datatype_node->ast_string) == INT) {
+            sprintf(buffer, "int %s;\n", datatype_node->ast_string);
+        } else if (symbol_tables[SYMBOL_DATATYPE]->get(symbol_tables[SYMBOL_DATATYPE], datatype_node->ast_string) == CHAR) {
+            sprintf(buffer, "char %s;\n", datatype_node->ast_string);
+        }
+        asm_list->append(asm_list, buffer);
+
         // SetVariable in Declaration
         if (current_node->getSize(current_node) == 2) {
             //asm_generator_code_gen(current_node->getItem(current_node, 1), asm_list, symbol_tables, pointer_symbol_table, stack+1, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility);
@@ -1728,9 +1752,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                 
                 asm_generator_code_gen(node_a, operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                
-                asm_list->append(asm_list, operand_b->array);
                 asm_list->append(asm_list, operand_a->array);
+                asm_list->append(asm_list, operand_b->array);
+                asm_list->append(asm_list, ";");
             }
         }
         
@@ -1744,8 +1768,10 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             
-            asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operand_a->array);
+            asm_list->append(asm_list, operand_b->array);
+            asm_list->append(asm_list, ";\n");
+            
         } else if (strcmp(current_node->ast_string, "<") == 0) {
             ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
@@ -1932,11 +1958,12 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 if (strcmp(current_node->ast_string, "+") == 0) { // add
                     char buffer[300] = {0};
                     extra_stuff->operator_stack_offset += -1;
-                    sprintf(buffer, "add r2, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    //sprintf(buffer, "add r2, r0, r%d\n", extra_stuff->operator_stack_offset);
                     extra_stuff->operator_stack_offset += -1;
-                    sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset);
-                    sprintf(buffer+strlen(buffer), "add r1, r%i, r%i\n", 1, 2);
-                    sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;ADD\n\n", extra_stuff->operator_stack_offset);
+                    //sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    //sprintf(buffer+strlen(buffer), "add r1, r%i, r%i\n", 1, 2);
+                    //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;ADD\n\n", extra_stuff->operator_stack_offset);
+                    sprintf(buffer, " + ");
                     extra_stuff->operator_stack_offset += 1;
                     operator->array = buffer;
                 } else if (strcmp(current_node->ast_string, "-") == 0) { // subtract
@@ -2015,8 +2042,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 }
             }
             asm_list->append(asm_list, operand_a->array);
-            asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operator->array);
+            asm_list->append(asm_list, operand_b->array);
+            
         }
     } else if (current_node->type == AST_OPERATOR && current_node->subtype == AST_DEREFERENCE) {
         #define STACK_BASE 0x0010
@@ -2427,17 +2455,21 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_SET) {
+                #define SYMBOL_DATATYPE 4
                 if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                     extra_stuff->operator_stack_offset += -1;
                     //sprintf(buffer, "movi [sp + %d], r%i\n", symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack, register_select);
                     //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                    sprintf(buffer+strlen(buffer), "movi [fp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string), extra_stuff->operator_stack_offset);
+                    //sprintf(buffer+strlen(buffer), "movi [fp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string), extra_stuff->operator_stack_offset);
+
+                    sprintf(buffer+strlen(buffer), " = ");
                     
                 } else {
                     extra_stuff->operator_stack_offset += -1;
                     //sprintf(buffer, "movi [dp + %s], r%i\n", current_node->ast_string, register_select);
                     //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                    sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                    //sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                    sprintf(buffer+strlen(buffer), " = ");
                     
                 }
             } else if (status == ASM_GET_MEMORY) {
@@ -2557,14 +2589,14 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "movi [sp + %d], r%i\n", symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack, register_select);
                         //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                        sprintf(buffer+strlen(buffer), "movi [fp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string), extra_stuff->operator_stack_offset);
-                        
+                        //sprintf(buffer+strlen(buffer), "movi [fp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string), extra_stuff->operator_stack_offset);
+                        sprintf(buffer, "%s = ", current_node->ast_string);
                     } else {
                         //sprintf(buffer, "movi [dp + %s], r%i\n", current_node->ast_string, register_select);
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                        sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
-                        
+                        //sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                        sprintf(buffer, "%s = ", current_node->ast_string);
                     }
                 }
             }
@@ -2758,12 +2790,14 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         char buffer[300] = {0};
         
         if (status == ASM_GET) {
-            sprintf(buffer, "addi r%d, r0, %s ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+            //sprintf(buffer, "addi r%d, r0, %s ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+            sprintf(buffer, "%s", current_node->ast_string);
             //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
             extra_stuff->operator_stack_offset += 1;
         } else if (status == ASM_GET_MEMORY) {
             //sprintf(buffer, "addi r1, r0, %s\n", current_node->ast_string);
-            sprintf(buffer+strlen(buffer), "addi r%d, r0, %s ;GET\n",  extra_stuff->operator_stack_offset, current_node->ast_string);
+            //sprintf(buffer+strlen(buffer), "addi r%d, r0, %s ;GET\n",  extra_stuff->operator_stack_offset, current_node->ast_string);
+            sprintf(buffer, "%s", current_node->ast_string);
             extra_stuff->operator_stack_offset += 1;
         }
         
@@ -2773,16 +2807,20 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         
         if (status == ASM_GET) {
             //sprintf(buffer, "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
-            sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
-            sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
+            //sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
+            //sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
+
+            sprintf(buffer, "%s", current_node->ast_string);
             
             //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
             extra_stuff->operator_stack_offset += 1;
         } else if (status == ASM_GET_MEMORY) {
             //sprintf(buffer, "addi r1, r0, %s\n", current_node->ast_string);
             //sprintf(buffer+strlen(buffer), "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
-            sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
-            sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
+            //sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
+            //sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
+
+            sprintf(buffer, "%s", current_node->ast_string);
             
             extra_stuff->operator_stack_offset += 1;
         }
@@ -5110,7 +5148,7 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-3 C Compiler\n");
     // Part 0 - initialisation
-    char *default_file = "functest.c";
+    char *default_file = "lowerer_test.c";
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
     } else if (argc == 2) {
@@ -5130,7 +5168,7 @@ int main(int argc, char* argv[]) {
     
 
     input_file = fopen(input_file_str, "rb");
-    output_file = fopen("c_program.asm", "wb");
+    output_file = fopen("c_lowered.cl", "wb");
     if (!input_file) {
         printf("Invalid input file\n");
         exit(1);
@@ -5232,7 +5270,7 @@ int main(int argc, char* argv[]) {
     fclose(output_file);
     printf("Complete\n");
     //pause();
-    system("asm.exe");
+    //system("asm.exe");
     return 0;
 }
 

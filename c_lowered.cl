@@ -11,12 +11,9 @@ jmp _main
 _main:
 subi sp, sp, 4
 add fp, r0, sp
-12add r2, r0, r5
-add r1, r0, r4
-add r1, r1, r2
-add r4, r0, r1 ;ADD
-
-movi [fp + 0], r4 ;SET
+int main_a;
+main_a = 1 + 2;
+main_a = 3 + 4;
 
 halt
 
