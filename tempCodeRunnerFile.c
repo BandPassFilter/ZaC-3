@@ -1,1 +1,1 @@
-AST_DECLARATION
+%s:

@@ -2,19 +2,39 @@
 * Main
 	* FunctionDeclaration void
 		* Function main
-			* Parameters
+			* Parameters Local
 			* Body
 				* Declaration int
-					* Identifier main_a Local
-					* Operator =
-						* Identifier main_a
-						* Operator +
-							* Literal 1
-							* Literal 2
+					* Identifier main_main_a Local
 				* SetVariable
 					* Operator =
-						* Identifier main_a
+						* Identifier main_main_a
 						* Operator +
+							* Operator +
+								* Literal 1
+								* Literal 2
 							* Literal 3
-							* Literal 4
+				* Declaration int
+					* Identifier main_main_b Local
+				* SetVariable
+					* Operator =
+						* Identifier main_main_b
+						* Literal 5
+				* SetVariable
+					* Operator =
+						* Identifier main_main_a
+						* Operator -
+							* Operator +
+								* Literal 3
+								* Literal 4
+							* Identifier main_main_b
+				* If
+					* Operator ==
+						* Identifier main_main_a
+						* Literal 1
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier main_main_a
+								* Literal 3
 * End
