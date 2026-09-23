@@ -1,3 +1,8 @@
+int func(int a) {
+    int b = 1;
+    return b;
+}
+
 void main() {
     int a = 1 + 2 + 3;
     int b = 5;
@@ -5,4 +10,5 @@ void main() {
     if (a == 1) {
         a = 3;
     }
+    func(a);
 }
