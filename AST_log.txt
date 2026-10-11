@@ -4,51 +4,160 @@
 		* Function func
 			* Parameters
 				* Declaration int
-					* Identifier func_a Local
+					* Identifier func_func_a Local
+				* Declaration int
+					* Identifier func_func_b Local
 			* Body
 				* Declaration int
-					* Identifier func_b Local
+					* Identifier func_func_c Local
+				* SetVariable
 					* Operator =
-						* Identifier func_b
+						* Identifier func_func_c
 						* Literal 1
-				* Return
-					* Identifier func_b
+				* Return Local
+					* Identifier func_func_a
 	* FunctionDeclaration void
 		* Function main
 			* Parameters
 			* Body
-				* Declaration int
-					* Identifier main_a Local
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier main_main_debug Local
+				* SetVariable Local
 					* Operator =
-						* Identifier main_a
+						* Identifier main_main_debug
+						* Literal32 9000000
+				* SetVariable
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier main_main_debug
+						* Literal 0
+				* Declaration int
+					* Identifier main_main_a Local
+				* SetVariable
+					* Operator =
+						* Identifier main_main_a
 						* Operator +
 							* Operator +
 								* Literal 1
 								* Literal 2
 							* Literal 3
 				* Declaration int
-					* Identifier main_b Local
-					* Operator =
-						* Identifier main_b
-						* Literal 5
+					* Identifier main_main_b Local
 				* SetVariable
 					* Operator =
-						* Identifier main_a
+						* Identifier main_main_b
+						* Literal 5
+				* Declaration int
+					* Identifier main_main_c Local
+				* SetVariable
+					* Operator =
+						* Identifier main_main_c
+						* Literal 0
+				* SetVariable
+					* Operator =
+						* Identifier main_main_a
 						* Operator -
 							* Operator +
 								* Literal 3
 								* Literal 4
-							* Identifier main_b
+							* Identifier main_main_b
 				* If
 					* Operator ==
-						* Identifier main_a
+						* Identifier main_main_a
 						* Literal 1
 					* Body
 						* SetVariable
 							* Operator =
-								* Identifier main_a
+								* Identifier main_main_a
 								* Literal 3
+				* SetVariable
+					* Operator =
+						* Identifier main_main_c
+						* Literal 0
+				* Declaration int
+					* Identifier main_var_0 Local
+					* Operator =
+						* Identifier main_var_0
+						* Operator +
+							* Identifier main_main_a
+							* Literal 123
+				* Declaration int
+					* Identifier main_var_1 Local
+					* Operator =
+						* Identifier main_var_1
+						* Identifier main_main_b
+				* SetVariable
+					* Operator =
+						* Identifier main_main_c
+						* FunctionCall func
+							* CallParameters
+								* Identifier main_var_0
+								* Identifier main_var_1
+				* Declaration int
+					* Identifier main_var_3 Local
+					* Operator =
+						* Identifier main_var_3
+						* Operator +
+							* Literal 523
+							* Identifier main_main_b
+				* Declaration int
+					* Identifier main_var_4 Local
+					* Operator =
+						* Identifier main_var_4
+						* Identifier main_main_a
 				* FunctionCall func
 					* CallParameters
-						* Identifier main_a
+						* Identifier main_var_3
+						* Identifier main_var_4
+				* SetVariable
+					* Operator =
+						* Identifier main_main_a
+						* Literal 0
+				* Declaration int
+					* Identifier main_var_6 Local
+					* Operator =
+						* Identifier main_var_6
+						* Identifier main_main_c
+				* Declaration int
+					* Identifier main_var_7 Local
+					* Operator =
+						* Identifier main_var_7
+						* Operator +
+							* Identifier main_main_b
+							* Identifier main_main_a
+				* SetVariable
+					* Operator =
+						* Identifier main_main_a
+						* FunctionCall func
+							* CallParameters
+								* Identifier main_var_6
+								* Identifier main_var_7
+				* While
+					* Operator ==
+						* Identifier main_main_a
+						* Literal 0
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier main_main_a
+								* Literal 1
+				* For
+					* SetVariable
+						* Operator =
+							* Identifier main_main_a
+							* Literal 0
+					* Operator <
+						* Identifier main_main_a
+						* Literal 5
+					* Operator =
+						* Identifier main_main_a
+						* Operator +
+							* Identifier main_main_a
+							* Literal 1
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier main_main_a
+								* Literal 1
 * End

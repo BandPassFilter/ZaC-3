@@ -210,6 +210,8 @@ char *MODIFIERS[MODIFIERS_SIZE] = {"_io", "_far", "_data", "_code"};
 
 int string_number = 0;
 
+void asm_generator_code_gen_call_params();
+
 int non_null_compare_string(char *string_a, char *string_b, int *output_char_offset) {
     // check simple equality without need of '\0'
     int i = 0;
@@ -557,6 +559,7 @@ AST_Node *expression(TokenList *localTokenList, AST_Node *current_node) {
                     AST_Node *params = generate_ast_node();
                     params->type = AST_CALL_PARAMS;
                     params->subtype = AST_NOSUBTYPE;
+                    params->ast_string = &localTokenList->getItemReference(localTokenList, i)->token_string[0];
                     int bracket_count = 1;
                     i += 2;
                     TokenList *paramTokenList = generateTokenList();
@@ -1341,6 +1344,7 @@ void print_AST_type(FILE *file, AST_Node *node) {
         fprintf(file, "Parameters");
     } else if (node->type == AST_CALL_PARAMS) {
         fprintf(file, "CallParameters");
+        fprintf(file, " %s", node->ast_string);
     } else if (node->type == AST_FUNCTION_DECLARATION) {
         fprintf(file, "FunctionDeclaration");
         fprintf(file, " %s", node->ast_string);
@@ -1523,30 +1527,30 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
     }
 }
 
-void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tables, DictionaryPointer *pointer_symbol_table, int *stack, int *heap, char *current_function) {
+void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tables, DictionaryPointer *function_types, int *stack, int *heap, char *current_function) {
     if (current_node->type != AST_DECLARATION) {
         if (current_node->type == AST_MAIN) {
             for (int i = 0; i < current_node->getSize(current_node); i++) {
-                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
+                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, function_types, stack, heap, current_function);
             }
         } else if (current_node->type == AST_FUNCTION_DECLARATION) {
             *stack = 0;
             symbol_tables[9]->set(symbol_tables[9], (int)current_node->ast_string[0], current_node->getItem(current_node, 0)->ast_string);
-            asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, pointer_symbol_table, stack, heap, current_function);
+            asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, function_types, stack, heap, current_function);
         } else if (current_node->type == AST_FUNCTION) {
             *stack = 0;
             //printf("Function %s:\n", current_node->ast_string);
             current_function = current_node->ast_string;
             
-            asm_generator_symbol_table_call_params(current_node->getItem(current_node, 1), symbol_tables, pointer_symbol_table, stack, heap, current_function);
-            asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, pointer_symbol_table, stack, heap, current_function);
+            asm_generator_symbol_table_call_params(current_node->getItem(current_node, 1), symbol_tables, function_types, stack, heap, current_function);
+            asm_generator_symbol_table_call_params(current_node->getItem(current_node, 0), symbol_tables, function_types, stack, heap, current_function);
             symbol_tables[2]->set(symbol_tables[2], *stack, current_node->ast_string);
             //printf("size: %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             //printf("\n");
             return;
         } else if (current_node->type == AST_BODY) {
             for (int i = 0; i < current_node->getSize(current_node); i++) {
-                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
+                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, function_types, stack, heap, current_function);
             }
         } else if (current_node->type == AST_PARAMS) {
             int param_stack = 0;
@@ -1554,7 +1558,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
                 param_stack = -(current_node->getSize(current_node)*2);
             }
             for (int i = 0; i < current_node->getSize(current_node); i++) {
-                asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, &param_stack, heap, current_function);
+                asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, function_types, &param_stack, heap, current_function);
             }
         } else if (current_node->type == AST_CALL_PARAMS) {
             int param_stack = 0;
@@ -1562,7 +1566,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
                 param_stack = -(current_node->getSize(current_node)*2);
             }
             for (int i = 0; i < current_node->getSize(current_node); i++) {
-                asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, &param_stack, heap, current_function);
+                asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, function_types, &param_stack, heap, current_function);
             }
         } else if (current_node->type == AST_IDENT) {
             char *var_string = calloc(100, sizeof(char));
@@ -1572,7 +1576,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
         } else {
             // walk the AST-tree DFS syle and find variable declarations
             for (int i = 0; i < current_node->getSize(current_node); i++) {
-                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
+                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, function_types, stack, heap, current_function);
             }
         }
     } else if (current_node->type == AST_DECLARATION) {
@@ -1614,7 +1618,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
         }
         if (declare_node->visibility == AST_LOCAL) {
             for (int i = 0; i < current_node->getSize(current_node); i++) {
-                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
+                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, function_types, stack, heap, current_function);
             }
             //printf("local variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *stack, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[0]->set(symbol_tables[0], *stack, declare_node->ast_string);
@@ -1628,7 +1632,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
         }
         else if (declare_node->visibility == AST_STATIC) {
             for (int i = 0; i < current_node->getSize(current_node); i++) {
-                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
+                asm_generator_symbol_table(current_node->getItem(current_node, i), symbol_tables, function_types, stack, heap, current_function);
             }
             //printf("static variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *heap, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[1]->set(symbol_tables[1], *heap, declare_node->ast_string);
@@ -1656,6 +1660,9 @@ enum asm_gen {
 
 typedef struct ExtraStuff {
     int operator_stack_offset;
+    DictionaryPointer *functionDictionary;
+    char *function_set_variable;
+    int function_param_variable_number;
 } ExtraStuff;
 
 void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Dictionary **symbol_tables, DictionaryPointer *pointer_symbol_table, int *stack, int status, int *jmp_label, int register_select, int *pointer_layer_dereference, int *ast_modifier, int *visibility, char *current_function, ExtraStuff *extra_stuff) {
@@ -1717,9 +1724,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         }
         if (recursive_node->visibility == AST_STATIC) {
             if (is_pointer) {
-                sprintf(buffer, ".word %s_ptr = 0\n", recursive_node->ast_string);
+                //sprintf(buffer, ".word %s_ptr = 0\n", recursive_node->ast_string);
             } else {
-                sprintf(buffer, ".word %s = 0\n", recursive_node->ast_string);
+                //sprintf(buffer, ".word %s = 0\n", recursive_node->ast_string);
             }
             asm_list->append(asm_list, buffer);
         } else if (current_node->getItem(current_node, 0)->visibility == AST_LOCAL) {
@@ -1731,12 +1738,23 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         }
         #define SYMBOL_DATATYPE 4
         AST_Node *datatype_node = current_node->getItem(current_node, 0);
+        CharAppendList *declare_string = generateCharAppendList();
+        asm_generator_code_gen(current_node->getItem(current_node, 0), declare_string, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+
+
+/*
         if (symbol_tables[SYMBOL_DATATYPE]->get(symbol_tables[SYMBOL_DATATYPE], datatype_node->ast_string) == INT) {
-            sprintf(buffer, "int %s;\n", datatype_node->ast_string);
+            sprintf(buffer, "int %s;\n", declare_string->array);
         } else if (symbol_tables[SYMBOL_DATATYPE]->get(symbol_tables[SYMBOL_DATATYPE], datatype_node->ast_string) == CHAR) {
-            sprintf(buffer, "char %s;\n", datatype_node->ast_string);
-        }
+            sprintf(buffer, "char %s;\n", declare_string->array);
+        }*/
+        sprintf(buffer, "%s %s;\n", current_node->ast_string, declare_string->array);
         asm_list->append(asm_list, buffer);
+
+        AST_Node *tail_node = current_node;
+        while (tail_node->type != AST_IDENT) {
+            tail_node = tail_node->getItem(tail_node, 0);
+        }
 
         // SetVariable in Declaration
         if (current_node->getSize(current_node) == 2) {
@@ -1752,7 +1770,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                 
                 asm_generator_code_gen(node_a, operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                asm_list->append(asm_list, operand_a->array);
+                char buffer[300] = {0};
+                sprintf(buffer, "%s = ", node_a->ast_string);
+                asm_list->append(asm_list, buffer);
                 asm_list->append(asm_list, operand_b->array);
                 asm_list->append(asm_list, ";");
             }
@@ -1765,9 +1785,15 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             extra_stuff->operator_stack_offset = 4;
-            asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            
+            if (current_node->getItem(current_node, 1)->type == AST_FUNCTION_CALL) {
+                extra_stuff->function_set_variable = current_node->getItem(current_node, 0)->ast_string;
+                asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                extra_stuff->function_set_variable = 0;
+            } else {
+                asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            }
             asm_list->append(asm_list, operand_a->array);
             asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, ";\n");
@@ -2014,10 +2040,11 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         #define IO_BASE 0x0013
         CharAppendList *operand = generateCharAppendList();
         asm_generator_code_gen(current_node->getItem(current_node, 0), operand, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, 7, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-        asm_list->append(asm_list, operand->array); // assume result stored in r1
+        
         char buffer[300] = {0};
         int modifier = *ast_modifier;
-        AST_Node *tail_node = current_node;
+        AST_Node *tail_node = (AST_Node*) malloc(sizeof(AST_Node));
+        memcpy(tail_node, current_node, sizeof(AST_Node));
         while (tail_node->type != AST_IDENT) {
             tail_node = tail_node->getItem(tail_node, 0);
         }
@@ -2058,35 +2085,42 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             if (status == ASM_GET) {
                 if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
                     //sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
-                    sprintf(buffer, "%s ", current_node->ast_string);
+                    sprintf(buffer, "*");
                     extra_stuff->operator_stack_offset += 1;
                 } else {
                     //sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
-                    sprintf(buffer, "%s ", current_node->ast_string);
+                    sprintf(buffer, "*");
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_GET_MEMORY) {
                 if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
                     //sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
-                    sprintf(buffer, "%s ", current_node->ast_string);
+                    sprintf(buffer, "*");
                     extra_stuff->operator_stack_offset += 1;
                 } else {
                     //sprintf(buffer+strlen(buffer), "movi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
-                    sprintf(buffer, "%s ", current_node->ast_string);
+                    sprintf(buffer, "*");
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_SET) {
                 if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
                     extra_stuff->operator_stack_offset += -1;
-                    sprintf(buffer+strlen(buffer), "mvbi [r%d + 0], r%d ;SET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
+                    sprintf(buffer, "*");
                 } else {
                     extra_stuff->operator_stack_offset += -1;
-                    sprintf(buffer+strlen(buffer), "movi [r%d + 0], r%d ;SET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
+                    sprintf(buffer, "*");
                 }
             }
             extra_stuff->operator_stack_offset -= 1;
         //}
         asm_list->append(asm_list, buffer);
+        asm_list->append(asm_list, operand->array); // assume result stored in r1
+        if (status == ASM_SET) {
+            asm_list->append(asm_list, "= ");
+        }
+        else if (status == ASM_SET_MEMORY) {
+            asm_list->append(asm_list, "= ");
+        }
         *pointer_layer_dereference--;
     } else if (current_node->type == AST_OPERATOR && current_node->subtype == AST_REFERENCE) {
         #define STACK_BASE 0x0010
@@ -2848,26 +2882,22 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         sprintf(buffer_b, "}\n", start_jmp_label);
         asm_list->append(asm_list, buffer_b);
     } else if (current_node->type == AST_WHILE) {
+        char buffer[300] = {0};
         CharAppendList *while_condition = generateCharAppendList();
         CharAppendList *while_body = generateCharAppendList();
         int start_jmp_label = *jmp_label;
-        char buffer[300] = {0};
-        sprintf(buffer, "%d_start:\n", start_jmp_label);
+        sprintf(buffer, "while (");
         asm_list->append(asm_list, buffer);
         asm_generator_code_gen(current_node->getItem(current_node, 0), while_condition, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-        char buffer_c[50] = {0};
         extra_stuff->operator_stack_offset += -1;
-        sprintf(buffer_c, "sub r%d, r%d, r0\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset);
-        asm_generator_code_gen(current_node->getItem(current_node, 1), while_body, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-        extra_stuff->operator_stack_offset = 4;
-        asm_list->append(asm_list, while_condition->array);
         
-        sprintf(buffer_c+strlen(buffer_c), "jz %d_false\n", start_jmp_label);
-        asm_list->append(asm_list, buffer_c);
+        asm_generator_code_gen(current_node->getItem(current_node, 1), while_body, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+        asm_list->append(asm_list, while_condition->array);
+        sprintf(buffer, ") {\n\t");
+        asm_list->append(asm_list, buffer);
         asm_list->append(asm_list, while_body->array);
         char buffer_b[50] = {0};
-        sprintf(buffer_b, "jmp %d_start\n", start_jmp_label);
-        sprintf(buffer_b+strlen(buffer_b), "%d_false:\n", start_jmp_label);
+        sprintf(buffer_b, "}\n", start_jmp_label);
         asm_list->append(asm_list, buffer_b);
     } else if (current_node->type == AST_FOR) {
         CharAppendList *for_init = generateCharAppendList();
@@ -2876,38 +2906,26 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         CharAppendList *for_body = generateCharAppendList();
         int start_jmp_label = *jmp_label;
         char buffer[300] = {0};
-        sprintf(buffer, "%d_start:\n", start_jmp_label);
-        
-        char buffer_b[50] = {0};
+        sprintf(buffer, "for (");
+        asm_list->append(asm_list, buffer);
         extra_stuff->operator_stack_offset = 3;
         asm_generator_code_gen(current_node->getItem(current_node, 0), for_init, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
         asm_generator_code_gen(current_node->getItem(current_node, 1), for_condition, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
         asm_generator_code_gen(current_node->getItem(current_node, 2), for_iter, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
         asm_generator_code_gen(current_node->getItem(current_node, 3), for_body, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
         
-        extra_stuff->operator_stack_offset = 4;
-        sprintf(buffer_b, "\n;for_init\n");
-        asm_list->append(asm_list, buffer_b);
+        for_init->array[for_init->size - 1] = 0;
+        for_iter->array[for_iter->size - 2] = 0;
+        for_iter->array[for_iter->size - 1] = 0;
         asm_list->append(asm_list, for_init->array);
-        
-        sprintf(buffer_b, "\n;for_condition\n");
-        asm_list->append(asm_list, buffer);
-        asm_list->append(asm_list, buffer_b);
-        
         asm_list->append(asm_list, for_condition->array);
-        char buffer_c[50] = {0};
-        sprintf(buffer_c, "sub r1, r1, r0\n");
-        sprintf(buffer_c+strlen(buffer_c), "jz %d_false\n", start_jmp_label);
-        asm_list->append(asm_list, buffer_c);
-
-        sprintf(buffer_b, "\n;for_body\n");
-        asm_list->append(asm_list, buffer_b);
-        asm_list->append(asm_list, for_body->array);
-        sprintf(buffer_b, "\n;for_iter\n");
-        asm_list->append(asm_list, buffer_b);
+        asm_list->append(asm_list, "; ");
         asm_list->append(asm_list, for_iter->array);
-        sprintf(buffer_b, "jmp %d_start\n", start_jmp_label);
-        sprintf(buffer_b+strlen(buffer_b), "%d_false:\n", start_jmp_label);
+        sprintf(buffer, ") {\n\t");
+        asm_list->append(asm_list, buffer);
+        asm_list->append(asm_list, for_body->array);
+        char buffer_b[50] = {0};
+        sprintf(buffer_b, "}\n", start_jmp_label);
         asm_list->append(asm_list, buffer_b);
     } else if (current_node->type == AST_FUNCTION_DECLARATION) {
         CharAppendList *function = generateCharAppendList();
@@ -2916,14 +2934,34 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         asm_list->append(asm_list, function->array);
     } else if (current_node->type == AST_FUNCTION) {
         CharAppendList *function_parameters = generateCharAppendList();
+        
         CharAppendList *function_body = generateCharAppendList();
         char buffer[300] = {0};
         //sprintf(buffer, "_%s:\n", current_node->ast_string);
         if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) == 'v') {
-            sprintf(buffer, "void %s() {\n", current_node->ast_string);
+            sprintf(buffer, "void %s(", current_node->ast_string);
         } else if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) == 'i') {
-            sprintf(buffer, "int %s() {\n", current_node->ast_string);
+            sprintf(buffer, "int %s(", current_node->ast_string);
         }
+        function_parameters->append(function_parameters, buffer);
+        asm_generator_code_gen(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_node->ast_string, extra_stuff);
+        for (int j = 0; j < function_parameters->size - 2; j++) {
+            if (function_parameters->array[j] == ';') {
+                function_parameters->array[j] = ',';
+            }
+        }
+        for (int j = 0; j < function_parameters->size; j++) {
+            if (function_parameters->array[j] == ';') {
+                function_parameters->array[j] = ' ';
+            }
+            if (function_parameters->array[j] == '\n') {
+                function_parameters->array[j] = ' ';
+            }
+        }
+        //for (int i = 0; i < 300; i++) buffer[i] = 0;
+        sprintf(buffer, ") {\n");
+        function_parameters->append(function_parameters, buffer);
+        asm_list->append(asm_list, function_parameters->array);
         if (strcmp(current_node->ast_string, "main") == 0) {
             /*sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");*/
@@ -2935,7 +2973,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             }
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");*/
         }
-        asm_list->append(asm_list, buffer);
+        //asm_list->append(asm_list, buffer);
         // function parameters are evaluated in the asm pre-parser (first pass to evaluate symbol values)
         asm_generator_code_gen(current_node->getItem(current_node, 1), function_body, symbol_tables, pointer_symbol_table, stack, ASM_NONE, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_node->ast_string, extra_stuff);
         char buffer_b[50] = {0};
@@ -2956,13 +2994,30 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         CharAppendList *function_parameters = generateCharAppendList();
         char buffer[300] = {0};
         int old_operator_stack_offset = extra_stuff->operator_stack_offset;
+        
+        if (extra_stuff->function_set_variable != 0) {
+            asm_list->append(asm_list, "0;\n");
+        } else {
+        }
         if (1) {
-            sprintf(buffer, "%s(", current_node->ast_string);
+            if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
+                asm_generator_code_gen_call_params(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                asm_list->append(asm_list, function_parameters->array);
+            }
+            sprintf(buffer, "\n%s = %s(", extra_stuff->function_set_variable, current_node->ast_string);
+            
+            if (extra_stuff->function_set_variable != 0) {
+                sprintf(buffer, "\n%s = %s(", extra_stuff->function_set_variable, current_node->ast_string);
+            } else {
+                sprintf(buffer, "\n%s(", current_node->ast_string);
+            }
             asm_list->append(asm_list, buffer);
+            CharAppendList *function_parameters = generateCharAppendList();
             if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
                 asm_generator_code_gen(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                 asm_list->append(asm_list, function_parameters->array);
             }
+
             
             extra_stuff->operator_stack_offset = old_operator_stack_offset;
         }
@@ -3003,29 +3058,25 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         int param_stack = 0;
         int null_stack = 0;
         if (current_node->getItem(current_node, 0)->type != AST_VOID) {
-            for (int i = current_node->getSize(current_node) - 1; i >= 0; i--) { // output params in reverse order, since stack works in LIFO (last in first out).
+            for (int i = 0; i < current_node->getSize(current_node) - 1; i++) { // output params in reverse order, since stack works in LIFO (last in first out).
                 int cancel_stack = 0;
                 //sprintf(buffer, "subi sp, sp, 4\n");
-                if (symbol_tables[0]->in(symbol_tables[0], current_node->getItem(current_node, i)->ast_string) != -1) {
-                    // function call in function param
-                    cancel_stack = -symbol_tables[0]->get(symbol_tables[0], current_node->getItem(current_node, i)->ast_string);
-                    asm_list->append(asm_list, buffer);
-                    //param_stack += 2;
-                    asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    //asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    //asm_list->append(asm_list, buffer_b);
-                    //extra_stuff->operator_stack_offset += -1;
-                } else {
-                    // variable in function
-                    asm_list->append(asm_list, buffer);
-                    //param_stack += 2;
-                    asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    //asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    //asm_list->append(asm_list, buffer_b);
-                    //extra_stuff->operator_stack_offset += -1;
-                }
+                // variable in function
+                //asm_list->append(asm_list, buffer);
+                //param_stack += 2;
+
+                //asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                //asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                char current_param[300] = {0};
+                sprintf(current_param, "var_%d, ", extra_stuff->function_param_variable_number - current_node->getSize(current_node));
+                extra_stuff->function_param_variable_number++;
+                asm_list->append(asm_list, current_param);
+                //extra_stuff->operator_stack_offset += -1;
                 //asm_list->append(asm_list, buffer);
             }
+            char current_param[300] = {0};
+            sprintf(current_param, "var_%d", extra_stuff->function_param_variable_number - current_node->getSize(current_node));
+            asm_list->append(asm_list, current_param);
         }
         else {
             //printf("void detected");
@@ -3916,7 +3967,6 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
 }*/
 
 
-/*
 void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *asm_list, Dictionary **symbol_tables, DictionaryPointer *pointer_symbol_table, int *stack, int status, int *jmp_label, int register_select, int *pointer_layer_dereference, int *ast_modifier, int *visibility, char *current_function, ExtraStuff *extra_stuff) {
     /*
     r0 = zero constant
@@ -3925,6 +3975,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
     r5,r6 = result register
     function parameters and local variables are stored on the stack
     the stack grows downwards from 0xffff to 0x0000
+    */
     
     if (current_node->type == AST_MAIN || current_node->type == AST_BODY) {
         if (current_node->type == AST_MAIN) {
@@ -3994,93 +4045,131 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         if (strcmp(current_node->ast_string, "=") == 0) {
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            extra_stuff->operator_stack_offset = 4;
+            asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
             
-            asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operand_a->array);
+            asm_list->append(asm_list, operand_b->array);
+            asm_list->append(asm_list, ";\n");
+            
         } else if (strcmp(current_node->ast_string, "<") == 0) {
             ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            
+            asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_a = extra_stuff->operator_stack_offset;
+            asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_b = extra_stuff->operator_stack_offset;
             char buffer[300] = {0};
-            // subtract to compare (if a - b == 0: a and b are equal)
-            sprintf(buffer, "sub r%d, r%d, r%d\n", register_select, register_select+2, register_select);
-            sprintf(buffer+strlen(buffer), "jnc %d_true\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "jz %d_false\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "addi r1, r0, 0\n");
-            sprintf(buffer+strlen(buffer), "jmp %d_false\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "%d_true:\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "addi r1, r0, 1\n");
-            sprintf(buffer+strlen(buffer), "%d_end:\n", *jmp_label);
-            *jmp_label += 1;
 
+            sprintf(buffer, "< ");
             operator->array = buffer;
 
             asm_list->append(asm_list, operand_a->array);
+            asm_list->append(asm_list, operator->array);
             asm_list->append(asm_list, operand_b->array);
-            asm_list->append(asm_list, buffer);
+            
+            extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, ">") == 0) {
             ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            
+            asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_a = extra_stuff->operator_stack_offset;
+            asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_b = extra_stuff->operator_stack_offset;
             char buffer[300] = {0};
-            // subtract to compare (if a - b == 0: a and b are equal)
-            sprintf(buffer, "sub r%d, r%d, r%d\n", register_select, register_select+2, register_select);
-            sprintf(buffer+strlen(buffer), "jc %d_true\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "jz %d_false\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "addi r1, r0, 0\n");
-            sprintf(buffer+strlen(buffer), "jmp %d_end\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "%d_true:\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "addi r1, r0, 1\n");
-            sprintf(buffer+strlen(buffer), "jmp %d_end\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "%d_end:\n", *jmp_label);
-            *jmp_label += 1;
 
+            sprintf(buffer, "> ");
             operator->array = buffer;
 
             asm_list->append(asm_list, operand_a->array);
-            asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operator->array);
+            asm_list->append(asm_list, operand_b->array);
+            
+            extra_stuff->operator_stack_offset += 1;
         } else if (strcmp(current_node->ast_string, "==") == 0) {
             ////printf("== operator\n");
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            
+            asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_a = extra_stuff->operator_stack_offset;
+            asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_b = extra_stuff->operator_stack_offset;
             char buffer[300] = {0};
             // subtract to compare (if a - b == 0: a and b are equal)
-            sprintf(buffer, "sub r%d, r%d, r%d\n", register_select, register_select+2, register_select);
+            /*extra_stuff->operator_stack_offset += -2;
+            sprintf(buffer, "sub r1, r%d, r%d\n", register_a-1, register_b-1);
             sprintf(buffer+strlen(buffer), "jz %d_true\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "addi r1, r0, 0\n");
-            sprintf(buffer+strlen(buffer), "jmp %d_false\n", *jmp_label);
+            sprintf(buffer+strlen(buffer), "addi r%d, r0, 0\n", extra_stuff->operator_stack_offset);
+            sprintf(buffer+strlen(buffer), "jmp %d_end\n", *jmp_label);
             sprintf(buffer+strlen(buffer), "%d_true:\n", *jmp_label);
-            sprintf(buffer+strlen(buffer), "addi r1, r0, 1\n");
-            sprintf(buffer+strlen(buffer), "jmp %d_end\n");
-            sprintf(buffer+strlen(buffer), "jmp %d_false\n", *jmp_label);
+            sprintf(buffer+strlen(buffer), "addi r%d, r0, 1\n", extra_stuff->operator_stack_offset);
+            sprintf(buffer+strlen(buffer), "jmp %d_end\n", *jmp_label);
             sprintf(buffer+strlen(buffer), "%d_end:\n", *jmp_label);
-            *jmp_label += 1;
+            *jmp_label += 1;*/
 
+            sprintf(buffer, "== ");
             operator->array = buffer;
 
             asm_list->append(asm_list, operand_a->array);
-            asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operator->array);
+            asm_list->append(asm_list, operand_b->array);
+            
+            extra_stuff->operator_stack_offset += 1;
+        } else if (strcmp(current_node->ast_string, "!=") == 0) {
+            ////printf("== operator\n");
+            CharAppendList *operand_a = generateCharAppendList();
+            CharAppendList *operand_b = generateCharAppendList();
+            CharAppendList *operator = generateCharAppendList();
+            
+            asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_a = extra_stuff->operator_stack_offset;
+            asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int register_b = extra_stuff->operator_stack_offset;
+            char buffer[300] = {0};
+
+            sprintf(buffer, "!= ");
+            operator->array = buffer;
+
+            asm_list->append(asm_list, operand_a->array);
+            asm_list->append(asm_list, operator->array);
+            asm_list->append(asm_list, operand_b->array);
+            
+            extra_stuff->operator_stack_offset += 1;
         } else {
             CharAppendList *operand_a = generateCharAppendList();
             CharAppendList *operand_b = generateCharAppendList();
             CharAppendList *operator = generateCharAppendList();
             int operand_a_pointer_dereference = 0;
             int operand_b_pointer_dereference = 0;
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, &operand_a_pointer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, &operand_b_pointer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            int *new_modifier_a = malloc(1*sizeof(int));
+            int *new_modifier_b = malloc(1*sizeof(int));
+            *new_modifier_a = AST_NO_MODIFIER;
+            *new_modifier_b = AST_NO_MODIFIER;
+            int *operand_a_modifier = new_modifier_a;
+            int *operand_b_modifier = new_modifier_b;
+            asm_generator_code_gen(current_node->getItem(current_node, 0), operand_a, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, &operand_a_pointer_dereference, operand_a_modifier, visibility, current_function, extra_stuff);
+            asm_generator_code_gen(current_node->getItem(current_node, 1), operand_b, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select+2, &operand_b_pointer_dereference, operand_b_modifier, visibility, current_function, extra_stuff);
+
+            if (*operand_a_modifier != AST_NO_MODIFIER) { // sets final pointer modifier if adding a modified pointer with an integer
+                *ast_modifier = *operand_a_modifier;
+                //printf("Set operator pointer modifier\n");
+            }
+            if (*operand_b_modifier != AST_NO_MODIFIER) {
+                *ast_modifier = *operand_b_modifier;
+                //printf("Set operator pointer modifier\n");
+            }
+            free(new_modifier_a);
+            free(new_modifier_b);
+
 
             int operand_a_pointer_layer = 0;
             int operand_b_pointer_layer = 0;
@@ -4098,31 +4187,107 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                 // pointer arithmetic (single layer)
                 if (strcmp(current_node->ast_string, "+") == 0) { // add
                     char buffer[300] = {0};
-                    pointer_arithmetic_shift_amount = ceil(log2(symbol_tables[7]->get(symbol_tables[7], current_node->getItem(current_node, 0)->ast_string)));
+                    /*
+                    extra_stuff->operator_stack_offset += -1;
+                    sprintf(buffer, "add r2, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    extra_stuff->operator_stack_offset += -1;
+                    pointer_arithmetic_shift_amount = ceil(log2(symbol_tables[7]->get(symbol_tables[7], current_node->getItem(current_node, 0)->ast_string))); // scale by datatype size
                     if (pointer_arithmetic_shift_amount > 0) {
-                        sprintf(buffer, "sli r%i, r%i, %d\n", register_select+2, register_select+2, pointer_arithmetic_shift_amount);
+                        sprintf(buffer+strlen(buffer), "sli r2, r2, %d\n", pointer_arithmetic_shift_amount);
                     }
-                    sprintf(buffer+strlen(buffer), "add r%i, r%i, r%i\n", register_select, register_select+2, register_select);
+                    sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    sprintf(buffer+strlen(buffer), "add r1, r%i, r%i\n", 1, 2);
+                    sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;ADD_POINTER\n\n", extra_stuff->operator_stack_offset);
+                    */
+                    sprintf(buffer, " + ");
+                    extra_stuff->operator_stack_offset += 1;
                     operator->array = buffer;
                 } else if (strcmp(current_node->ast_string, "-") == 0) { // subtract
                     char buffer[300] = {0};
-                    sprintf(buffer, "sub r%i, r%i, r%i\n", register_select, register_select+2, register_select);
+                    /*
+                    extra_stuff->operator_stack_offset += -1;
+                    sprintf(buffer, "add r2, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    extra_stuff->operator_stack_offset += -1;
+                    pointer_arithmetic_shift_amount = ceil(log2(symbol_tables[7]->get(symbol_tables[7], current_node->getItem(current_node, 0)->ast_string))); // scale by datatype size
+                    if (pointer_arithmetic_shift_amount > 0) {
+                        sprintf(buffer+strlen(buffer), "sli r2, r2, %d\n", pointer_arithmetic_shift_amount);
+                    }
+                    sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    sprintf(buffer+strlen(buffer), "add r1, r%i, r%i\n", 1, 2);
+                    sprintf(buffer+strlen(buffer), "sub r%d, r0, r1 ;SUBTRACT_POINTER\n\n", extra_stuff->operator_stack_offset);
+
+                    extra_stuff->operator_stack_offset += 1;
+                    operator->array = buffer;*/
+
+                    sprintf(buffer, " - ");
+                    extra_stuff->operator_stack_offset += 1;
                     operator->array = buffer;
+                } else {
+                    printf("Invalid pointer operator\n");
+                    exit(1);
                 }
             } else {
                 if (strcmp(current_node->ast_string, "+") == 0) { // add
                     char buffer[300] = {0};
-                    sprintf(buffer, "add r%i, r%i, r%i\n", register_select, register_select+2, register_select);
+                    extra_stuff->operator_stack_offset += -1;
+                    //sprintf(buffer, "add r2, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    extra_stuff->operator_stack_offset += -1;
+                    //sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    //sprintf(buffer+strlen(buffer), "add r1, r%i, r%i\n", 1, 2);
+                    //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;ADD\n\n", extra_stuff->operator_stack_offset);
+                    sprintf(buffer, " + ");
+                    extra_stuff->operator_stack_offset += 1;
                     operator->array = buffer;
                 } else if (strcmp(current_node->ast_string, "-") == 0) { // subtract
                     char buffer[300] = {0};
-                    sprintf(buffer, "sub r%i, r%i, r%i\n", register_select, register_select+2, register_select);
+                    extra_stuff->operator_stack_offset += -1;
+                    //sprintf(buffer, "add r2, r0, r%d\n", extra_stuff->operator_stack_offset);
+                    extra_stuff->operator_stack_offset += -1;
+                    //sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset);
+                   // sprintf(buffer+strlen(buffer), "sub r1, r%i, r%i\n", 1, 2);
+                    //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;SUB\n\n", extra_stuff->operator_stack_offset);
+                    sprintf(buffer, " - ");
+                    extra_stuff->operator_stack_offset += 1;
                     operator->array = buffer;
+                } else if (strcmp(current_node->ast_string, "&") == 0) { // bitwise and
+                    char buffer[300] = {0};
+                    sprintf(buffer, " & ");
+                    extra_stuff->operator_stack_offset += 1;
+                    operator->array = buffer;
+                } else if (strcmp(current_node->ast_string, "&&") == 0) { // logical and
+                    char buffer[300] = {0};
+                    sprintf(buffer, " && ");
+                    extra_stuff->operator_stack_offset += 1;
+                    operator->array = buffer;
+                } else if (strcmp(current_node->ast_string, "|") == 0) { // bitwise or
+                    char buffer[300] = {0};
+                    sprintf(buffer, " | ");
+                    extra_stuff->operator_stack_offset += 1;
+                    operator->array = buffer;
+                } else if (strcmp(current_node->ast_string, "||") == 0) { // logical or
+                    char buffer[300] = {0};
+                    sprintf(buffer, " || ");
+                    extra_stuff->operator_stack_offset += 1;
+                    operator->array = buffer;
+                } else if (strcmp(current_node->ast_string, "<<") == 0) { // left shift
+                    char buffer[300] = {0};
+                    sprintf(buffer, " << ");
+                    extra_stuff->operator_stack_offset += 1;
+                    operator->array = buffer;
+                } else if (strcmp(current_node->ast_string, ">>") == 0) { // right shift
+                    char buffer[300] = {0};
+                    sprintf(buffer, " >> ");
+                    extra_stuff->operator_stack_offset += 1;
+                    operator->array = buffer;
+                } else {
+                    printf("Invalid operator\n");
+                    exit(1);
                 }
             }
             asm_list->append(asm_list, operand_a->array);
-            asm_list->append(asm_list, operand_b->array);
             asm_list->append(asm_list, operator->array);
+            asm_list->append(asm_list, operand_b->array);
+            
         }
     } else if (current_node->type == AST_OPERATOR && current_node->subtype == AST_DEREFERENCE) {
         #define STACK_BASE 0x0010
@@ -4188,6 +4353,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                     }
                 }
             //}
+            */
             asm_list->append(asm_list, buffer);
             *pointer_layer_dereference--;
         }
@@ -4216,28 +4382,34 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                 if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                     
                     //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
-                    sprintf(buffer, "movi r%d, [sp + %d] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                    //sprintf(buffer, "movi r%d, [fp + %d] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                    sprintf(buffer, "%s", current_node->ast_string);
                     //sprintf(buffer+strlen(buffer), "add r%d, r0, r1\n", extra_stuff->operator_stack_offset);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
                     
                     //sprintf(buffer, "movi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                    sprintf(buffer, "movi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+                    //sprintf(buffer, "movi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+                    sprintf(buffer, "%s", current_node->ast_string);
                     //sprintf(buffer+strlen(buffer), "add r%d, r0, r1\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_SET) {
+                #define SYMBOL_DATATYPE 4
                 if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                     extra_stuff->operator_stack_offset += -1;
-                    //sprintf(buffer, "movi [sp + %d], r%i\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, register_select);
+                    //sprintf(buffer, "movi [sp + %d], r%i\n", symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack, register_select);
                     //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                    sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, extra_stuff->operator_stack_offset);
+                    //sprintf(buffer+strlen(buffer), "movi [fp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string), extra_stuff->operator_stack_offset);
+
+                    sprintf(buffer+strlen(buffer), " = ");
                     
                 } else {
                     extra_stuff->operator_stack_offset += -1;
                     //sprintf(buffer, "movi [dp + %s], r%i\n", current_node->ast_string, register_select);
                     //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                    sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                    //sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                    sprintf(buffer+strlen(buffer), " = ");
                     
                 }
             } else if (status == ASM_GET_MEMORY) {
@@ -4245,33 +4417,34 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "movi r%d, [sp + %d] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%d, [fp + %d] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {
                         
                         //sprintf(buffer, "mvbi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "movi r%d, [dp + %s] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, current_node->ast_string);
-                        //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%d, [dp + %s] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+                        sprintf(buffer, "%s", current_node->ast_string);
+                        //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
                         extra_stuff->operator_stack_offset += 1;
                     }
-                } else if (status == ASM_SET_MEMORY) {
+                } else {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
-                        //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "movi r%d, [sp + %d] ;SET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%d, [fp + %d] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {
                         
                         //sprintf(buffer, "movi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "movi r%d, [dp + %s] ;SET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        //sprintf(buffer, "movi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     }
-                } else {
-                    printf("status error\n");
-                    exit(1);
                 }
             }
         } else {
@@ -4280,28 +4453,32 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                 if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
-                        //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "mvbi r%d, [sp + %d] ;/GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "mvbi r%d, [fp + %d] ;/GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {
                         
                         //sprintf(buffer, "mvbi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "mvbi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
-                        //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "mvbi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+                        sprintf(buffer, "%s", current_node->ast_string);
+                        //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(&symbol_tables[0], current_node->ast_string) + *stack);
                         extra_stuff->operator_stack_offset += 1;
                     }
                 } else {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
-                        //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "movi r%d, [sp + %d] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%d, [fp + %d] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {
                         
                         //sprintf(buffer, "movi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "movi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        //sprintf(buffer, "movi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     }
@@ -4311,39 +4488,44 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "mvbi r%d, [sp + %d] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "mvbi r%d, [fp + %d] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {
                         
                         //sprintf(buffer, "mvbi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "mvbi r%d, [dp + %s] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+                        //sprintf(buffer, "mvbi r%d, [dp + %s] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
                         extra_stuff->operator_stack_offset += 1;
                     }
-                } else {
+                }
+                else {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
-                        //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "movi r%d, [sp + %d] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
+                        //sprintf(buffer, "movi r%d, [fp + %d] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {
                         
                         //sprintf(buffer, "movi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "movi r%d, [dp + %s] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        //sprintf(buffer, "movi r%d, [dp + %s] ;GET_MEMORY\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "%s", current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     }
                 }
             } else if (status == ASM_SET) {
-                //if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == AST_
+                //if (symbol_tables[4].get(&symbol_tables[4], tail_node->ast_string) == AST_
                 if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         extra_stuff->operator_stack_offset += -1;
-                        //sprintf(buffer, "mvbi [sp + %d], r%i\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, register_select);
+                        //sprintf(buffer, "mvbi [sp + %d], r%i\n", symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack, register_select);
                         //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                        sprintf(buffer+strlen(buffer), "mvbi [sp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, extra_stuff->operator_stack_offset);
+                        sprintf(buffer+strlen(buffer), "mvbi [fp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string), extra_stuff->operator_stack_offset);
                         
                     } else {
                         extra_stuff->operator_stack_offset += -1;
@@ -4357,16 +4539,16 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                 else {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         extra_stuff->operator_stack_offset += -1;
-                        //sprintf(buffer, "movi [sp + %d], r%i\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, register_select);
+                        //sprintf(buffer, "movi [sp + %d], r%i\n", symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack, register_select);
                         //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                        sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, extra_stuff->operator_stack_offset);
-                        
+                        //sprintf(buffer+strlen(buffer), "movi [fp + %d], r%d ;SET\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string), extra_stuff->operator_stack_offset);
+                        sprintf(buffer, "%s = ", current_node->ast_string);
                     } else {
                         //sprintf(buffer, "movi [dp + %s], r%i\n", current_node->ast_string, register_select);
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                        sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
-                        
+                        //sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                        sprintf(buffer, "%s = ", current_node->ast_string);
                     }
                 }
             }
@@ -4502,9 +4684,23 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         char buffer[300] = {0};
         //sprintf(buffer, "movi [sp + 0], ra\n");
         //sprintf(buffer+strlen(buffer), "addi sp, sp, -2\n");
+        char *function_name = current_node->ast_string;
+        AST_Node *params = extra_stuff->functionDictionary->get(extra_stuff->functionDictionary, function_name);
+        
+        
         for (int i = 0; i < current_node->getSize(current_node); i++) {
-            asm_generator_code_gen_call_params(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            AST_Node *current_param = params->getItem(params, i);
+            CharAppendList *current_param_expression = (CharAppendList*) malloc(sizeof(CharAppendList));
+            CharAppendListInit(current_param_expression);
+            asm_list->append(asm_list, current_param->ast_string);
+            asm_list->append(asm_list, " ");
+            asm_generator_code_gen_call_params(current_node->getItem(current_node, i), current_param_expression, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+            char param_suffix[100] = {0};
+            sprintf(param_suffix, "var_%d = %s;\n", extra_stuff->function_param_variable_number, current_param_expression->array);
+            extra_stuff->function_param_variable_number++;
+            asm_list->append(asm_list, param_suffix);
             asm_list->append(asm_list, buffer);
+            free(current_param_expression);
         }
     } else if (current_node->type == AST_STRING) {
         char buffer[300] = {0};
@@ -4516,9 +4712,9 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         printf("Invalid AST node in asm generation\n");
         exit(1);
     }
-}*/
+}
 
-char *asm_generator(AST_Node *start_node, DictionaryPointer *pointer_symbol_table, Dictionary **symbol_table) {
+char *asm_generator(AST_Node *start_node, DictionaryPointer *pointer_symbol_table, Dictionary **symbol_table, DictionaryPointer *functionDictionary) {
     // two pass AST traversal
     // first pass is to evaluate all local and static references and put into a symbol table
     // second pass is to do codegen
@@ -4564,6 +4760,7 @@ char *asm_generator(AST_Node *start_node, DictionaryPointer *pointer_symbol_tabl
     char *current_function = "main";
     ExtraStuff extra_stuff = {0};
     extra_stuff.operator_stack_offset = 4;
+    extra_stuff.functionDictionary = functionDictionary;
     asm_generator_code_gen(start_node, asm_list, symbol_table, pointer_symbol_table, &stack, ASM_NONE, &jmp_label, 1, &pointer_layer_dereference, &ast_modifier, &visibility, current_function, &extra_stuff);
     //asm_list->append(asm_list, "halt\n");
     return asm_list->array;
@@ -4908,12 +5105,31 @@ char *pre_processor(char *input_file_buf, int size) {
     return input_file_buf;
 }
 
+void make_function_dictionary_aux(DictionaryPointer *functionDictionary, AST_Node *current_node) {
+    if (current_node->type == AST_FUNCTION) {
+        char *functionString = current_node->ast_string;
+        functionDictionary->set(functionDictionary, (AST_Node*)current_node->getItem(current_node, 0), functionString);
+    }
+    for (int i = 0; i < current_node->getSize(current_node); i++) {
+        make_function_dictionary_aux(functionDictionary, current_node->getItem(current_node, i));
+    }
+}
+
+DictionaryPointer *make_function_dictionary(AST_Node *start_node) {
+    DictionaryPointer *functionDictionary;
+    DictionaryPointerInit(functionDictionary);
+    make_function_dictionary_aux(functionDictionary, start_node);
+
+    return functionDictionary;
+}
+
 Dictionary **symbol_pass(AST_Node *start_node) {
     CharAppendList *asm_list = (CharAppendList*) malloc(sizeof(CharAppendList));
     CharAppendListInit(asm_list);
 
     Dictionary *symbol_table = (Dictionary *) malloc(10*sizeof(Dictionary));
     Dictionary **symbol_tables = (Dictionary **) malloc(10*sizeof(Dictionary*));
+    DictionaryPointer *function_types = (DictionaryPointer *) malloc(1*sizeof(DictionaryPointer));
 
     for (int i = 0; i < 10; i++) {
         symbol_tables[i] = &(symbol_table[i]);
@@ -4940,6 +5156,7 @@ Dictionary **symbol_pass(AST_Node *start_node) {
     DictionaryInit(symbol_tables[7]); // variable pointer dereferenced byte-size (INT: 2, CHAR: 1, UINT8_T: 1, Struct: 2^n bytes)
     DictionaryInit(symbol_tables[8]); // modifier (no modifier, near, far, etc.)
     DictionaryInit(symbol_tables[9]); // function return type (void, char, int, char*, int*, etc.)
+    DictionaryPointerInit(function_types);
     
 
     int jmp_label = 0;
@@ -4950,7 +5167,7 @@ Dictionary **symbol_pass(AST_Node *start_node) {
 
     Dictionary *pointer_symbol_table;
 
-    asm_generator_symbol_table(start_node, symbol_tables, &pointer_symbol_table, &local_stack, &heap, "");
+    asm_generator_symbol_table(start_node, symbol_tables, function_types, &local_stack, &heap, "");
     return symbol_tables;
 }
 
@@ -5168,6 +5385,7 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-3 C Lowerer\n");
     // Part 0 - initialisation
+    //char *default_file = "lowerer_test.c";
     char *default_file = "lowerer_test.c";
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
@@ -5266,30 +5484,34 @@ int main(int argc, char* argv[]) {
     
     //printf("AST Iter count: %d\n", iter);
 
-    // Part 6 - AST adjuster
+    // Part 5 - AST adjuster
     // Examples: inserts type casts when necessary (i.e. converts 16-bit immediates to 32-bit for 32-bit operations).
 
     Dictionary **symbol_table = symbol_pass(start_node);
     ast_adjust(start_node, symbol_table);
     print_AST_tree(start_node);
 
+    // Part 5.1 - Make function return and param type dictionary
+    DictionaryPointer *functionDictionary = make_function_dictionary(start_node);
+    
 
-    // Part 5 - AST parser / ASM generator
+
+    // Part 6 - AST parser / ASM generator
     // Generates asm code for assembler.
     //printf("\nAssembly output:\n");
     char *asm_output;
     
-    asm_output = asm_generator(start_node, pointer_symbol_table, symbol_table);
+    asm_output = asm_generator(start_node, pointer_symbol_table, symbol_table, functionDictionary);
     ////printf("%s\n", asm_output);
     
-    // Part 6 - Machine code generator
+    // Part 7 - Machine code generator
     printf("input_file = %p\n", input_file);
     printf("output_file = %p\n", output_file);
     fprintf(output_file, "%s", asm_output);
     fclose(input_file);
     fclose(output_file);
     printf("Complete\n");
-    //system("zcc _c_lowered.c");
+    system("zcc _c_lowered.c");
     //pause();
     //system("asm.exe");
     return 0;

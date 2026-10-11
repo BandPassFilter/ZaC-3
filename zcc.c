@@ -4693,61 +4693,6 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             }
         }
         if (parse_finish == 0) {
-            // now check identifiers
-            i = start_i;
-                if (check_letter_is_number(input_file_buf[i])) {
-                    //parse_finish = 0;
-                    //break;
-                }
-            while (check_letter_is_alphabet(input_file_buf[i])) {
-                if (check_letter_is_number(input_file_buf[i])) {
-                    parse_finish = 0;
-                    break;
-                }
-                sub_string[j] = input_file_buf[i];
-                i++;
-                j++;
-            }
-            // now check identifiers
-            if (check_letter_is_not_alphabet(input_file_buf[i])) {
-                // now to lexical analysis on sub_string
-                ////printf("sub_string = %s\n", sub_string);
-                if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
-                    parse_finish = 1;
-                } else if (check_string_in_strings(SEPARATORS_SIZE, SEPARATORS, sub_string) != -1) {
-                    parse_finish = 1;
-                } else if (check_string_in_strings(OPERATORS_SIZE, OPERATORS, sub_string) != -1) {
-                    parse_finish = 1;
-                } else if (j > 0) {
-                    // identifiers
-                    //printf("identifier detected: %s\n", sub_string);
-                    if (!strcmp(sub_string, "main")) {
-                        //printf("main\n");
-                    }
-                    char *ident_string = (char *) malloc((j) * sizeof(char) + 1);
-                    if (ident_string == NULL) {
-                        printf("Memory allocation fail!\n");
-                        exit(1);
-                    }
-                    strcpy(ident_string, sub_string);
-                    Token nextToken;
-                    TokenInit(&nextToken);
-                    nextToken.token_valid = 1;
-                    nextToken.token_type = IDENT;
-                    nextToken.token_subtype = TOKEN_NOSUBTYPE;
-                    nextToken.token_value = TOKEN_VALUE_NONE;
-                    nextToken.token_modifier = NO_MODIFIER;
-                    strcpy(nextToken.token_string, ident_string);
-                    tokenList->append(tokenList, nextToken);
-                    token_index++;
-                    clear_string(50, sub_string);
-                    j = 0;
-                    parse_finish = 1;
-                    start_i = i;
-                }
-            }
-        }
-        if (parse_finish == 0) {
             // now check literals
             i = start_i;
             while (check_letter_is_alphabet(input_file_buf[i])) {
@@ -4795,6 +4740,62 @@ TokenList *lexer(char *input_file_buf, long fsize) {
                 }
             }
         }
+        if (parse_finish == 0) {
+            // now check identifiers
+            i = start_i;
+                if (check_letter_is_number(input_file_buf[i])) {
+                    parse_finish = 0;
+                    break;
+                }
+            while (check_letter_is_alphabet(input_file_buf[i])) {
+                if (check_letter_is_number(input_file_buf[i])) {
+                    //parse_finish = 0;
+                    //break;
+                }
+                sub_string[j] = input_file_buf[i];
+                i++;
+                j++;
+            }
+            // now check identifiers
+            if (check_letter_is_not_alphabet(input_file_buf[i])) {
+                // now to lexical analysis on sub_string
+                ////printf("sub_string = %s\n", sub_string);
+                if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
+                    parse_finish = 1;
+                } else if (check_string_in_strings(SEPARATORS_SIZE, SEPARATORS, sub_string) != -1) {
+                    parse_finish = 1;
+                } else if (check_string_in_strings(OPERATORS_SIZE, OPERATORS, sub_string) != -1) {
+                    parse_finish = 1;
+                } else if (j > 0) {
+                    // identifiers
+                    //printf("identifier detected: %s\n", sub_string);
+                    if (!strcmp(sub_string, "main")) {
+                        //printf("main\n");
+                    }
+                    char *ident_string = (char *) malloc((j) * sizeof(char) + 1);
+                    if (ident_string == NULL) {
+                        printf("Memory allocation fail!\n");
+                        exit(1);
+                    }
+                    strcpy(ident_string, sub_string);
+                    Token nextToken;
+                    TokenInit(&nextToken);
+                    nextToken.token_valid = 1;
+                    nextToken.token_type = IDENT;
+                    nextToken.token_subtype = TOKEN_NOSUBTYPE;
+                    nextToken.token_value = TOKEN_VALUE_NONE;
+                    nextToken.token_modifier = NO_MODIFIER;
+                    strcpy(nextToken.token_string, ident_string);
+                    tokenList->append(tokenList, nextToken);
+                    token_index++;
+                    clear_string(50, sub_string);
+                    j = 0;
+                    parse_finish = 1;
+                    start_i = i;
+                }
+            }
+        }
+
         if (parse_finish == 0) {
             i++;
         }
