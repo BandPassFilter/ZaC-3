@@ -143,13 +143,23 @@ int mod(int a, int b) {
     return result;
 }
 
+void print(char *str) {
+    char *uart = 1245184;
+    char current_char;
+    while (*str > 0) {
+        current_char = *str;
+        print_char(current_char);
+        str = str + 1;
+    }
+}
+
 void main() {
     int a = 3;
     int b = 2;
     int c = 1;
     cr();
     int not_prime = 0;
-
+    char *end_str = "Finished!\n";
     while (a < 32768) {
         not_prime = 0;
         while (b < (a >> 1)) {
@@ -167,4 +177,5 @@ void main() {
         b = 2;
     }
     cr();
+    print(end_str);
 }

@@ -2921,7 +2921,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         char register_buf_pop[300] = {0};
         int old_operator_stack_offset = extra_stuff->operator_stack_offset;
         // save registers
-        for (int i = 3; i <= old_operator_stack_offset; i++) {
+        for (int i = 3; i <= old_operator_stack_offset+1; i++) {
             sprintf(register_buf+strlen(register_buf), "subi sp, sp, 4\n");
             sprintf(register_buf+strlen(register_buf), "movi [sp + 0], r%d ;REGISTER_SAVE_PUSH\n", i);
         }
@@ -2933,7 +2933,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             }
             
             function_total->append(function_total, register_buf);
-            function_total->append(function_total, function_parameters->array);
+            if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
+                function_total->append(function_total, function_parameters->array);
+            }
             
             asm_list->append(asm_list, function_total->array);
             sprintf(buffer+strlen(buffer), "jal _%s\n", current_node->ast_string);
@@ -2955,7 +2957,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             
         }
         //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
-        for (int i = old_operator_stack_offset; i >= 3; i--) {
+        for (int i = old_operator_stack_offset+1; i >= 3; i--) {
             
             sprintf(register_buf_pop+strlen(register_buf_pop), "movi r%d, [sp + 0] ;REGISTER_SAVE_POP\n", i);
             sprintf(register_buf_pop+strlen(register_buf_pop), "addi sp, sp, 4\n");
@@ -2993,7 +2995,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             sprintf(buffer, "subi sp, sp, 4\n");
             for (int i = current_node->getSize(current_node) - 1; i >= 0; i--) { // output params in reverse order, since stack works in LIFO (last in first out).
                 int cancel_stack = 0;
-                function_param_code->append(function_param_code, buffer);
+                asm_list->append(asm_list, buffer);
                 if (symbol_tables[0]->in(symbol_tables[0], current_node->getItem(current_node, i)->ast_string) != -1) {
                     // function call in function param
                     cancel_stack = -symbol_tables[0]->get(symbol_tables[0], current_node->getItem(current_node, i)->ast_string);
@@ -3001,11 +3003,11 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     //param_stack += 2;
                     //asm_generator_code_gen(current_node->getItem(current_node, i), blank, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                     
-                    asm_generator_code_gen(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    set_stack_param(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    set_stack_param(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                     //function_total->append(function_total, register_buf);
-                    function_total->append(function_total, function_param_code->array);
-                    function_total->append(function_total, ";CALL_PARAM_END\n");
+                    //function_total->append(function_total, function_param_code->array);
+                    asm_list->append(asm_list, ";CALL_PARAM_END_A\n");
                     //asm_list->append(asm_list, buffer_b);
                     //extra_stuff->operator_stack_offset += -1;
                 } else {
@@ -3014,18 +3016,18 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     //param_stack += 2;
                     //asm_generator_code_gen(current_node->getItem(current_node, i), blank, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                     //function_param_code->append(function_param_code, register_buf);
-                    asm_generator_code_gen(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    set_stack_param(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    set_stack_param(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
                     //function_total->append(function_total, register_buf);
-                    function_total->append(function_total, function_param_code->array);
-                    function_total->append(function_total, ";CALL_PARAM_END\n");
+                    //function_total->append(function_total, function_param_code->array);
+                    asm_list->append(asm_list, ";CALL_PARAM_END\n");
                     //asm_list->append(asm_list, buffer_b);
                     //extra_stuff->operator_stack_offset += -1;
                 }
                 //
             }
             
-            asm_list->append(asm_list, function_total->array);
+            //asm_list->append(asm_list, function_total->array);
         }
         else {
             //printf("void detected");
