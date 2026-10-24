@@ -13,8 +13,8 @@
 						* Operator ~* Dereference
 							* Identifier print_char_uart
 						* Literal32 1245184
-				* SetVariable Local
-					* Operator =
+				* SetVariable
+					* Operator = Local
 						* Operator ~* Dereference
 							* Identifier print_char_uart
 						* Identifier print_char_value
@@ -23,7 +23,7 @@
 			* Parameters
 			* Body
 				* Declaration char
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier get_char_uart Local
 					* Operator =
 						* Operator ~* Dereference
@@ -31,7 +31,7 @@
 						* Literal32 1245184
 				* Return
 					* Operator ~* Dereference
-						* Identifier get_char_uart Local
+						* Identifier get_char_uart
 	* FunctionDeclaration int
 		* Function get_hex_int
 			* Parameters
@@ -51,13 +51,13 @@
 						* Identifier get_hex_int_number
 						* Operator -
 							* Operator ~* Dereference
-								* Operator - Local
+								* Operator -
 									* Operator +
 										* Identifier get_hex_int_hex_to_dec
 										* Identifier get_hex_int_c
 									* Literal 48
 							* Literal 48
-				* Return Local
+				* Return
 					* Identifier get_hex_int_number
 	* FunctionDeclaration void
 		* Function print
@@ -67,10 +67,10 @@
 						* Identifier print_str Local
 			* Body
 				* Declaration char
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier print_uart Local
 					* Operator =
-						* Operator ~* Dereference
+						* Operator ~* Dereference Local
 							* Identifier print_uart
 						* Literal32 1245184
 				* Declaration char
@@ -78,39 +78,39 @@
 				* While
 					* Operator >
 						* Operator ~* Dereference
-							* Identifier print_str
+							* Identifier print_str Local
 						* Literal 0
 					* Body
 						* SetVariable
-							* Operator = Local
+							* Operator =
 								* Identifier print_current_char
 								* Operator ~* Dereference
 									* Identifier print_str
-						* FunctionCall print_char Local
+						* FunctionCall print_char
 							* CallParameters
 								* Identifier print_current_char
 						* SetVariable
-							* Operator = Local
+							* Operator =
 								* Identifier print_str
 								* Operator +
 									* Identifier print_str
 									* Literal 1
-	* FunctionDeclaration void Local
+	* FunctionDeclaration void
 		* Function print_hex_byte
-			* Parameters Local
+			* Parameters
 				* Declaration char
 					* Identifier print_hex_byte_x Local
 			* Body
-				* Declaration char
+				* Declaration char Local
 					* Identifier print_hex_byte_temp Local
 				* Declaration char
 					* Identifier print_hex_byte_temp_b Local
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
-						* Operator >> Local
+						* Operator >>
 							* Identifier print_hex_byte_x
-							* Literal 4
+							* Literal 4 Local
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
@@ -118,15 +118,15 @@
 							* Identifier print_hex_byte_temp
 							* Literal 15
 				* SetVariable
-					* Operator =
-						* Identifier print_hex_byte_temp_b
+					* Operator = Local
+						* Identifier print_hex_byte_temp_b Local
 						* Identifier print_hex_byte_temp
-				* SetVariable Local
+				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
 						* Operator +
 							* Identifier print_hex_byte_temp_b
-							* Literal 48
+							* Literal 48 Local
 				* If
 					* Operator >
 						* Identifier print_hex_byte_temp_b
@@ -136,22 +136,22 @@
 							* Operator =
 								* Identifier print_hex_byte_temp
 								* Operator +
-									* Identifier print_hex_byte_temp_b Local
+									* Identifier print_hex_byte_temp_b
 									* Literal 55
-				* FunctionCall print_char
+				* FunctionCall print_char Local
 					* CallParameters
 						* Identifier print_hex_byte_temp
 				* SetVariable
-					* Operator = Local
-						* Identifier print_hex_byte_temp
-						* Identifier print_hex_byte_x Local
-				* SetVariable
 					* Operator =
+						* Identifier print_hex_byte_temp
+						* Identifier print_hex_byte_x
+				* SetVariable
+					* Operator = Local
 						* Identifier print_hex_byte_temp
 						* Operator &
 							* Identifier print_hex_byte_temp
 							* Literal 15
-				* SetVariable Local
+				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp_b
 						* Identifier print_hex_byte_temp
@@ -162,23 +162,23 @@
 							* Identifier print_hex_byte_temp_b
 							* Literal 48
 				* If Local
-					* Operator > Local
+					* Operator >
 						* Identifier print_hex_byte_temp_b
 						* Literal 9
 					* Body
-						* SetVariable
+						* SetVariable Local
 							* Operator =
 								* Identifier print_hex_byte_temp
-								* Operator + Local
-									* Identifier print_hex_byte_temp_b Local
+								* Operator +
+									* Identifier print_hex_byte_temp_b
 									* Literal 55
 				* FunctionCall print_char
-					* CallParameters
+					* CallParameters Local
 						* Identifier print_hex_byte_temp
 	* FunctionDeclaration void
 		* Function print_hex
 			* Parameters
-				* Declaration int
+				* Declaration int Local
 					* Identifier print_hex_x Local
 			* Body
 				* Declaration char

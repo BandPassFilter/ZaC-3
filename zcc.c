@@ -2921,7 +2921,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         char register_buf_pop[300] = {0};
         int old_operator_stack_offset = extra_stuff->operator_stack_offset;
         // save registers
-        for (int i = 3; i <= old_operator_stack_offset+1; i++) {
+        for (int i = 3; i <= old_operator_stack_offset; i++) {
             sprintf(register_buf+strlen(register_buf), "subi sp, sp, 4\n");
             sprintf(register_buf+strlen(register_buf), "movi [sp + 0], r%d ;REGISTER_SAVE_PUSH\n", i);
         }
@@ -2957,7 +2957,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             
         }
         //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
-        for (int i = old_operator_stack_offset+1; i >= 3; i--) {
+        for (int i = old_operator_stack_offset; i >= 3; i--) {
             
             sprintf(register_buf_pop+strlen(register_buf_pop), "movi r%d, [sp + 0] ;REGISTER_SAVE_POP\n", i);
             sprintf(register_buf_pop+strlen(register_buf_pop), "addi sp, sp, 4\n");
