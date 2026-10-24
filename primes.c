@@ -1,5 +1,5 @@
 void print_char(char x) {
-    char _io *uart = 0;
+    char *uart = 1245184;
     *uart = x;
 }
 

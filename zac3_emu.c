@@ -319,7 +319,7 @@ void print_binary(int x) {
 }
 
 int main(int argc, char** argv) {
-    printf("ZaC-2 Emulator\n");
+    printf("ZaC-3 Emulator\n");
 
     if (InitialiseSerialPort() == 1) {
         printf("serial port error\n");

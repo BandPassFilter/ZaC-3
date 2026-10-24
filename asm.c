@@ -674,7 +674,7 @@ int main(int argc, char** argv) {
             //printf("jmp label detected\n");
         }
         if (inst_type == NONE && !check_string_is_jmp_label(instruction_string, PARSE_LENGTH) && instruction_string[0] != '.' && instruction_string[0] != '\0') {
-            printf("Invalid opcode at offset: %d", input_buf_ptr);
+            printf("Invalid opcode %s at offset: %d", instruction_string, input_buf_ptr);
             exit(1);
         }
 

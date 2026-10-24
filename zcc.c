@@ -1477,11 +1477,11 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
             dereferenced_var_size = 1;
         }
         if (declare_node->visibility == AST_LOCAL) {
-            const int call_overhead = 4;
+            const int call_overhead = 8;
             for (int i = 0; i < current_node->getSize(current_node); i++) {
                 asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             }
-            //printf("Call Parameters local variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *stack+call_overhead, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
+            printf("Call Parameters local variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *stack+call_overhead, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[0]->set(symbol_tables[0], *stack+call_overhead, declare_node->ast_string);
             symbol_tables[3]->set(symbol_tables[3], AST_LOCAL, declare_node->ast_string);
             symbol_tables[4]->set(symbol_tables[4], current_node->token_value, declare_node->ast_string);
@@ -1495,7 +1495,7 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
             for (int i = 0; i < current_node->getSize(current_node); i++) {
                 asm_generator_symbol_table_call_params(current_node->getItem(current_node, i), symbol_tables, pointer_symbol_table, stack, heap, current_function);
             }
-            //printf("Call Parameters static variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *heap, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
+            printf("Call Parameters static variable \"%s\" set offset: %d, type: %s%s, pointer size: %d, dereferenced size: %d, modifier: %d\n", declare_node->ast_string, *heap, current_node->ast_string, pointer_layer_string, datatype_size, dereferenced_var_size, modifier);
             symbol_tables[1]->set(symbol_tables[1], *heap, declare_node->ast_string);
             symbol_tables[3]->set(symbol_tables[3], AST_STATIC, declare_node->ast_string);
             symbol_tables[4]->set(symbol_tables[4], current_node->token_value, declare_node->ast_string);
@@ -1641,6 +1641,9 @@ enum asm_gen {
 
 typedef struct ExtraStuff {
     int operator_stack_offset;
+    DictionaryPointer *functionDictionary;
+    char *function_set_variable;
+    int function_param_variable_number;
 } ExtraStuff;
 
 void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Dictionary **symbol_tables, DictionaryPointer *pointer_symbol_table, int *stack, int status, int *jmp_label, int register_select, int *pointer_layer_dereference, int *ast_modifier, int *visibility, char *current_function, ExtraStuff *extra_stuff) {
@@ -2882,10 +2885,13 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         } else {
             sprintf(buffer+strlen(buffer), "subi sp, sp, 4\n");
+            sprintf(buffer+strlen(buffer), "movi [sp + 0], fp\n"); 
+            sprintf(buffer+strlen(buffer), "subi sp, sp, 4\n");
             sprintf(buffer+strlen(buffer), "movi [sp + 0], ra\n");
             if (symbol_tables[2]->get(symbol_tables[2], current_node->ast_string) > 0) {
                 sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             }
+
             sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         }
         asm_list->append(asm_list, buffer);
@@ -2894,31 +2900,48 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         char buffer_b[50] = {0};
         asm_list->append(asm_list, function_body->array);
         if (strcmp(current_node->ast_string, "main") == 0) {
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
             sprintf(buffer_b, "halt\n");
         } else {
             sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             sprintf(buffer_b+strlen(buffer_b), "movi ra, [sp + 0]\n");
             sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 4\n");
             //sprintf(buffer_b+strlen(buffer_b), "add fp, r0, sp\n");
+            sprintf(buffer_b+strlen(buffer_b), "movi fp, [sp + 0]\n");
+            sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, 4\n");
             sprintf(buffer_b+strlen(buffer_b), "jr ra\n");
         }
         asm_list->append(asm_list, buffer_b);
     } else if (current_node->type == AST_FUNCTION_CALL) {
         CharAppendList *function_parameters = generateCharAppendList();
+        CharAppendList *function_total = generateCharAppendList();
         char buffer[300] = {0};
+        char buffer_b[300] = {0};
+        char register_buf[300] = {0};
+        char register_buf_pop[300] = {0};
         int old_operator_stack_offset = extra_stuff->operator_stack_offset;
+        // save registers
+        for (int i = 3; i <= old_operator_stack_offset; i++) {
+            sprintf(register_buf+strlen(register_buf), "subi sp, sp, 4\n");
+            sprintf(register_buf+strlen(register_buf), "movi [sp + 0], r%d ;REGISTER_SAVE_PUSH\n", i);
+        }
+        //asm_list->append(asm_list, register_buf);
         if (1) {
             if (current_node->getItem(current_node, 0)->getItem(current_node->getItem(current_node, 0), 0)->type != AST_VOID) {
                 asm_generator_code_gen(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                asm_list->append(asm_list, function_parameters->array);
+                
             }
-            sprintf(buffer, "jal _%s\n", current_node->ast_string);
+            
+            function_total->append(function_total, register_buf);
+            function_total->append(function_total, function_parameters->array);
+            
+            asm_list->append(asm_list, function_total->array);
+            sprintf(buffer+strlen(buffer), "jal _%s\n", current_node->ast_string);
             //extra_stuff->operator_stack_offset = old_operator_stack_offset;
         }
         
         if (1) {
-            sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;RETURN_SET\n", extra_stuff->operator_stack_offset);
+            sprintf(buffer_b+strlen(buffer_b), "add r%d, r0, r1 ;RETURN_SET\n", extra_stuff->operator_stack_offset);
             if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) != 'v') {
                 //printf("Non void function detected\n");
                 extra_stuff->operator_stack_offset += 1;
@@ -2931,8 +2954,16 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             
             
         }
-        sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+        //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+        for (int i = old_operator_stack_offset; i >= 3; i--) {
+            
+            sprintf(register_buf_pop+strlen(register_buf_pop), "movi r%d, [sp + 0] ;REGISTER_SAVE_POP\n", i);
+            sprintf(register_buf_pop+strlen(register_buf_pop), "addi sp, sp, 4\n");
+        }
+        
         asm_list->append(asm_list, buffer);
+        asm_list->append(asm_list, register_buf_pop);
+        asm_list->append(asm_list, buffer_b);
     } else if (current_node->type == AST_PARAMS) {
         CharAppendList *function_param_code = generateCharAppendList();
         char buffer[300] = {0};
@@ -2945,37 +2976,56 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
     } else if (current_node->type == AST_CALL_PARAMS) {
         // call params will recurse on a different function to this main one, as the syntax requires different interpretation
         CharAppendList *function_param_code = generateCharAppendList();
+        CharAppendList *function_total = generateCharAppendList();
         char buffer[300] = {0};
         char buffer_b[50] = {0};
+        char register_buf[300] = {0};
+        char register_buf_pop[300] = {0};
+        int old_operator_stack_offset = extra_stuff->operator_stack_offset;
         sprintf(buffer_b, "movi [sp + 0], r%d\n", extra_stuff->operator_stack_offset);
         //sprintf(buffer, "movi [sp + 0], ra\n");
         //sprintf(buffer+strlen(buffer), "addi sp, sp, -2\n");
         int param_stack = 0;
         int null_stack = 0;
+
+        function_total->append(function_total, ";CALL_PARAM_START\n");
         if (current_node->getItem(current_node, 0)->type != AST_VOID) {
+            sprintf(buffer, "subi sp, sp, 4\n");
             for (int i = current_node->getSize(current_node) - 1; i >= 0; i--) { // output params in reverse order, since stack works in LIFO (last in first out).
                 int cancel_stack = 0;
-                sprintf(buffer, "subi sp, sp, 4\n");
+                function_param_code->append(function_param_code, buffer);
                 if (symbol_tables[0]->in(symbol_tables[0], current_node->getItem(current_node, i)->ast_string) != -1) {
                     // function call in function param
                     cancel_stack = -symbol_tables[0]->get(symbol_tables[0], current_node->getItem(current_node, i)->ast_string);
-                    asm_list->append(asm_list, buffer);
+                    //asm_list->append(asm_list, buffer);
                     //param_stack += 2;
-                    asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    set_stack_param(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    //asm_generator_code_gen(current_node->getItem(current_node, i), blank, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    
+                    asm_generator_code_gen(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    set_stack_param(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    //function_total->append(function_total, register_buf);
+                    function_total->append(function_total, function_param_code->array);
+                    function_total->append(function_total, ";CALL_PARAM_END\n");
                     //asm_list->append(asm_list, buffer_b);
                     //extra_stuff->operator_stack_offset += -1;
                 } else {
                     // variable in function
-                    asm_list->append(asm_list, buffer);
+                    //asm_list->append(asm_list, buffer);
                     //param_stack += 2;
-                    asm_generator_code_gen(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
-                    set_stack_param(current_node->getItem(current_node, i), asm_list, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    //asm_generator_code_gen(current_node->getItem(current_node, i), blank, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    //function_param_code->append(function_param_code, register_buf);
+                    asm_generator_code_gen(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &param_stack, ASM_GET_MEMORY, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    set_stack_param(current_node->getItem(current_node, i), function_param_code, symbol_tables, pointer_symbol_table, &cancel_stack, ASM_SET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+                    //function_total->append(function_total, register_buf);
+                    function_total->append(function_total, function_param_code->array);
+                    function_total->append(function_total, ";CALL_PARAM_END\n");
                     //asm_list->append(asm_list, buffer_b);
                     //extra_stuff->operator_stack_offset += -1;
                 }
-                //asm_list->append(asm_list, buffer);
+                //
             }
+            
+            asm_list->append(asm_list, function_total->array);
         }
         else {
             //printf("void detected");
@@ -2995,7 +3045,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_function));
         sprintf(buffer+strlen(buffer), "movi ra, [sp + 0]\n");
         sprintf(buffer+strlen(buffer), "addi sp, sp, 4\n");
-        sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+        sprintf(buffer+strlen(buffer), "movi fp, [sp + 0]\n");  
+        sprintf(buffer+strlen(buffer), "addi sp, sp, 4\n");
         sprintf(buffer+strlen(buffer), "jr ra\n");
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_VOID) {
@@ -3712,14 +3763,14 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         sprintf(buffer, "_%s:\n", current_node->ast_string);
         if (strcmp(current_node->ast_string, "main") == 0) {
             sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         } else {
             sprintf(buffer+strlen(buffer), "subi sp, sp, 4\n");
             sprintf(buffer+strlen(buffer), "movi [sp + 0], ra\n");
             if (symbol_tables[2]->get(symbol_tables[2], current_node->ast_string) > 0) {
                 sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
             }
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         }
         asm_list->append(asm_list, buffer);
         // function parameters are evaluated in the asm pre-parser (first pass to evaluate symbol values)
@@ -3727,7 +3778,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         char buffer_b[50] = {0};
         asm_list->append(asm_list, function_body->array);
         if (strcmp(current_node->ast_string, "main") == 0) {
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
             sprintf(buffer_b, "halt\n");
         } else {
             sprintf(buffer_b+strlen(buffer_b), "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
@@ -3769,17 +3820,17 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         
         if (status == ASM_SET || status == ASM_NONE) {
             //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;RETURN_SET\n", extra_stuff->operator_stack_offset);
-            sprintf(buffer+strlen(buffer), "movi [sp + %d], r1 ;RETURN_SET_STACK\n", 0);
+            sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;RETURN_SET_STACK\n", 0, extra_stuff->operator_stack_offset - 1);
             if ((char)symbol_tables[9]->get(symbol_tables[9], current_node->ast_string) != 'v') {
                 //printf("Non void function detected\n");
-                extra_stuff->operator_stack_offset += 1;
+                //extra_stuff->operator_stack_offset += 1;
             }
             
             AST_Node *callparam_node = current_node->getItem(current_node, 0);
             if (callparam_node->getItem(callparam_node, 0)->type != AST_VOID) {
-                sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
+                //sprintf(buffer+strlen(buffer), "addi sp, sp, %d\n", 4*callparam_node->getSize(callparam_node));
             }
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
             
         }
         
@@ -4398,10 +4449,10 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         char buffer[300] = {0};
         sprintf(buffer, "_%s:\n", current_node->ast_string);
         if (strcmp(current_node->ast_string, "main") == 0) {
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
             sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
         } else {
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
             sprintf(buffer+strlen(buffer), "subi sp, sp, 4\n");
             sprintf(buffer+strlen(buffer), "movi [sp + 0], ra\n");
             sprintf(buffer+strlen(buffer), "subi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
@@ -4412,7 +4463,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         char buffer_b[50] = {0};
         asm_list->append(asm_list, function_body->array);
         if (strcmp(current_node->ast_string, "main") == 0) {
-            sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+            //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
             sprintf(buffer_b, "halt\n");
         } else {
             sprintf(buffer_b, "addi sp, sp, %d\n", symbol_tables[2]->get(symbol_tables[2], current_node->ast_string));
@@ -4427,7 +4478,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         asm_generator_code_gen_call_params(current_node->getItem(current_node, 0), function_parameters, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
         asm_list->append(asm_list, function_parameters->array);
         sprintf(buffer+strlen(buffer), "jal _%s\n", current_node->ast_string);
-        sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
+        //sprintf(buffer+strlen(buffer), "add fp, r0, sp\n");
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_PARAMS) {
         CharAppendList *function_param_code = generateCharAppendList();
@@ -4857,6 +4908,7 @@ Dictionary **symbol_pass(AST_Node *start_node) {
 
     Dictionary *symbol_table = (Dictionary *) malloc(10*sizeof(Dictionary));
     Dictionary **symbol_tables = (Dictionary **) malloc(10*sizeof(Dictionary*));
+    DictionaryPointer *function_types = (DictionaryPointer *) malloc(1*sizeof(DictionaryPointer));
 
     for (int i = 0; i < 10; i++) {
         symbol_tables[i] = &(symbol_table[i]);
@@ -4883,6 +4935,7 @@ Dictionary **symbol_pass(AST_Node *start_node) {
     DictionaryInit(symbol_tables[7]); // variable pointer dereferenced byte-size (INT: 2, CHAR: 1, UINT8_T: 1, Struct: 2^n bytes)
     DictionaryInit(symbol_tables[8]); // modifier (no modifier, near, far, etc.)
     DictionaryInit(symbol_tables[9]); // function return type (void, char, int, char*, int*, etc.)
+    DictionaryPointerInit(function_types);
     
 
     int jmp_label = 0;
@@ -4893,7 +4946,8 @@ Dictionary **symbol_pass(AST_Node *start_node) {
 
     Dictionary *pointer_symbol_table;
 
-    asm_generator_symbol_table(start_node, symbol_tables, &pointer_symbol_table, &local_stack, &heap, "");
+    asm_generator_symbol_table(start_node, symbol_tables, function_types, &local_stack, &heap, "");
+    //asm_generator_symbol_table(start_node, symbol_tables, &pointer_symbol_table, &local_stack, &heap, "");
     return symbol_tables;
 }
 
@@ -5128,10 +5182,16 @@ int main(int argc, char* argv[]) {
     }
     */
     FILE *input_file, *output_file;
-    
 
+    
+    
+    char *output_file_str = "c_program.asm";
     input_file = fopen(input_file_str, "rb");
-    output_file = fopen("c_program.asm", "wb");
+    output_file = fopen(output_file_str, "wb");
+
+    printf("Input file: \"%s\"\n", input_file_str);
+    printf("Output file: \"%s\"\n", output_file_str);
+
     if (!input_file) {
         printf("Invalid input file\n");
         exit(1);
@@ -5183,14 +5243,18 @@ int main(int argc, char* argv[]) {
     
     // Part 1 - Pre-processor
     // Evalulates macros, defines, includes and removes comments
+    //printf("Preprocessing... ");
     input_file_buf = pre_processor(input_file_buf, fsize);
+    //printf("Done\n");
 
     // Part 2 and 3 - Lexer and tokenList modifier
     // Lexer will be just a static struct array
+    //printf("Lexing... ");
     TokenList *tokenList = lexer(input_file_buf, fsize);
-
+    //printf("Done\n");
     // Part 4 - Token array parser / AST generation
     // AST will be generated via a malloc struct tree with 4 childs per node
+    //printf("Generating AST... ");
     int local_idx = 0;
     int iter = 0;
     const int iter_end = 10000;
@@ -5220,18 +5284,21 @@ int main(int argc, char* argv[]) {
     // Part 5 - AST parser / ASM generator
     // Generates asm code for assembler.
     //printf("\nAssembly output:\n");
+    //printf("Done\n");
+    //printf("Generating asm... ");
     char *asm_output;
     
     asm_output = asm_generator(start_node, pointer_symbol_table, symbol_table);
     ////printf("%s\n", asm_output);
     
     // Part 6 - Machine code generator
-    printf("input_file = %p\n", input_file);
-    printf("output_file = %p\n", output_file);
+    //printf("input_file = %p\n", input_file);
+    //printf("output_file = %p\n", output_file);
     fprintf(output_file, "%s", asm_output);
     fclose(input_file);
     fclose(output_file);
-    printf("Complete\n");
+    //printf("Done\n");
+    printf("Complete\n\n");
     //pause();
     system("asm.exe");
     return 0;
