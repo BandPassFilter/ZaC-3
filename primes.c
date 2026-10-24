@@ -16,7 +16,7 @@ void print_bcd(int x) {
     int bcd_b_carry = 0;
 
     for (int i = 0; i < 16; i = i + 1) {
-        if ((bcd_a & 15) > 3) {
+        if ((bcd_a & 15) > 4) {
             bcd_a = bcd_a + 3;
         }
         if ((bcd_a & 240) > 64) {
