@@ -358,18 +358,48 @@ void print_bcd(int x) {
     }
         
     char temp_print = 0;
+    int not_leading_zero = 0;
+
     temp_print = (bcd_b & 15) + 48;
-    print_char(temp_print);
+    if (temp_print != 48) {
+        not_leading_zero = 1;
+        print_char(temp_print);
+    }
+    if (temp_print == 48 && not_leading_zero == 1) {
+        print_char(temp_print);
+    }
     temp_print = (bcd_a >> 12) + 48;
-    print_char(temp_print);
+    if (temp_print != 48) {
+        not_leading_zero = 1;
+        print_char(temp_print);
+    }
+    if (temp_print == 48 && not_leading_zero == 1) {
+        print_char(temp_print);
+    }
     temp_print = ((bcd_a >> 8) & 15) + 48;
-    print_char(temp_print);
+    if (temp_print != 48) {
+        not_leading_zero = 1;
+        print_char(temp_print);
+    }
+    if (temp_print == 48 && not_leading_zero == 1) {
+        print_char(temp_print);
+    }
     temp_print = ((bcd_a >> 4) & 15) + 48;
-    print_char(temp_print);
+    if (temp_print != 48) {
+        not_leading_zero = 1;
+        print_char(temp_print);
+    }
+    if (temp_print == 48 && not_leading_zero == 1) {
+        print_char(temp_print);
+    }
     temp_print = (bcd_a & 15) + 48;
-    print_char(temp_print);
-
-
+    if (temp_print != 48) {
+        not_leading_zero = 1;
+        print_char(temp_print);
+    }
+    if (temp_print == 48 && not_leading_zero == 1) {
+        print_char(temp_print);
+    }
 }
 
 void cr() {

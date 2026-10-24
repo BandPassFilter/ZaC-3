@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define LABEL_STRING_SIZE 50
-#define LABELS_SIZE 256
+#define LABELS_SIZE 512
 #define PARSE_LENGTH 64
 
 /*
@@ -40,6 +40,16 @@ typedef struct {
 
 int compare_string(char *string_a, char *string_b) {
     // each string null-terminated
+    if (strcmp(string_a, string_b) == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+
+/*
+int compare_string(char *string_a, char *string_b) {
+    // each string null-terminated
     int i = 0;
     while (string_a[i] == string_b[i]) {
         if (string_a[i] == '\0' && string_b[i] == '\0') {
@@ -49,11 +59,16 @@ int compare_string(char *string_a, char *string_b) {
     }
     return 0;
 }
+*/
 
-void push_labels(Label *labels, char *instruction_string, int memory_value_value, int imm_value_value, int *input_buf_ptr, int *label_idx, int label_type) {
+void push_labels(int labels_size, Label *labels, char *instruction_string, int memory_value_value, int imm_value_value, int *input_buf_ptr, int *label_idx, int label_type) {
     // store data in label struct
     int i = 0;
-    while (i < LABEL_STRING_SIZE && instruction_string[i] != '\0' && instruction_string[i] != ':') {
+    if (*label_idx >= labels_size) {
+        printf("Labels out of bounds error! Index: %d\n", *label_idx);
+        exit(-1);
+    }
+    while (i < (LABEL_STRING_SIZE - 20) && instruction_string[i] != '\0' && instruction_string[i] != ':') {
         labels[*label_idx].name[i] = instruction_string[i];
         i++;
     }
@@ -404,7 +419,7 @@ int main(int argc, char** argv) {
 
     char *input_file_str = "c_program.asm";
 
-    input_file = fopen(input_file_str, "r");
+    input_file = fopen(input_file_str, "rb");
     if (!input_file) {
         printf("Invalid input file\n");
         exit(1);
@@ -507,9 +522,10 @@ int main(int argc, char** argv) {
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             grab_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "1234"
             directive_value = atoi(temp_string);
-            push_labels(labels, directive_string, directive_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_NUMBER);
+            push_labels(LABELS_SIZE, labels, directive_string, directive_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_NUMBER);
             data_segment_output[adrs_offset_value] = directive_value;
             adrs_offset_value = adrs_offset_value + 1;
+            
         } else if (compare_string(instruction_string, ".word")) {
             // ".word word_name = 0x0001"
             //printf(".word detected\n");
@@ -520,7 +536,7 @@ int main(int argc, char** argv) {
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             grab_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "1234"
             directive_value = atoi(temp_string);
-            push_labels(labels, directive_string, directive_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_NUMBER);
+            push_labels(LABELS_SIZE, labels, directive_string, directive_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_NUMBER);
             data_segment_output[adrs_offset_value] = directive_value % 256;
             data_segment_output[adrs_offset_value+1] = (directive_value >> 8) % 256;
             adrs_offset_value = adrs_offset_value + 2;
@@ -532,7 +548,7 @@ int main(int argc, char** argv) {
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             grab_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "1234"
             directive_value = atoi(temp_string);
-            push_labels(labels, directive_string, directive_value, directive_value, &dummy_idx, &label_idx, LABEL_NUMBER);
+            push_labels(LABELS_SIZE, labels, directive_string, directive_value, directive_value, &dummy_idx, &label_idx, LABEL_NUMBER);
         } else if (compare_string(instruction_string, ".asciiz")) {
             // ".asciiz string_namme = "Hello, World!\n"
             //printf(".asciiz detected\n");
@@ -544,7 +560,7 @@ int main(int argc, char** argv) {
             input_buf_ptr++;
             grab_quoted_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "Hello, World!\n"
             int STRING_BASE = 262144;
-            push_labels(labels, directive_string, STRING_BASE + adrs_offset_value, STRING_BASE + adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
+            push_labels(LABELS_SIZE, labels, directive_string, STRING_BASE + adrs_offset_value, STRING_BASE + adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
             int temp_str_i = 0;
             while (temp_str_i < strlen(temp_string)+1) {
                 data_segment_output[adrs_offset_value + temp_str_i] = temp_string[temp_str_i];
@@ -555,18 +571,19 @@ int main(int argc, char** argv) {
             // ".include "include_file.asm"
             //printf(".include detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-            //push_labels(labels, instruction_string, 0, &input_buf_ptr, &label_idx);
+            //push_labels(LABELS_SIZE, labels, instruction_string, 0, &input_buf_ptr, &label_idx);
         } else if (compare_string(instruction_string, ".global")) {
             // ".global global_name"
             //printf(".global detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-            //push_labels(labels, instruction_string, 0, &input_buf_ptr, &label_idx);
+            //push_labels(LABELS_SIZE, labels, instruction_string, 0, &input_buf_ptr, &label_idx);
         } else if (check_string_is_non_inst(instruction_string, PARSE_LENGTH)) {
             //printf("%s %d\n", &instruction_string, current_address);
-            push_labels(labels, instruction_string, 0, current_address, &input_buf_ptr, &label_idx, LABEL_NUMBER);
+            push_labels(LABELS_SIZE, labels, instruction_string, 0, current_address, &input_buf_ptr, &label_idx, LABEL_NUMBER);
         }
 
         // if instruction_string in opcode list, then increment address by 1 (PC indexes instructions by 32-bit words)
+        //printf("%p\n", j_type_inst[3]);
         if (check_string_in_strings(NOP_ARR_LENGTH, nop_type_inst, instruction_string) != -1) {
             current_address += 4;
         } else if (check_string_in_strings(R_ARR_LENGTH, r_type_inst, instruction_string) != -1) {
