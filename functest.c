@@ -20,6 +20,6 @@ void main() {
 	*test_char_ptr = 4;
 
 	int a;
-	func_a(1, 2);
+	func_a(1, 3);
 	
 }
