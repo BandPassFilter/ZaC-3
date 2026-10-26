@@ -56,38 +56,16 @@ void print_hex_byte(char x) {
 void print_hex(int x) {
     char temp;
     char temp_b;
-    temp = x >> 12;
-    temp = temp & 15;
-    temp_b = temp;
-    temp = temp_b + 48;
-    if (temp_b > 9) {
-        temp = temp_b + 55;
+    for (int i = 16; i > 0; i = i - 4) {
+        temp = x >> (i - 4);
+        temp = temp & 15;
+        temp_b = temp;
+        temp = temp_b + 48;
+        if (temp_b > 9) {
+            temp = temp_b + 55;
+        }
+        print_char(temp);
     }
-    print_char(temp);
-    temp = x >> 8;
-    temp = temp & 15;
-    temp_b = temp;
-    temp = temp_b + 48;
-    if (temp_b > 9) {
-        temp = temp_b + 55;
-    }
-    print_char(temp);
-    temp = x >> 4;
-    temp = temp & 15;
-    temp_b = temp;
-    temp = temp_b + 48;
-    if (temp_b > 9) {
-        temp = temp_b + 55;
-    }
-    print_char(temp);
-    temp = x;
-    temp = temp & 15;
-    temp_b = temp;
-    temp = temp_b + 48;
-    if (temp_b > 9) {
-        temp = temp_b + 55;
-    }
-    print_char(temp);
 }
 
 void print_int_hex(int x) {
@@ -150,34 +128,30 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
     shell_buf_offset = shell_buf_offset + 1;
     int input_a = 0;
     char current_char = *(shell_buf + shell_buf_offset);
-    input_a = get_hex_int(*(shell_buf + shell_buf_offset)) << 12;
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 8);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 4);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)));
-    shell_buf_offset = shell_buf_offset + 1;
+
+    for (int i = 16; i > 0; i = i - 4) {
+        input_a = input_a + get_hex_int(*(shell_buf + shell_buf_offset)) << (i - 4);
+        shell_buf_offset = shell_buf_offset + 1;
+    }
+
     //print_hex(input_a);
+    shell_buf_offset = shell_buf_offset + 1;
     int input_b = 0;
-    shell_buf_offset = shell_buf_offset + 1;
-    input_b = get_hex_int(*(shell_buf + shell_buf_offset)) << 12;
-    shell_buf_offset = shell_buf_offset + 1;
-    input_b = input_b + (get_hex_int(*(shell_buf + shell_buf_offset)) << 8);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_b = input_b + (get_hex_int(*(shell_buf + shell_buf_offset)) << 4);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_b = input_b + (get_hex_int(*(shell_buf + shell_buf_offset)));
+    for (i = 16; i > 0; i = i - 4) {
+        input_b = input_b + get_hex_int(*(shell_buf + shell_buf_offset)) << (i - 4);
+        shell_buf_offset = shell_buf_offset + 1;
+    }
+
     //print_char(32);
     //print_hex(input_b);
     //print(cr);
     char *dump_ptr = input_a;
     int col_ctr = 0;
     while (dump_ptr < input_b) {
-        if ((col_ctr - 1) & 7 == 7) {
+        if (((col_ctr - 1) & 7) == 7) {
             print_char(32);
         }
-        if ((col_ctr - 1) & 15 == 15) {
+        if (((col_ctr - 1) & 15) == 15) {
             print(cr);
             print_hex(dump_ptr);
             print_char(58);
@@ -189,20 +163,18 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
         print_char(32);
         col_ctr = col_ctr + 1;
         dump_ptr = dump_ptr + 1;
-        if (dump_ptr > input_a) {
-            if ((col_ctr - 1) & 15 == 15) {
-                //print(cr);
-                col_ctr = 0;
-                while (col_ctr < 16) {
-                    char dump_char = *(dump_ptr + col_ctr - 16);
-                    if (dump_char > 31 && dump_char < 127) {
-                        print_char(dump_char);
-                    }
-                    if (dump_char < 32 || dump_char > 126) {
-                        print_char(46);
-                    }
-                    col_ctr = col_ctr + 1;
+        if ((dump_ptr > input_a) & (((col_ctr - 1) & 15) == 15)) {
+            //print(cr);
+            col_ctr = 0;
+            while (col_ctr < 16) {
+                char dump_char = *(dump_ptr + col_ctr - 16);
+                if (dump_char > 31 && dump_char < 127) {
+                    print_char(dump_char);
                 }
+                if (dump_char < 32 || dump_char > 126) {
+                    print_char(46);
+                }
+                col_ctr = col_ctr + 1;
             }
         }
     }
@@ -217,22 +189,12 @@ void write_command(char *shell_buf, int shell_buf_offset) {
     int input_a = 0;
     char current_char = *(shell_buf + shell_buf_offset);
     // 32-bit address input
-    input_a = get_hex_int(*(shell_buf + shell_buf_offset)) << 28;
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 24);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 20);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 16);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 12);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 8);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)) << 4);
-    shell_buf_offset = shell_buf_offset + 1;
-    input_a = input_a + (get_hex_int(*(shell_buf + shell_buf_offset)));
-    shell_buf_offset = shell_buf_offset + 1;
+
+    for (int i = 32; i > 0; i = i - 4) {
+        input_a = input_a + get_hex_int(*(shell_buf + shell_buf_offset)) << (i - 4);
+        shell_buf_offset = shell_buf_offset + 1;
+    }
+
     char *write_ptr = input_a;
     int display_ptr = write_ptr;
     char write_value = 0;
@@ -368,38 +330,18 @@ void print_bcd(int x) {
     if (temp_print == 48 && not_leading_zero == 1) {
         print_char(temp_print);
     }
-    temp_print = (bcd_a >> 12) + 48;
-    if (temp_print != 48) {
-        not_leading_zero = 1;
-        print_char(temp_print);
+
+    for (i = 16; i > 0; i = i - 4) {
+        temp_print = ((bcd_a >> (i - 4)) & 15) + 48;
+        if (temp_print != 48) {
+            not_leading_zero = 1;
+            print_char(temp_print);
+        }
+        if (temp_print == 48 && not_leading_zero == 1) {
+            print_char(temp_print);
+        }
     }
-    if (temp_print == 48 && not_leading_zero == 1) {
-        print_char(temp_print);
-    }
-    temp_print = ((bcd_a >> 8) & 15) + 48;
-    if (temp_print != 48) {
-        not_leading_zero = 1;
-        print_char(temp_print);
-    }
-    if (temp_print == 48 && not_leading_zero == 1) {
-        print_char(temp_print);
-    }
-    temp_print = ((bcd_a >> 4) & 15) + 48;
-    if (temp_print != 48) {
-        not_leading_zero = 1;
-        print_char(temp_print);
-    }
-    if (temp_print == 48 && not_leading_zero == 1) {
-        print_char(temp_print);
-    }
-    temp_print = (bcd_a & 15) + 48;
-    if (temp_print != 48) {
-        not_leading_zero = 1;
-        print_char(temp_print);
-    }
-    if (temp_print == 48 && not_leading_zero == 1) {
-        print_char(temp_print);
-    }
+
 }
 
 void cr() {

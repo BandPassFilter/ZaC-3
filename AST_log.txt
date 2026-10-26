@@ -18,7 +18,7 @@
 						* Operator ~* Dereference
 							* Identifier print_char_uart
 						* Identifier print_char_value
-	* FunctionDeclaration char Local
+	* FunctionDeclaration char
 		* Function get_char
 			* Parameters
 			* Body
@@ -29,8 +29,8 @@
 						* Operator ~* Dereference
 							* Identifier get_char_uart
 						* Literal32 1245184
-				* Return Local
-					* Operator ~* Dereference
+				* Return
+					* Operator ~* Dereference Local
 						* Identifier get_char_uart
 	* FunctionDeclaration int
 		* Function get_hex_int
@@ -45,23 +45,23 @@
 						* Operator ~* Dereference
 							* Identifier get_hex_int_hex_to_dec
 						* String string_0: "0123456789       :;<=>?" Static
-				* Declaration int Local
+				* Declaration int
 					* Identifier get_hex_int_number Local
 					* Operator =
 						* Identifier get_hex_int_number
 						* Operator -
 							* Operator ~* Dereference
-								* Operator - Local
+								* Operator -
 									* Operator +
-										* Identifier get_hex_int_hex_to_dec
+										* Identifier get_hex_int_hex_to_dec Local
 										* Identifier get_hex_int_c
 									* Literal 48
-							* Literal 48 Local
+							* Literal 48
 				* Return
 					* Identifier get_hex_int_number
 	* FunctionDeclaration void
 		* Function print
-			* Parameters
+			* Parameters Local
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier print_str Local
@@ -72,48 +72,48 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier print_uart
-						* Literal32 1245184 Local
+						* Literal32 1245184
 				* Declaration char
 					* Identifier print_current_char Local
 				* While
 					* Operator >
-						* Operator ~* Dereference
+						* Operator ~* Dereference Local
 							* Identifier print_str
 						* Literal 0
 					* Body
-						* SetVariable
+						* SetVariable Local
 							* Operator =
 								* Identifier print_current_char
-								* Operator ~* Dereference Local
+								* Operator ~* Dereference
 									* Identifier print_str
 						* FunctionCall print_char
 							* CallParameters
 								* Identifier print_current_char
 						* SetVariable
 							* Operator =
-								* Identifier print_str Local
+								* Identifier print_str
 								* Operator +
 									* Identifier print_str
 									* Literal 1
 	* FunctionDeclaration void
 		* Function print_hex_byte
 			* Parameters
-				* Declaration char
+				* Declaration char Local
 					* Identifier print_hex_byte_x Local
 			* Body
 				* Declaration char
 					* Identifier print_hex_byte_temp Local
-				* Declaration char Local
+				* Declaration char
 					* Identifier print_hex_byte_temp_b Local
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
-						* Operator >> Local
+						* Operator >>
 							* Identifier print_hex_byte_x
 							* Literal 4
 				* SetVariable
 					* Operator =
-						* Identifier print_hex_byte_temp Local
+						* Identifier print_hex_byte_temp
 						* Operator &
 							* Identifier print_hex_byte_temp
 							* Literal 15
@@ -121,43 +121,9 @@
 					* Operator =
 						* Identifier print_hex_byte_temp_b
 						* Identifier print_hex_byte_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_byte_temp
-						* Operator + Local
-							* Identifier print_hex_byte_temp_b
-							* Literal 48
-				* If
-					* Operator >
-						* Identifier print_hex_byte_temp_b
-						* Literal 9
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_hex_byte_temp Local
-								* Operator +
-									* Identifier print_hex_byte_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_byte_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_byte_temp Local
-						* Identifier print_hex_byte_x
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_byte_temp
-						* Operator &
-							* Identifier print_hex_byte_temp
-							* Literal 15
 				* SetVariable Local
 					* Operator =
-						* Identifier print_hex_byte_temp_b Local
-						* Identifier print_hex_byte_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_byte_temp
+						* Identifier print_hex_byte_temp Local
 						* Operator +
 							* Identifier print_hex_byte_temp_b
 							* Literal 48
@@ -172,12 +138,46 @@
 								* Operator +
 									* Identifier print_hex_byte_temp_b
 									* Literal 55 Local
+				* FunctionCall print_char Local
+					* CallParameters
+						* Identifier print_hex_byte_temp
+				* SetVariable Local
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Identifier print_hex_byte_x
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Operator &
+							* Identifier print_hex_byte_temp
+							* Literal 15
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp_b
+						* Identifier print_hex_byte_temp
+				* SetVariable
+					* Operator =
+						* Identifier print_hex_byte_temp
+						* Operator +
+							* Identifier print_hex_byte_temp_b
+							* Literal 48
+				* If
+					* Operator >
+						* Identifier print_hex_byte_temp_b
+						* Literal 9
+					* Body Local
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_byte_temp
+								* Operator +
+									* Identifier print_hex_byte_temp_b
+									* Literal 55
 				* FunctionCall print_char
 					* CallParameters
 						* Identifier print_hex_byte_temp
 	* FunctionDeclaration void
 		* Function print_hex
-			* Parameters
+			* Parameters Local
 				* Declaration int
 					* Identifier print_hex_x Local
 			* Body
@@ -185,148 +185,59 @@
 					* Identifier print_hex_temp Local
 				* Declaration char
 					* Identifier print_hex_temp_b Local
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator >>
-							* Identifier print_hex_x
-							* Literal 12
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
-				* If
+				* For
+					* Declaration int
+						* Identifier print_hex_i Local
+						* Operator =
+							* Identifier print_hex_i
+							* Literal 16
 					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_hex_temp
-								* Operator +
-									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
-				* SetVariable
+						* Identifier print_hex_i
+						* Literal 0
 					* Operator =
-						* Identifier print_hex_temp
-						* Operator >>
-							* Identifier print_hex_x
-							* Literal 8
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
-				* If
-					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_hex_temp
-								* Operator +
-									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator >>
-							* Identifier print_hex_x
+						* Identifier print_hex_i
+						* Operator -
+							* Identifier print_hex_i
 							* Literal 4
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
-				* If
-					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
 					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_temp
+								* Operator >>
+									* Identifier print_hex_x
+									* Operator -
+										* Identifier print_hex_i
+										* Literal 4
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_temp
+								* Operator &
+									* Identifier print_hex_temp
+									* Literal 15
+						* SetVariable
+							* Operator =
+								* Identifier print_hex_temp_b
+								* Identifier print_hex_temp
 						* SetVariable
 							* Operator =
 								* Identifier print_hex_temp
 								* Operator +
 									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Identifier print_hex_x
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
-				* If
-					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
-					* Body
-						* SetVariable
-							* Operator =
+									* Literal 48
+						* If
+							* Operator >
+								* Identifier print_hex_temp_b
+								* Literal 9
+							* Body
+								* SetVariable
+									* Operator =
+										* Identifier print_hex_temp
+										* Operator +
+											* Identifier print_hex_temp_b
+											* Literal 55
+						* FunctionCall print_char
+							* CallParameters
 								* Identifier print_hex_temp
-								* Operator +
-									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
 	* FunctionDeclaration void
 		* Function print_int_hex
 			* Parameters
@@ -605,72 +516,42 @@
 							* Operator +
 								* Identifier dump_command_shell_buf
 								* Identifier dump_command_shell_buf_offset
-				* SetVariable
+				* For
+					* Declaration int
+						* Identifier dump_command_i Local
+						* Operator =
+							* Identifier dump_command_i
+							* Literal 16
+					* Operator >
+						* Identifier dump_command_i
+						* Literal 0
 					* Operator =
-						* Identifier dump_command_input_a
-						* Operator <<
-							* FunctionCall get_hex_int
-								* CallParameters
-									* Operator ~* Dereference
-										* Operator +
-											* Identifier dump_command_shell_buf
-											* Identifier dump_command_shell_buf_offset
-							* Literal 12
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_input_a
-						* Operator +
-							* Identifier dump_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier dump_command_shell_buf
-												* Identifier dump_command_shell_buf_offset
-								* Literal 8
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_input_a
-						* Operator +
-							* Identifier dump_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier dump_command_shell_buf
-												* Identifier dump_command_shell_buf_offset
-								* Literal 4
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_input_a
-						* Operator +
-							* Identifier dump_command_input_a
-							* FunctionCall get_hex_int
-								* CallParameters
-									* Operator ~* Dereference
-										* Operator +
-											* Identifier dump_command_shell_buf
-											* Identifier dump_command_shell_buf_offset
+						* Identifier dump_command_i
+						* Operator -
+							* Identifier dump_command_i
+							* Literal 4
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier dump_command_input_a
+								* Operator +
+									* Identifier dump_command_input_a
+									* Operator <<
+										* FunctionCall get_hex_int
+											* CallParameters
+												* Operator ~* Dereference
+													* Operator +
+														* Identifier dump_command_shell_buf
+														* Identifier dump_command_shell_buf_offset
+										* Operator -
+											* Identifier dump_command_i
+											* Literal 4
+						* SetVariable
+							* Operator =
+								* Identifier dump_command_shell_buf_offset
+								* Operator +
+									* Identifier dump_command_shell_buf_offset
+									* Literal 1
 				* SetVariable
 					* Operator =
 						* Identifier dump_command_shell_buf_offset
@@ -682,78 +563,41 @@
 					* Operator =
 						* Identifier dump_command_input_b
 						* Literal 0
-				* SetVariable
+				* For
+					* SetVariable
+						* Operator =
+							* Identifier dump_command_i
+							* Literal 16
+					* Operator >
+						* Identifier dump_command_i
+						* Literal 0
 					* Operator =
-						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_input_b
-						* Operator <<
-							* FunctionCall get_hex_int
-								* CallParameters
-									* Operator ~* Dereference
-										* Operator +
-											* Identifier dump_command_shell_buf
-											* Identifier dump_command_shell_buf_offset
-							* Literal 12
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_input_b
-						* Operator +
-							* Identifier dump_command_input_b
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier dump_command_shell_buf
-												* Identifier dump_command_shell_buf_offset
-								* Literal 8
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_input_b
-						* Operator +
-							* Identifier dump_command_input_b
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier dump_command_shell_buf
-												* Identifier dump_command_shell_buf_offset
-								* Literal 4
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier dump_command_input_b
-						* Operator +
-							* Identifier dump_command_input_b
-							* FunctionCall get_hex_int
-								* CallParameters
-									* Operator ~* Dereference
-										* Operator +
-											* Identifier dump_command_shell_buf
-											* Identifier dump_command_shell_buf_offset
+						* Identifier dump_command_i
+						* Operator -
+							* Identifier dump_command_i
+							* Literal 4
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier dump_command_input_b
+								* Operator +
+									* Identifier dump_command_input_b
+									* Operator <<
+										* FunctionCall get_hex_int
+											* CallParameters
+												* Operator ~* Dereference
+													* Operator +
+														* Identifier dump_command_shell_buf
+														* Identifier dump_command_shell_buf_offset
+										* Operator -
+											* Identifier dump_command_i
+											* Literal 4
+						* SetVariable
+							* Operator =
+								* Identifier dump_command_shell_buf_offset
+								* Operator +
+									* Identifier dump_command_shell_buf_offset
+									* Literal 1
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier dump_command_dump_ptr Local
@@ -827,68 +671,67 @@
 									* Identifier dump_command_dump_ptr
 									* Literal 1
 						* If
-							* Operator >
-								* Identifier dump_command_dump_ptr
-								* Identifier dump_command_input_a
-							* Body
-								* If
-									* Operator ==
-										* Operator &
-											* Operator -
-												* Identifier dump_command_col_ctr
-												* Literal 1
-											* Literal 15
+							* Operator &
+								* Operator >
+									* Identifier dump_command_dump_ptr
+									* Identifier dump_command_input_a
+								* Operator ==
+									* Operator &
+										* Operator -
+											* Identifier dump_command_col_ctr
+											* Literal 1
 										* Literal 15
+									* Literal 15
+							* Body
+								* SetVariable
+									* Operator =
+										* Identifier dump_command_col_ctr
+										* Literal 0
+								* While
+									* Operator <
+										* Identifier dump_command_col_ctr
+										* Literal 16
 									* Body
+										* Declaration char
+											* Identifier dump_command_dump_char Local
+											* Operator =
+												* Identifier dump_command_dump_char
+												* Operator ~* Dereference
+													* Operator -
+														* Operator +
+															* Identifier dump_command_dump_ptr
+															* Identifier dump_command_col_ctr
+														* Literal 16
+										* If
+											* Operator &&
+												* Operator >
+													* Identifier dump_command_dump_char
+													* Literal 31
+												* Operator <
+													* Identifier dump_command_dump_char
+													* Literal 127
+											* Body
+												* FunctionCall print_char
+													* CallParameters
+														* Identifier dump_command_dump_char
+										* If
+											* Operator ||
+												* Operator <
+													* Identifier dump_command_dump_char
+													* Literal 32
+												* Operator >
+													* Identifier dump_command_dump_char
+													* Literal 126
+											* Body
+												* FunctionCall print_char
+													* CallParameters
+														* Literal 46
 										* SetVariable
 											* Operator =
 												* Identifier dump_command_col_ctr
-												* Literal 0
-										* While
-											* Operator <
-												* Identifier dump_command_col_ctr
-												* Literal 16
-											* Body
-												* Declaration char
-													* Identifier dump_command_dump_char Local
-													* Operator =
-														* Identifier dump_command_dump_char
-														* Operator ~* Dereference
-															* Operator -
-																* Operator +
-																	* Identifier dump_command_dump_ptr
-																	* Identifier dump_command_col_ctr
-																* Literal 16
-												* If
-													* Operator &&
-														* Operator >
-															* Identifier dump_command_dump_char
-															* Literal 31
-														* Operator <
-															* Identifier dump_command_dump_char
-															* Literal 127
-													* Body
-														* FunctionCall print_char
-															* CallParameters
-																* Identifier dump_command_dump_char
-												* If
-													* Operator ||
-														* Operator <
-															* Identifier dump_command_dump_char
-															* Literal 32
-														* Operator >
-															* Identifier dump_command_dump_char
-															* Literal 126
-													* Body
-														* FunctionCall print_char
-															* CallParameters
-																* Literal 46
-												* SetVariable
-													* Operator =
-														* Identifier dump_command_col_ctr
-														* Operator +
-															* Identifier dump_command_col_ctr
-															* Literal 1
+												* Operator +
+													* Identifier dump_command_col_ctr
+													* Literal 1
 				* FunctionCall print
 					* CallParameters
 						* Identifier dump_command_cr
@@ -937,154 +780,42 @@
 							* Operator +
 								* Identifier write_command_shell_buf
 								* Identifier write_command_shell_buf_offset
-				* SetVariable
+				* For
+					* Declaration int
+						* Identifier write_command_i Local
+						* Operator =
+							* Identifier write_command_i
+							* Literal 32
+					* Operator >
+						* Identifier write_command_i
+						* Literal 0
 					* Operator =
-						* Identifier write_command_input_a
-						* Operator <<
-							* FunctionCall get_hex_int
-								* CallParameters
-									* Operator ~* Dereference
-										* Operator +
-											* Identifier write_command_shell_buf
-											* Identifier write_command_shell_buf_offset
-							* Literal 28
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier write_command_input_a
-						* Operator +
-							* Identifier write_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier write_command_shell_buf
-												* Identifier write_command_shell_buf_offset
-								* Literal 24
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier write_command_input_a
-						* Operator +
-							* Identifier write_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier write_command_shell_buf
-												* Identifier write_command_shell_buf_offset
-								* Literal 20
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier write_command_input_a
-						* Operator +
-							* Identifier write_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier write_command_shell_buf
-												* Identifier write_command_shell_buf_offset
-								* Literal 16
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier write_command_input_a
-						* Operator +
-							* Identifier write_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier write_command_shell_buf
-												* Identifier write_command_shell_buf_offset
-								* Literal 12
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier write_command_input_a
-						* Operator +
-							* Identifier write_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier write_command_shell_buf
-												* Identifier write_command_shell_buf_offset
-								* Literal 8
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier write_command_input_a
-						* Operator +
-							* Identifier write_command_input_a
-							* Operator <<
-								* FunctionCall get_hex_int
-									* CallParameters
-										* Operator ~* Dereference
-											* Operator +
-												* Identifier write_command_shell_buf
-												* Identifier write_command_shell_buf_offset
-								* Literal 4
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier write_command_input_a
-						* Operator +
-							* Identifier write_command_input_a
-							* FunctionCall get_hex_int
-								* CallParameters
-									* Operator ~* Dereference
-										* Operator +
-											* Identifier write_command_shell_buf
-											* Identifier write_command_shell_buf_offset
-				* SetVariable
-					* Operator =
-						* Identifier write_command_shell_buf_offset
-						* Operator +
-							* Identifier write_command_shell_buf_offset
-							* Literal 1
+						* Identifier write_command_i
+						* Operator -
+							* Identifier write_command_i
+							* Literal 4
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier write_command_input_a
+								* Operator +
+									* Identifier write_command_input_a
+									* Operator <<
+										* FunctionCall get_hex_int
+											* CallParameters
+												* Operator ~* Dereference
+													* Operator +
+														* Identifier write_command_shell_buf
+														* Identifier write_command_shell_buf_offset
+										* Operator -
+											* Identifier write_command_i
+											* Literal 4
+						* SetVariable
+							* Operator =
+								* Identifier write_command_shell_buf_offset
+								* Operator +
+									* Identifier write_command_shell_buf_offset
+									* Literal 1
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier write_command_write_ptr Local
@@ -1576,149 +1307,67 @@
 							* CallParameters
 								* Identifier print_bcd_temp_print
 				* If
-					* Operator ==
-						* Operator &&
-							* Operator ==
-								* Identifier print_bcd_temp_print
-								* Literal 48
+					* Operator &&
+						* Operator ==
+							* Identifier print_bcd_temp_print
+							* Literal 48
+						* Operator ==
 							* Identifier print_bcd_not_leading_zero
-						* Literal 1
+							* Literal 1
 					* Body
 						* FunctionCall print_char
 							* CallParameters
 								* Identifier print_bcd_temp_print
-				* SetVariable
+				* For
+					* SetVariable
+						* Operator =
+							* Identifier print_bcd_i
+							* Literal 16
+					* Operator >
+						* Identifier print_bcd_i
+						* Literal 0
 					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator >>
-								* Identifier print_bcd_bcd_a
-								* Literal 12
-							* Literal 48
-				* If
-					* Operator !=
-						* Identifier print_bcd_temp_print
-						* Literal 48
+						* Identifier print_bcd_i
+						* Operator -
+							* Identifier print_bcd_i
+							* Literal 4
 					* Body
 						* SetVariable
 							* Operator =
-								* Identifier print_bcd_not_leading_zero
-								* Literal 1
-						* FunctionCall print_char
-							* CallParameters
 								* Identifier print_bcd_temp_print
-				* If
-					* Operator ==
-						* Operator &&
-							* Operator ==
-								* Identifier print_bcd_temp_print
-								* Literal 48
-							* Identifier print_bcd_not_leading_zero
-						* Literal 1
-					* Body
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_bcd_temp_print
-				* SetVariable
-					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator &
-								* Operator >>
-									* Identifier print_bcd_bcd_a
-									* Literal 8
-								* Literal 15
-							* Literal 48
-				* If
-					* Operator !=
-						* Identifier print_bcd_temp_print
-						* Literal 48
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_bcd_not_leading_zero
-								* Literal 1
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_bcd_temp_print
-				* If
-					* Operator ==
-						* Operator &&
-							* Operator ==
+								* Operator +
+									* Operator &
+										* Operator >>
+											* Identifier print_bcd_bcd_a
+											* Operator -
+												* Identifier print_bcd_i
+												* Literal 4
+										* Literal 15
+									* Literal 48
+						* If Local
+							* Operator !=
 								* Identifier print_bcd_temp_print
 								* Literal 48
-							* Identifier print_bcd_not_leading_zero
-						* Literal 1
-					* Body
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_bcd_temp_print
-				* SetVariable
-					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator &
-								* Operator >>
-									* Identifier print_bcd_bcd_a
-									* Literal 4
-								* Literal 15
-							* Literal 48
-				* If
-					* Operator !=
-						* Identifier print_bcd_temp_print
-						* Literal 48
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_bcd_not_leading_zero
-								* Literal 1
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_bcd_temp_print
-				* If
-					* Operator ==
-						* Operator &&
-							* Operator ==
-								* Identifier print_bcd_temp_print
-								* Literal 48
-							* Identifier print_bcd_not_leading_zero
-						* Literal 1
-					* Body
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_bcd_temp_print
-				* SetVariable
-					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator &
-								* Identifier print_bcd_bcd_a
-								* Literal 15
-							* Literal 48
-				* If
-					* Operator !=
-						* Identifier print_bcd_temp_print
-						* Literal 48
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_bcd_not_leading_zero
-								* Literal 1
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_bcd_temp_print
-				* If
-					* Operator ==
-						* Operator &&
-							* Operator ==
-								* Identifier print_bcd_temp_print
-								* Literal 48
-							* Identifier print_bcd_not_leading_zero
-						* Literal 1
-					* Body
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_bcd_temp_print
+							* Body
+								* SetVariable
+									* Operator =
+										* Identifier print_bcd_not_leading_zero
+										* Literal 1
+								* FunctionCall print_char
+									* CallParameters
+										* Identifier print_bcd_temp_print
+						* If
+							* Operator &&
+								* Operator ==
+									* Identifier print_bcd_temp_print
+									* Literal 48
+								* Operator ==
+									* Identifier print_bcd_not_leading_zero
+									* Literal 1
+							* Body
+								* FunctionCall print_char
+									* CallParameters
+										* Identifier print_bcd_temp_print
 	* FunctionDeclaration void
 		* Function cr
 			* Parameters

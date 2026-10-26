@@ -329,7 +329,7 @@ int getPrecedence (char *operator) {
     } else if (strcmp(operator, "~&") == 0) {
         return 4;
     } else if (strcmp(operator, "==") == 0) {
-        return 0;
+        return 1;
     } else if (strcmp(operator, "<=") == 0) {
         return 1;
     } else if (strcmp(operator, ">=") == 0) {
@@ -339,21 +339,21 @@ int getPrecedence (char *operator) {
     } else if (strcmp(operator, ">") == 0) {
         return 1;
     } else if (strcmp(operator, "<<") == 0) {
-        return 1;
+        return 5;
     } else if (strcmp(operator, ">>") == 0) {
-        return 1;
+        return 5;
     } else if (strcmp(operator, "!=") == 0) {
-        return 0;
-    } else if (strcmp(operator, "^") == 0) {
         return 1;
+    } else if (strcmp(operator, "^") == 0) {
+        return 2;
     } else if (strcmp(operator, "-") == 0) {
-        return 2;
+        return 3;
     } else if (strcmp(operator, "+") == 0) {
-        return 2;
+        return 3;
     } else if (strcmp(operator, "*") == 0) {
-        return 3;
+        return 4;
     } else if (strcmp(operator, "/") == 0) {
-        return 3;
+        return 4;
     } else if (strcmp(operator, "&") == 0) {
         return 0;
     } else if (strcmp(operator, "&&") == 0) {
