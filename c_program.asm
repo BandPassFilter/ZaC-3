@@ -67,7 +67,7 @@ subi sp, sp, 8
 add fp, r0, sp
 .asciiz string_0 = "0123456789       :;<=>?"
 addi r5, r0, string_0
-lui r5, 4 ;GET_32
+lui r5, _string_hi_adrs ;GET_32
 movi [fp + 0], r5 ;SET
 
 movi r5, [fp + 0] ;GET
@@ -844,7 +844,7 @@ jmp 10_start
 
 .asciiz string_1 = ">"
 addi r4, r0, string_1
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 4], r4 ;SET
 
 subi sp, sp, 4
@@ -1063,22 +1063,22 @@ subi sp, sp, 44
 add fp, r0, sp
 .asciiz string_2 = "\n"
 addi r5, r0, string_2
-lui r5, 4 ;GET_32
+lui r5, _string_hi_adrs ;GET_32
 movi [fp + 0], r5 ;SET
 
 .asciiz string_3 = " "
 addi r5, r0, string_3
-lui r5, 4 ;GET_32
+lui r5, _string_hi_adrs ;GET_32
 movi [fp + 4], r5 ;SET
 
 .asciiz string_4 = "dump command detected\n"
 addi r5, r0, string_4
-lui r5, 4 ;GET_32
+lui r5, _string_hi_adrs ;GET_32
 movi [fp + 8], r5 ;SET
 
 .asciiz string_5 = "shell_buf_offset: "
 addi r5, r0, string_5
-lui r5, 4 ;GET_32
+lui r5, _string_hi_adrs ;GET_32
 movi [fp + 12], r5 ;SET
 
 addi r5, r0, 21568 ;GET_32
@@ -1904,12 +1904,12 @@ subi sp, sp, 44
 add fp, r0, sp
 .asciiz string_6 = "write command detected\n"
 addi r4, r0, string_6
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 0], r4 ;SET
 
 .asciiz string_7 = "\n"
 addi r4, r0, string_7
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 4], r4 ;SET
 
 subi sp, sp, 4
@@ -2346,7 +2346,7 @@ mvbi [fp + 36], r4 ;SET
 
 .asciiz string_8 = "0123456789       :;<=>?"
 addi r4, r0, string_8
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 40], r4 ;SET
 
 21_start:
@@ -2646,7 +2646,7 @@ subi sp, sp, 4
 add fp, r0, sp
 .asciiz string_9 = "run command detected\n"
 addi r4, r0, string_9
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 0], r4 ;SET
 
 subi sp, sp, 4
@@ -3964,27 +3964,27 @@ subi sp, sp, 76
 add fp, r0, sp
 .asciiz string_10 = "\nZaC-3 OS\n"
 addi r4, r0, string_10
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 0], r4 ;SET
 
 .asciiz string_11 = "dump"
 addi r4, r0, string_11
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 4], r4 ;SET
 
 .asciiz string_12 = "write"
 addi r4, r0, string_12
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 8], r4 ;SET
 
 .asciiz string_13 = "run"
 addi r4, r0, string_13
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 12], r4 ;SET
 
 .asciiz string_14 = "primes"
 addi r4, r0, string_14
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 16], r4 ;SET
 
 subi sp, sp, 4
@@ -4005,17 +4005,17 @@ add r4, r0, r1 ;RETURN_SET
 
 .asciiz string_15 = "Typed string is: "
 addi r4, r0, string_15
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 20], r4 ;SET
 
 .asciiz string_16 = "Invalid command\n"
 addi r4, r0, string_16
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 24], r4 ;SET
 
 .asciiz string_17 = "\ncarriage return\n"
 addi r4, r0, string_17
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 28], r4 ;SET
 
 addi r4, r0, 6784 ;GET_32
@@ -4024,7 +4024,7 @@ movi [fp + 32], r4 ;SET
 
 .asciiz string_18 = "\n"
 addi r4, r0, string_18
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 36], r4 ;SET
 
 addi r4, r0, 32 ;GET
@@ -4582,7 +4582,7 @@ jmp 59_start
 
 .asciiz string_19 = "end\n"
 addi r4, r0, string_19
-lui r4, 4 ;GET_32
+lui r4, _string_hi_adrs ;GET_32
 movi [fp + 72], r4 ;SET
 
 subi sp, sp, 4

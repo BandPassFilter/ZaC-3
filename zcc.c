@@ -182,12 +182,12 @@ void pause() {
 }
 
 
-#define KEYWORDS_SIZE 15
+#define KEYWORDS_SIZE 16
 #define SEPARATORS_SIZE 6
 #define OPERATORS_SIZE 24
 #define WHITE_SPACE_SIZE 3
 #define MODIFIERS_SIZE 4
-char *KEYWORDS[KEYWORDS_SIZE] = {"void", "int", "char", "uint8_t", "uint16_t", "int8_t", "int16_t", "static", "if", "while", "for", "else", "asm", "struct", "return"};
+char *KEYWORDS[KEYWORDS_SIZE] = {"void", "int", "char", "uint8_t", "uint16_t", "int8_t", "int16_t", "static", "if", "while", "for", "else", "asm", "struct", "return", "asm"};
 char *SEPARATORS[SEPARATORS_SIZE] = {"{", "}", "(", ")", ";", ","};
 char *OPERATORS[OPERATORS_SIZE] = {"++", "--", "==", ">=", "<=", "!=", "&&", "<<", ">>", "||", "->", ".", "+", "-", "<", "*", "/", ">", "!", "=", "&", "|", "[", "]"};
 char *WHITE_SPACE[WHITE_SPACE_SIZE] = {" ", "\n", "\t"};
@@ -3036,7 +3036,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         char buffer[300] = {0};
         sprintf(buffer, ".asciiz string_%d = \"%s\"\n", string_number++, current_node->ast_string);
         sprintf(buffer+strlen(buffer), "addi r%d, r0, %s\n", extra_stuff->operator_stack_offset, current_node->ast_string_name);
-        sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, 4);
+        sprintf(buffer+strlen(buffer), "lui r%d, _string_hi_adrs ;GET_32\n", extra_stuff->operator_stack_offset);
         asm_list->append(asm_list, buffer);
         extra_stuff->operator_stack_offset += 1;
     } else if (current_node->type == AST_RETURN) {
