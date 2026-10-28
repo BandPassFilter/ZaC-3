@@ -1,3 +1,5 @@
+#PROGRAM_START 131072
+
 void print_char(char x) {
     char *uart = 1245184;
     *uart = x;

@@ -5,6 +5,10 @@
 //   copy-pasting of HEX files into the terminal if you want to quickly load programs and data.
 //
 // - Change the "exit" key from write command from an enter to esc.
+//
+// - Implement run command, this would use my C-compiler specific "run" keyword which sets the program counter to the specified address.
+//   Normally in modern C you would use a function pointer, but I don't have function pointers implemented in my C compiler, so I use this
+//   method instead of just making my own special keywords.
 
 void print_char(char value) {
     char *uart = 1245184;
@@ -163,7 +167,7 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
         print_char(32);
         col_ctr = col_ctr + 1;
         dump_ptr = dump_ptr + 1;
-        if ((dump_ptr > input_a) & (((col_ctr - 1) & 15) == 15)) {
+        if ((dump_ptr > input_a) && (((col_ctr - 1) & 15) == 15)) {
             //print(cr);
             col_ctr = 0;
             while (col_ctr < 16) {
@@ -201,6 +205,7 @@ void write_command(char *shell_buf, int shell_buf_offset) {
     int run = 1;
     char input_char_a = 0;
     char input_char_b = 0;
+    char input_char_c = 0;
     char *hex_to_dec = "0123456789       :;<=>?";
     while (run == 1) {
         display_ptr = write_ptr;
@@ -216,12 +221,13 @@ void write_command(char *shell_buf, int shell_buf_offset) {
         if (run == 1) {
             print_char(input_char_a);
             input_char_b = get_char();
+            print_char(input_char_b);
         }
-        if (input_char_b == 13) {
+        input_char_c = get_char();
+        if (input_char_c == 13) {
             run = 0;
         }
         if (run == 1) {
-            print_char(input_char_b);
             write_value = 0;
             write_value = get_hex_int(input_char_a) << 4;
             write_value = write_value + get_hex_int(input_char_b);
@@ -235,9 +241,11 @@ void write_command(char *shell_buf, int shell_buf_offset) {
     }
 }
 
-void run_command() {
+void run_command(char *shell_buf, int shell_buf_offset) {
     char *run_str = "run command detected\n";
+    int run_address = 131072;
     print(run_str);
+    $run run_address;
 }
 
 int multiply(int a, int b) {

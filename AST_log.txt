@@ -23,14 +23,14 @@
 			* Parameters
 			* Body
 				* Declaration char
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier get_char_uart Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier get_char_uart
-						* Literal32 1245184
+						* Literal32 1245184 Local
 				* Return
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier get_char_uart
 	* FunctionDeclaration int
 		* Function get_hex_int
@@ -39,9 +39,9 @@
 					* Identifier get_hex_int_c Local
 			* Body
 				* Declaration char
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier get_hex_int_hex_to_dec Local
-					* Operator =
+					* Operator = Local
 						* Operator ~* Dereference
 							* Identifier get_hex_int_hex_to_dec
 						* String string_0: "0123456789       :;<=>?" Static
@@ -53,7 +53,7 @@
 							* Operator ~* Dereference
 								* Operator -
 									* Operator +
-										* Identifier get_hex_int_hex_to_dec Local
+										* Identifier get_hex_int_hex_to_dec
 										* Identifier get_hex_int_c
 									* Literal 48
 							* Literal 48
@@ -61,7 +61,7 @@
 					* Identifier get_hex_int_number
 	* FunctionDeclaration void
 		* Function print
-			* Parameters Local
+			* Parameters
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier print_str Local
@@ -81,7 +81,7 @@
 							* Identifier print_str
 						* Literal 0
 					* Body
-						* SetVariable Local
+						* SetVariable
 							* Operator =
 								* Identifier print_current_char
 								* Operator ~* Dereference
@@ -89,16 +89,16 @@
 						* FunctionCall print_char
 							* CallParameters
 								* Identifier print_current_char
-						* SetVariable
+						* SetVariable Local
 							* Operator =
 								* Identifier print_str
 								* Operator +
-									* Identifier print_str
+									* Identifier print_str Local
 									* Literal 1
 	* FunctionDeclaration void
 		* Function print_hex_byte
 			* Parameters
-				* Declaration char Local
+				* Declaration char
 					* Identifier print_hex_byte_x Local
 			* Body
 				* Declaration char
@@ -116,14 +116,14 @@
 						* Identifier print_hex_byte_temp
 						* Operator &
 							* Identifier print_hex_byte_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
+							* Literal 15 Local
+				* SetVariable Local
+					* Operator = Local
 						* Identifier print_hex_byte_temp_b
 						* Identifier print_hex_byte_temp
-				* SetVariable Local
+				* SetVariable
 					* Operator =
-						* Identifier print_hex_byte_temp Local
+						* Identifier print_hex_byte_temp
 						* Operator +
 							* Identifier print_hex_byte_temp_b
 							* Literal 48
@@ -132,16 +132,16 @@
 						* Identifier print_hex_byte_temp_b
 						* Literal 9
 					* Body
-						* SetVariable
+						* SetVariable Local
 							* Operator =
 								* Identifier print_hex_byte_temp
 								* Operator +
 									* Identifier print_hex_byte_temp_b
-									* Literal 55 Local
+									* Literal 55
 				* FunctionCall print_char Local
 					* CallParameters
 						* Identifier print_hex_byte_temp
-				* SetVariable Local
+				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
 						* Identifier print_hex_byte_x
@@ -155,29 +155,29 @@
 					* Operator =
 						* Identifier print_hex_byte_temp_b
 						* Identifier print_hex_byte_temp
-				* SetVariable
+				* SetVariable Local
 					* Operator =
 						* Identifier print_hex_byte_temp
 						* Operator +
 							* Identifier print_hex_byte_temp_b
-							* Literal 48
+							* Literal 48 Local
 				* If
 					* Operator >
 						* Identifier print_hex_byte_temp_b
 						* Literal 9
-					* Body Local
+					* Body
 						* SetVariable
 							* Operator =
 								* Identifier print_hex_byte_temp
 								* Operator +
 									* Identifier print_hex_byte_temp_b
-									* Literal 55
+									* Literal 55 Local
 				* FunctionCall print_char
 					* CallParameters
 						* Identifier print_hex_byte_temp
 	* FunctionDeclaration void
 		* Function print_hex
-			* Parameters Local
+			* Parameters
 				* Declaration int
 					* Identifier print_hex_x Local
 			* Body
@@ -671,7 +671,7 @@
 									* Identifier dump_command_dump_ptr
 									* Literal 1
 						* If
-							* Operator &
+							* Operator &&
 								* Operator >
 									* Identifier dump_command_dump_ptr
 									* Identifier dump_command_input_a
@@ -849,6 +849,11 @@
 						* Identifier write_command_input_char_b
 						* Literal 0
 				* Declaration char
+					* Identifier write_command_input_char_c Local
+					* Operator =
+						* Identifier write_command_input_char_c
+						* Literal 0
+				* Declaration char
 					* Operator ~* Dereference
 						* Identifier write_command_hex_to_dec Local
 					* Operator =
@@ -907,9 +912,18 @@
 										* FunctionCall get_char
 											* CallParameters
 												* Void
+								* FunctionCall print_char
+									* CallParameters
+										* Identifier write_command_input_char_b
+						* SetVariable
+							* Operator =
+								* Identifier write_command_input_char_c
+								* FunctionCall get_char
+									* CallParameters
+										* Void
 						* If
 							* Operator ==
-								* Identifier write_command_input_char_b
+								* Identifier write_command_input_char_c
 								* Literal 13
 							* Body
 								* SetVariable
@@ -921,9 +935,6 @@
 								* Identifier write_command_run
 								* Literal 1
 							* Body
-								* FunctionCall print_char
-									* CallParameters
-										* Identifier write_command_input_char_b
 								* SetVariable
 									* Operator =
 										* Identifier write_command_write_value
@@ -961,6 +972,11 @@
 	* FunctionDeclaration void
 		* Function run_command
 			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier run_command_shell_buf Local
+				* Declaration int
+					* Identifier run_command_shell_buf_offset Local
 			* Body
 				* Declaration char
 					* Operator ~* Dereference
@@ -969,9 +985,16 @@
 						* Operator ~* Dereference
 							* Identifier run_command_run_str
 						* String string_9: "run command detected\n" Static
+				* Declaration int
+					* Identifier run_command_run_address Local
+					* Operator =
+						* Identifier run_command_run_address
+						* Literal32 131072
 				* FunctionCall print
 					* CallParameters
 						* Identifier run_command_run_str
+				* Run
+					* Identifier run_command_run_address
 	* FunctionDeclaration int
 		* Function multiply
 			* Parameters
@@ -1344,7 +1367,7 @@
 												* Literal 4
 										* Literal 15
 									* Literal 48
-						* If Local
+						* If
 							* Operator !=
 								* Identifier print_bcd_temp_print
 								* Literal 48

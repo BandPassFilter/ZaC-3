@@ -411,23 +411,53 @@ enum inst_type {
 int main(int argc, char** argv) {
     printf("ZaC-3 Assembler\n");
 
-    /*
-    if (argc != 2) {
+    
+    int boot_program = 0;
+
+    printf("Argc: %d\n", argc);
+
+    char *input_file_str = "c_program.asm";
+    if (argc > 2) {
+        if (strcmp(argv[1], "-b") == 0) {
+            boot_program = 1;
+            input_file_str = argv[2];
+        }
+    } else if (argc == 2) {
+        input_file_str = argv[1];
+    } else {
         printf("Needs a file to assemble!\n");
         exit(1);
     }
-    */
+
+    int start_address = 0;
+    if (boot_program == 1) {
+        start_address = PROGRAM_START;
+    }
+
+    char output_file_str[100] = {0};
+    int i = 0;
+    while (i < strlen(input_file_str) && input_file_str[i] != '.') {
+        output_file_str[i] = input_file_str[i];
+        i++;
+    }
+    output_file_str[i++] = '.';
+    output_file_str[i++] = 'b';
+    output_file_str[i++] = 'i';
+    output_file_str[i++] = 'n';
+    output_file_str[i++] = '\0';
 
     FILE *input_file, *output_file;
-
-    char *input_file_str = "c_program.asm";
+    printf("Input file str: %s\n", input_file_str);
+    printf("Output file str: %s\n", output_file_str);
+    
+    
 
     input_file = fopen(input_file_str, "rb");
     if (!input_file) {
         printf("Invalid input file\n");
         exit(1);
     }
-    output_file = fopen("program.bin", "wb");
+    output_file = fopen(output_file_str, "wb");
     if (!output_file) {
         printf("Unable to make output file\n");
         exit(1);
@@ -520,288 +550,9 @@ int main(int argc, char** argv) {
     int inst_shift = 0;
     int code_pointer = 0;
     int comment = 0;
-    printf("Calculate machine code size pass\n");
-    while(input_buf_ptr < fsize) {
-        comment = 0;
-        // read instruction until whitespace
-        //for (int i = 0; i < PARSE_LENGTH; i++) {
-            //instruction_string[i] = '\0';
-        //}
-        skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-        grab_string(input_file_buf, fsize, instruction_string, &input_buf_ptr);
-        // detect and remove comments
-        char *temp_ptr = (char*)input_buf_ptr;
-        if (instruction_string[0] == ';') {
-            temp_ptr--;
-            remove_line_after(input_file_buf, fsize, &temp_ptr);
-            for (int i = 0; i < PARSE_LENGTH; i++) {
-                instruction_string[i] = '\0';
-            }
-            comment = 1;
-        }
-        //printf("Instruction: %s\n", instruction_string);
-        input_buf_ptr++;
-        parse_string_ptr = 0;
-
-        // now decode instruction and grab operands as needed (R-type, I-type and J-type)
-
-        // detect assembler directives and skip line if so
-        if (instruction_string[0] == '.') {
-            skip_line(input_file_buf, fsize, &input_buf_ptr);
-        }
-
-        int instruction_number = 0;
-        inst_type = NONE;
-        // evaluate instruction type and value
-        int i = 0;
-        while (inst_type == NONE && i < NOP_ARR_LENGTH) {
-            if(compare_string(nop_type_inst[i], instruction_string)) {
-                instruction_number = i;
-                inst_type = NOP_TYPE;
-                break;
-            }
-            i++;
-        }
-        i = 0;
-        while (inst_type == NONE && i < R_ARR_LENGTH) {
-            if(compare_string(r_type_inst[i], instruction_string)) {
-                instruction_number = i;
-                inst_type = R_TYPE;
-                break;
-            }
-            i++;
-        }
-        i = 0;
-        while (inst_type == NONE && i < I_ARR_LENGTH) {
-            if(compare_string(i_type_inst[i], instruction_string)) {
-                instruction_number = i;
-                inst_type = I_TYPE;
-                break;
-            }
-            i++;
-        }
-        i = 0;
-        while (inst_type == NONE && i < J_ARR_LENGTH) {
-            if(compare_string(j_type_inst[i], instruction_string)) {
-                instruction_number = i;
-                inst_type = J_TYPE;
-                break;
-            }
-            i++;
-        }
-        if (check_string_is_jmp_label(instruction_string, PARSE_LENGTH)) {
-            //printf("jmp label detected\n");
-        }
-        if (inst_type == NONE && !check_string_is_jmp_label(instruction_string, PARSE_LENGTH) && instruction_string[0] != '.' && instruction_string[0] != '\0') {
-            printf("Invalid opcode %s at offset: %d", instruction_string, input_buf_ptr);
-            exit(1);
-        }
-
-        // now decode operands depending on instruction type (R-type, I-type, J-type)
-        switch(inst_type) {
-            case (NOP_TYPE): {
-                if (compare_string(instruction_string, "halt")) {
-                    break;
-                }
-            }
-            case(R_TYPE): {
-                if (compare_string(instruction_string, "jr")) {
-                    // r0 format
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    inst_shift = 0;
-                    reg_a = eval_register(reg_a_string);
-                    reg_b = 0;
-                    reg_c = 0;
-                } else if (compare_string(instruction_string, "mov")) {
-                    // r0, r1 format
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    inst_shift = 0;
-                    reg_a = eval_register(reg_a_string);
-                    reg_b = eval_register(reg_b_string);
-                    reg_c = 0;
-                } else {
-                // r0, r1, r2 format
-                skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
-                skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                grab_string(input_file_buf, fsize, reg_c_string, &input_buf_ptr);
-                skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                inst_shift = 0;
-                reg_a = eval_register(reg_a_string);
-                reg_b = eval_register(reg_b_string);
-                reg_c = eval_register(reg_c_string);
-                }
-                break;
-            }
-            case(I_TYPE): {
-                if (instruction_number == 4) { // movi
-                    // [r1 + offset], r0 format for output
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    if (compare_string(instruction_string, "movi")) {
-                        if (input_file_buf[input_buf_ptr] == '[') {
-                            //printf("bracket detected, memory store instruction\n");
-                            input_buf_ptr++; // skip '[' character
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, offset_math_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            inst_shift = 1;
-                            reg_a = eval_register(reg_a_string);
-                            reg_b = eval_register(reg_b_string);
-                            //imm16 = eval_imm16(imm16_string, labels);
-                        } else {
-                            // r0, [r1 + offset] format for input
-                            //printf("non bracket detected, memory load instruction\n");
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            input_buf_ptr++; // skip '[' character
-                            grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, offset_math_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            inst_shift = 0;
-                            reg_a = eval_register(reg_a_string);
-                            reg_b = eval_register(reg_b_string);
-                            //imm16 = eval_imm16(imm16_string, labels);
-                        }
-                    }
-                }
-                if (instruction_number == 5) { // mvbi
-                    // [r1 + offset], r0 format for output
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    if (compare_string(instruction_string, "mvbi")) {
-                        if (input_file_buf[input_buf_ptr] == '[') {
-                            //printf("bracket detected, memory store instruction\n");
-                            input_buf_ptr++; // skip '[' character
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, offset_math_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            inst_shift = 1;
-                            reg_a = eval_register(reg_a_string);
-                            reg_b = eval_register(reg_b_string);
-                           // imm16 = eval_imm16(imm16_string, labels);
-                        } else {
-                            // r0, [r1 + offset] format for input
-                            //printf("non bracket detected, memory load instruction\n");
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            input_buf_ptr++; // skip '[' character
-                            grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, offset_math_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
-                            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                            inst_shift = 0;
-                            reg_a = eval_register(reg_a_string);
-                            reg_b = eval_register(reg_b_string);
-                            //imm16 = eval_imm16(imm16_string, labels);
-                        }
-                    }
-                }
-
-                if (instruction_number == 6) { // lui
-                    // r0, imm16 format
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    inst_shift = 0;
-                    reg_a = eval_register(reg_a_string);
-                    reg_b = 0;
-                    //imm16 = eval_imm16(imm16_string, labels);
-                    break;
-                }
-
-                if (!compare_string(instruction_string, "movi") && !compare_string(instruction_string, "mvbi") || (compare_string(instruction_string, "lui"))) {
-                    // r0, r1, imm16 format
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, reg_a_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, reg_b_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
-                    skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                    inst_shift = 0;
-                    reg_a = eval_register(reg_a_string);
-                    reg_b = eval_register(reg_b_string);
-                    //imm16 = eval_imm16(imm16_string, labels);
-                }
-
-                break;
-            }
-            case(J_TYPE): {
-                // imm24 format
-                skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
-                skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                //imm16 = eval_imm16(imm16_string, labels);
-                break;
-            }
-        }
-
-        // now write code binary
-        // now that opcodes and operands are decoded, construct the final instruction binary value
-        // R-type: OOOO OxAA AAAB BBBB CCCC Cxxx xxxx xxxx
-        // I-type: OOOO OxAA AAAB BBBB IIII IIII IIII IIII
-        // J-type: OOOO Oxxx xxxx xxxx JJJJ JJJJ JJJJ JJJJ
-        opcode = eval_opcode(inst_type, instruction_number, inst_shift);
-        int machine_code = 0;
-        switch(inst_type) {
-            case (NOP_TYPE): {
-                machine_code = opcode << 27;
-                break;
-            }
-            case(R_TYPE): {
-                machine_code = (opcode << 27) + (reg_a << 21) + (reg_b << 16) + (reg_c << 11);
-                break;
-            }
-            case(I_TYPE): {
-                machine_code = (opcode << 27) + (reg_a << 21) + (reg_b << 16) + ((uint16_t)imm16);
-                break;
-            }
-            case(J_TYPE): {
-                machine_code = (opcode << 27) + (imm16);
-                break;
-            }
-        }
-        if (!check_string_is_non_inst(instruction_string, PARSE_LENGTH) & comment == 0) {
-            //printf("MACHINE CODE: ");
-            //print_binary(machine_code);
-            //printf(" Address: %d\n", code_pointer);
-            //output_array[code_pointer] = (uint32_t)machine_code;
-            code_pointer++;
-        }
-    }
-    int string_start_address = code_pointer*4;
-    printf("Strings start address: %d\n", string_start_address);
     
     int label_idx = 0;
-    int current_address = 0;
+    int current_address = start_address;
     // second pass (evaluate label addresses and values, and assembler directives)
     Label labels[LABELS_SIZE] = {0};
     // jump labels are "jump_label:"
@@ -876,7 +627,7 @@ int main(int argc, char** argv) {
             input_buf_ptr++;
             grab_quoted_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "Hello, World!\n"
             int STRING_BASE = 262144;
-            push_labels(LABELS_SIZE, labels, directive_string, string_start_address + adrs_offset_value, string_start_address + adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
+            push_labels(LABELS_SIZE, labels, directive_string, adrs_offset_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
             int temp_str_i = 0;
             while (temp_str_i < strlen(temp_string)+1) {
                 data_segment_output[adrs_offset_value + temp_str_i] = temp_string[temp_str_i];
@@ -1075,7 +826,7 @@ int main(int argc, char** argv) {
                             inst_shift = 1;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, string_start_address);
+                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
                         } else {
                             // r0, [r1 + offset] format for input
                             //printf("non bracket detected, memory load instruction\n");
@@ -1092,7 +843,7 @@ int main(int argc, char** argv) {
                             inst_shift = 0;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, string_start_address);
+                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
                         }
                     }
                 }
@@ -1115,7 +866,7 @@ int main(int argc, char** argv) {
                             inst_shift = 1;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, string_start_address);
+                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
                         } else {
                             // r0, [r1 + offset] format for input
                             //printf("non bracket detected, memory load instruction\n");
@@ -1132,7 +883,7 @@ int main(int argc, char** argv) {
                             inst_shift = 0;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, string_start_address);
+                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
                         }
                     }
                 }
@@ -1147,7 +898,7 @@ int main(int argc, char** argv) {
                     inst_shift = 0;
                     reg_a = eval_register(reg_a_string);
                     reg_b = 0;
-                    imm16 = eval_imm16(imm16_string, labels, string_start_address);
+                    imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
                     break;
                 }
 
@@ -1163,7 +914,7 @@ int main(int argc, char** argv) {
                     inst_shift = 0;
                     reg_a = eval_register(reg_a_string);
                     reg_b = eval_register(reg_b_string);
-                    imm16 = eval_imm16(imm16_string, labels, string_start_address);
+                    imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
                 }
 
                 break;
@@ -1173,7 +924,7 @@ int main(int argc, char** argv) {
                 skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                 grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
                 skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                imm16 = eval_imm16(imm16_string, labels, string_start_address);
+                imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
                 break;
             }
         }

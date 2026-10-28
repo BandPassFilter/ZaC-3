@@ -45,7 +45,9 @@ enum AST_type {
     AST_LITERAL_32,
     AST_OPERATOR_32,
     AST_IDENT_32,
-    AST_SET_VARIABLE_32
+    AST_SET_VARIABLE_32,
+    AST_RUN,
+    AST_PROGRAM_START
 };
 
 #ifndef GLOBAL_I

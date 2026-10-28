@@ -321,6 +321,19 @@ void print_binary(int x) {
 int main(int argc, char** argv) {
     printf("ZaC-3 Emulator\n");
 
+    char *input_file_str;
+    char *default_file = "program.bin";
+
+    if (argc < 2) {
+        input_file_str = default_file; // default filename for testing
+    } else if (argc == 2) {
+        input_file_str = argv[1];
+    } else {
+        input_file_str = default_file;
+    }
+
+    printf("Program file: %s\n", input_file_str);
+
     if (InitialiseSerialPort() == 1) {
         printf("serial port error\n");
         //exit(1);
@@ -346,7 +359,7 @@ int main(int argc, char** argv) {
     }
 
     // now load input program into memory
-    FILE *program_file = fopen("program.bin", "rb");
+    FILE *program_file = fopen(input_file_str, "rb");
     if (!program_file) {
         printf("Error opening program file!\n");
         exit(1);

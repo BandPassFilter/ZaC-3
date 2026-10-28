@@ -113,6 +113,15 @@ NEAR TODO:
   and then when the register file gets full (r20 is maximum I think, everything past is system registers) then it "spills" onto the stack. However
   that's a future thing. For now just keep it explicit register or memory via enum.
 
+  - Make a unique keyword that only my ZaC-3 C compiler sees so that way gcc won't compile all my ZaC-3-only C programs into x86.
+    This would be #ZaC-3 or something. Also I would have "run 0x00200000" keyword that allows C to set the program counter to any
+    value to run programs from the OS. In modern C I would use function pointers but I don't have function pointers in my compiler
+    so I would make my own simple keyword instead.
+ 
+  - Make #START_PROGRAM 0x0020000 that would allow the C program to start at any arbitrary address, this is to allow user programs
+    to start above the OS code. This would be in a single-tasking system with no MMU. In an MMU system with multi-tasking OS, all
+    tasks would start at 0x00000000 in their own virtual space and wouldn't need #START_PROGRAM 0x00200000.
+
 FAR TODO:
     - ZaC-3 will be fully 32-bit CPU, and so 32-bit ints, 32-bit pointers, etc. Although it will still use the same backplane, but it will have a different bus protocol.
     32-bit A/D. It will flip-flop 32-bit address and 32-bit data depending on the A/D signal (A/D low = address, A/D high = data). And since this only takes 33 pins
@@ -187,7 +196,9 @@ void pause() {
 #define OPERATORS_SIZE 24
 #define WHITE_SPACE_SIZE 3
 #define MODIFIERS_SIZE 4
-char *KEYWORDS[KEYWORDS_SIZE] = {"void", "int", "char", "uint8_t", "uint16_t", "int8_t", "int16_t", "static", "if", "while", "for", "else", "asm", "struct", "return", "asm"};
+#define PRE_PROCESSOR_KEYWORDS_SIZE 1
+char *PRE_PROCESSOR_KEYWORDS[PRE_PROCESSOR_KEYWORDS_SIZE] = {"#PROGRAM_START"};
+char *KEYWORDS[KEYWORDS_SIZE] = {"void", "int", "char", "uint8_t", "uint16_t", "int8_t", "int16_t", "static", "if", "while", "for", "else", "asm", "struct", "return", "$run"};
 char *SEPARATORS[SEPARATORS_SIZE] = {"{", "}", "(", ")", ";", ","};
 char *OPERATORS[OPERATORS_SIZE] = {"++", "--", "==", ">=", "<=", "!=", "&&", "<<", ">>", "||", "->", ".", "+", "-", "<", "*", "/", ">", "!", "=", "&", "|", "[", "]"};
 char *WHITE_SPACE[WHITE_SPACE_SIZE] = {" ", "\n", "\t"};
@@ -211,6 +222,15 @@ int non_null_compare_string(char *string_a, char *string_b, int *output_char_off
 
 int compare_string(char *string_a, char *string_b) {
     // each string null-terminated
+    if (strcmp(string_a, string_b) == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+/*
+int compare_string(char *string_a, char *string_b) {
+    // each string null-terminated
     int i = 0;
     while (string_a[i] == string_b[i]) {
         if (string_a[i] == '\0' && string_b[i] == '\0') {
@@ -220,6 +240,7 @@ int compare_string(char *string_a, char *string_b) {
     }
     return 0;
 }
+    */
 
 int check_string_equals_strings(int strings_arr_length, char **strings, char* string) {
     // checks if string is in string array (strings)
@@ -253,7 +274,7 @@ int check_letter_is_number(char letter) {
 }
 
 int check_letter_is_alphabet_and_space(char letter) {
-    char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_ ";
+    char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$# ";
     for (int i = 0; i < sizeof(alphabet); i++) {
         if (letter == alphabet[i]) {
             return 1;
@@ -263,7 +284,7 @@ int check_letter_is_alphabet_and_space(char letter) {
 }
 
 int check_letter_is_alphabet(char letter) {
-    char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+    char alphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$#";
     for (int i = 0; i < sizeof(alphabet); i++) {
         if (letter == alphabet[i]) {
             return 1;
@@ -1187,6 +1208,46 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
             
         } else if (strcmp(current_token.token_string, "out") == 0) {
             
+        } else if (strcmp(current_token.token_string, "$run") == 0) {
+            AST_Node *AST_statement = generate_ast_node();
+            AST_statement->type = AST_RUN;
+            AST_statement->subtype = AST_NOSUBTYPE;
+            
+            TokenList token_operands;
+            TokenListInit(&token_operands, 0);
+            local_idx++;
+            while (tokenList->getItem(tokenList, local_idx).token_string[0] != ';') {
+                token_operands.append(&token_operands, tokenList->getItem(tokenList, local_idx));
+                local_idx++;
+            }
+            for (int i = 0; i < token_operands.getSize(&token_operands); i++) {
+                //printf("%s ", token_operands.getItem(&token_operands, i).token_string);
+            }
+            AST_Node *AST_return_operand = generate_ast_node();
+            AST_return_operand = expression(&token_operands, AST_return_operand);
+            AST_statement->append(AST_statement, AST_return_operand);
+            current_node->append(current_node, AST_statement);
+            local_idx++;
+        } else if (strcmp(current_token.token_string, "#PROGRAM_START") == 0) {
+            AST_Node *AST_statement = generate_ast_node();
+            AST_statement->type = AST_PROGRAM_START;
+            AST_statement->subtype = AST_NOSUBTYPE;
+            
+            TokenList token_operands;
+            TokenListInit(&token_operands, 0);
+            local_idx++;
+            while (tokenList->getItem(tokenList, local_idx).token_string[0] != '\n') {
+                token_operands.append(&token_operands, tokenList->getItem(tokenList, local_idx));
+                local_idx++;
+            }
+            for (int i = 0; i < token_operands.getSize(&token_operands); i++) {
+                //printf("%s ", token_operands.getItem(&token_operands, i).token_string);
+            }
+            AST_Node *AST_return_operand = generate_ast_node();
+            AST_return_operand = expression(&token_operands, AST_return_operand);
+            AST_statement->append(AST_statement, AST_return_operand);
+            current_node->append(current_node, AST_statement);
+            local_idx++;
         }
     } else if (current_token.token_type == IDENT && tokenList->getItem(tokenList, tokenList_idx+1).token_string[0] == '(') {
         // function call
@@ -1367,6 +1428,12 @@ void print_AST_type(FILE *file, AST_Node *node) {
     }
     if (node->type == AST_CAST) {
         fprintf(file, " Cast");
+    }
+    if (node->type == AST_RUN) {
+        fprintf(file, "Run");
+    }
+    if (node->type == AST_PROGRAM_START) {
+        fprintf(file, "ProgramStart");
     }
 }
 
@@ -1644,6 +1711,7 @@ typedef struct ExtraStuff {
     DictionaryPointer *functionDictionary;
     char *function_set_variable;
     int function_param_variable_number;
+    CharAppendList *EOF_data;
 } ExtraStuff;
 
 void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Dictionary **symbol_tables, DictionaryPointer *pointer_symbol_table, int *stack, int status, int *jmp_label, int register_select, int *pointer_layer_dereference, int *ast_modifier, int *visibility, char *current_function, ExtraStuff *extra_stuff) {
@@ -3033,11 +3101,13 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             //printf("void detected");
         }
     } else if (current_node->type == AST_STRING) {
-        char buffer[300] = {0};
-        sprintf(buffer, ".asciiz string_%d = \"%s\"\n", string_number++, current_node->ast_string);
-        sprintf(buffer+strlen(buffer), "addi r%d, r0, %s\n", extra_stuff->operator_stack_offset, current_node->ast_string_name);
-        sprintf(buffer+strlen(buffer), "lui r%d, _string_hi_adrs ;GET_32\n", extra_stuff->operator_stack_offset);
-        asm_list->append(asm_list, buffer);
+        char buffer_EOF[300] = {0};
+        char buffer_now[100] = {0};
+        sprintf(buffer_EOF, ".asciiz string_%d = \"%s\"\n", string_number++, current_node->ast_string);
+        sprintf(buffer_now+strlen(buffer_now), "addi r%d, r0, %s\n", extra_stuff->operator_stack_offset, current_node->ast_string_name);
+        sprintf(buffer_now+strlen(buffer_now), "lui r%d, _string_hi_adrs ;GET_32\n", extra_stuff->operator_stack_offset);
+        extra_stuff->EOF_data->append(extra_stuff->EOF_data, buffer_EOF);
+        asm_list->append(asm_list, buffer_now);
         extra_stuff->operator_stack_offset += 1;
     } else if (current_node->type == AST_RETURN) {
         char buffer[300] = {0};
@@ -3050,6 +3120,18 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         sprintf(buffer+strlen(buffer), "movi fp, [sp + 0]\n");  
         sprintf(buffer+strlen(buffer), "addi sp, sp, 4\n");
         sprintf(buffer+strlen(buffer), "jr ra\n");
+        asm_list->append(asm_list, buffer);
+    } else if (current_node->type == AST_RUN) {
+        char buffer[300] = {0};
+        asm_generator_code_gen(current_node->getItem(current_node, 0), asm_list, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, extra_stuff);
+        //extra_stuff->operator_stack_offset = extra_stuff->operator_stack_offset - 1;
+        sprintf(buffer+strlen(buffer), "jr r%d\n", extra_stuff->operator_stack_offset-1);
+        asm_list->append(asm_list, buffer);
+    } else if (current_node->type == AST_PROGRAM_START) {
+        char buffer[300] = {0};
+        
+        //extra_stuff->operator_stack_offset = extra_stuff->operator_stack_offset - 1;
+        sprintf(buffer+strlen(buffer), ".org %s\n", current_node->getItem(current_node, 0)->ast_string);
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_VOID) {
         // do nothing
@@ -4559,7 +4641,9 @@ char *asm_generator(AST_Node *start_node, DictionaryPointer *pointer_symbol_tabl
     char *current_function = "main";
     ExtraStuff extra_stuff = {0};
     extra_stuff.operator_stack_offset = 4;
+    extra_stuff.EOF_data = generateCharAppendList();
     asm_generator_code_gen(start_node, asm_list, symbol_table, pointer_symbol_table, &stack, ASM_NONE, &jmp_label, 1, &pointer_layer_dereference, &ast_modifier, &visibility, current_function, &extra_stuff);
+    asm_list->append(asm_list, extra_stuff.EOF_data->array);
     asm_list->append(asm_list, "halt\n");
     return asm_list->array;
 }
@@ -4618,7 +4702,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
                 
             }
             else if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
-                //printf("keyword detected: %s\n", sub_string);
+                printf("keyword detected: %s\n", sub_string);
                 Token nextToken;
                 TokenInit(&nextToken);
                 nextToken.token_valid = 1;
@@ -4812,7 +4896,7 @@ TokenList *lexer(char *input_file_buf, long fsize) {
             // now check identifiers
             if (check_letter_is_not_alphabet(input_file_buf[i])) {
                 // now to lexical analysis on sub_string
-                ////printf("sub_string = %s\n", sub_string);
+                //printf("sub_string = %s\n", sub_string);
                 if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
                     parse_finish = 1;
                 } else if (check_string_in_strings(SEPARATORS_SIZE, SEPARATORS, sub_string) != -1) {
@@ -4901,6 +4985,30 @@ char *pre_processor(char *input_file_buf, int size) {
         }
         i++;
     }
+    /*
+    if (check_letter_is_not_alphabet(input_file_buf[i])) {
+            // now to lexical analysis on sub_string
+            ////printf("sub_string = %s\n", sub_string);
+            if (check_string_in_strings(MODIFIERS_SIZE, MODIFIERS, sub_string) != -1) {
+                
+            }
+            else if (check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string) != -1) {
+                printf("keyword detected: %s\n", sub_string);
+                Token nextToken;
+                TokenInit(&nextToken);
+                nextToken.token_valid = 1;
+                nextToken.token_type = KEYWORD;
+                nextToken.token_subtype = TOKEN_NOSUBTYPE;
+                nextToken.token_value = check_string_in_strings(KEYWORDS_SIZE, KEYWORDS, sub_string);
+                nextToken.token_modifier = NO_MODIFIER;
+                strcpy(nextToken.token_string, sub_string);
+                tokenList->append(tokenList, nextToken);
+                start_i = i;
+                parse_finish = 1;
+            }
+        clear_string(50, sub_string);
+        j = 0;
+        */
     return input_file_buf;
 }
 
@@ -5167,7 +5275,7 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-3 C Compiler\n");
     // Part 0 - initialisation
-    char *default_file = "functest.c";
+    char *default_file = "os.c";
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
     } else if (argc == 2) {
@@ -5186,8 +5294,19 @@ int main(int argc, char* argv[]) {
     FILE *input_file, *output_file;
 
     
-    
-    char *output_file_str = "c_program.asm";
+    int output_file_str_len = (strlen(input_file_str) + 10);
+    char output_file_str[100] = {0};
+    int i = 0;
+    while (i < strlen(input_file_str) && input_file_str[i] != '.') {
+        output_file_str[i] = input_file_str[i];
+        i++;
+    }
+    output_file_str[i++] = '.';
+    output_file_str[i++] = 'a';
+    output_file_str[i++] = 's';
+    output_file_str[i++] = 'm';
+    output_file_str[i++] = '\0';
+
     input_file = fopen(input_file_str, "rb");
     output_file = fopen(output_file_str, "wb");
 
@@ -5302,7 +5421,8 @@ int main(int argc, char* argv[]) {
     //printf("Done\n");
     printf("Complete\n\n");
     //pause();
-    system("asm.exe");
+    char asm_buffer[100];
+    sprintf(&asm_buffer, "asm %s", output_file_str);
+    system(asm_buffer);
     return 0;
 }
-

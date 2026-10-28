@@ -1391,7 +1391,7 @@ jmp 15_end
 add r2, r0, r5
 add r1, r0, r4
 and r1, r1, r2
-add r4, r0, r1 ;BITWISE_AND
+add r4, r0, r1 ;LOGICAL_AND
 
 sub r4, r4, r0
 jz 14_false
@@ -1567,7 +1567,7 @@ subi sp, sp, 4
 movi [sp + 0], fp
 subi sp, sp, 4
 movi [sp + 0], ra
-subi sp, sp, 48
+subi sp, sp, 52
 add fp, r0, sp
 .asciiz string_6 = "write command detected\n"
 addi r4, r0, string_6
@@ -1595,20 +1595,20 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-movi r4, [fp + 60] ;GET
+movi r4, [fp + 64] ;GET
 addi r5, r0, 1 ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD
 
-movi [fp + 60], r4 ;SET
+movi [fp + 64], r4 ;SET
 
 addi r4, r0, 0 ;GET
 movi [fp + 8], r4 ;SET
 
-movi r4, [fp + 56] ;GET
-movi r5, [fp + 60] ;GET
+movi r4, [fp + 60] ;GET
+movi r5, [fp + 64] ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
@@ -1647,8 +1647,8 @@ movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r5, [fp + 56] ;GET
-movi r6, [fp + 60] ;GET
+movi r5, [fp + 60] ;GET
+movi r6, [fp + 64] ;GET
 add r2, r0, r6
 add r1, r0, r5
 add r1, r1, r2
@@ -1685,14 +1685,14 @@ add r4, r0, r1 ;ADD
 
 movi [fp + 8], r4 ;SET
 
-movi r4, [fp + 60] ;GET
+movi r4, [fp + 64] ;GET
 addi r5, r0, 1 ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD
 
-movi [fp + 60], r4 ;SET
+movi [fp + 64], r4 ;SET
 
 
 ;for_iter
@@ -1725,10 +1725,13 @@ mvbi [fp + 36], r4 ;SET
 addi r4, r0, 0 ;GET
 mvbi [fp + 40], r4 ;SET
 
+addi r4, r0, 0 ;GET
+mvbi [fp + 44], r4 ;SET
+
 .asciiz string_8 = "0123456789       :;<=>?"
 addi r4, r0, string_8
 lui r4, _string_hi_adrs ;GET_32
-movi [fp + 44], r4 ;SET
+movi [fp + 48], r4 ;SET
 
 22_start:
 movi r4, [fp + 32] ;GET
@@ -1877,9 +1880,37 @@ addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 mvbi [fp + 40], r4 ;SET
 
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+mvbi r4, [fp + 40] ;GET_MEMORY
+mvbi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _print_char
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
 25_false:
 
-mvbi r4, [fp + 40] ;/GET
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+jal _get_char
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+mvbi [fp + 44], r4 ;SET
+
+mvbi r4, [fp + 44] ;/GET
 addi r5, r0, 13 ;GET
 sub r1, r4, r5
 jz 26_true
@@ -1908,22 +1939,6 @@ jmp 27_end
 27_end:
 sub r4, r4, r0
 jz 27_false
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-mvbi r4, [fp + 40] ;GET_MEMORY
-mvbi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _print_char
-addi sp, sp, 4
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-
 addi r4, r0, 0 ;GET
 mvbi [fp + 28], r4 ;SET
 
@@ -2011,7 +2026,7 @@ add r4, r0, r1 ;RETURN_SET
 jmp 22_start
 22_false:
 
-addi sp, sp, 48
+addi sp, sp, 52
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]
@@ -2023,12 +2038,16 @@ subi sp, sp, 4
 movi [sp + 0], fp
 subi sp, sp, 4
 movi [sp + 0], ra
-subi sp, sp, 4
+subi sp, sp, 8
 add fp, r0, sp
 .asciiz string_9 = "run command detected\n"
 addi r4, r0, string_9
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 0], r4 ;SET
+
+addi r4, r0, 0 ;GET_32
+lui r4, 2 ;GET_32
+movi [fp + 4], r4 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -2046,7 +2065,10 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-addi sp, sp, 4
+movi r4, [fp + 4] ;GET
+jr r4
+
+addi sp, sp, 8
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]
@@ -2060,8 +2082,8 @@ subi sp, sp, 4
 movi [sp + 0], ra
 subi sp, sp, 8
 add fp, r0, sp
-addi r4, r0, 0 ;GET
-movi [fp + 0], r4 ;SET
+addi r5, r0, 0 ;GET
+movi [fp + 0], r5 ;SET
 
 
 ;for_init
