@@ -1,5 +1,3 @@
-#PROGRAM_START 131072
-
 void print_char(char x) {
     char *uart = 1245184;
     *uart = x;
@@ -155,10 +153,15 @@ void print(char *str) {
     }
 }
 
+void tab() {
+    print_char(9);
+}
+
 void main() {
     int a = 3;
     int b = 2;
     int c = 1;
+    int col = 0;
     cr();
     int not_prime = 0;
     char *end_str = "Finished!\n";
@@ -173,7 +176,12 @@ void main() {
         }
         if (not_prime == 0) {
             print_bcd(a);
-            cr();
+            tab();
+            col = col + 1;
+            if (col == 8) {
+                cr();
+                col = 0;
+            }
         }
         a = a + 1;
         b = 2;

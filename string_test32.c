@@ -20,7 +20,7 @@ void print(char *str) {
 
 void main() {
 	char *debug = 9000000;
-	
+	//*debug = 0;
     char *x = "Hello, World!\n";
     char *uart;
     uart = 1245184;

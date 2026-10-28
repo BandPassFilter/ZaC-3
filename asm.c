@@ -6,7 +6,6 @@
 #define LABEL_STRING_SIZE 50
 #define LABELS_SIZE 512
 #define PARSE_LENGTH 64
-#define PROGRAM_START 0x20000
 
 /*
 Assembler for ZaC-3
@@ -359,7 +358,7 @@ int eval_opcode(int inst_type, int instruction_number, int inst_shift) {
     exit(1);
 }
 
-int eval_imm16(char *input_string, Label *labels, int string_start_address) {
+int eval_imm16(char *input_string, Label *labels, int STRING_BASE) {
     int temp_label_idx = check_string_in_labels(labels, input_string);
     if (temp_label_idx != -1) {
         if (labels[temp_label_idx].label_type == LABEL_NUMBER) {
@@ -370,12 +369,11 @@ int eval_imm16(char *input_string, Label *labels, int string_start_address) {
     } else if (string_is_number(input_string)) {
         return atoi(input_string);
     } else if (strcmp(input_string, "_string_hi_adrs") == 0) {
-        return string_start_address >> 16;
+        return STRING_BASE >> 16;
     } else {
         printf("Operand error %s\n", input_string);
         exit(1);
     }
-    
 }
 
 int eval_imm24(char *input_string, Label *labels) {
@@ -385,7 +383,7 @@ int eval_imm24(char *input_string, Label *labels) {
     } else if (string_is_number(input_string)) {
         return atoi(input_string);
     } else {
-        printf("Operand error %s\n", input_string);
+        printf("Operand error at offset");
         exit(1);
     }
 }
@@ -416,7 +414,7 @@ int main(int argc, char** argv) {
 
     printf("Argc: %d\n", argc);
 
-    char *input_file_str = "c_program.asm";
+    char *input_file_str = "string_test32.asm";
     if (argc > 2) {
         if (strcmp(argv[1], "-b") == 0) {
             boot_program = 1;
@@ -429,10 +427,7 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    int start_address = 0;
-    if (boot_program == 1) {
-        start_address = PROGRAM_START;
-    }
+    int start_address = 0; // TODO, make .org statement so that programs can run in single-tasking OS.
 
     char output_file_str[100] = {0};
     int i = 0;
@@ -498,6 +493,7 @@ int main(int argc, char** argv) {
 
 
 
+
     // read input file into buffer
     fread(input_file_buf, sizeof(char), fsize, input_file);
     
@@ -518,49 +514,17 @@ int main(int argc, char** argv) {
     char *i_type_inst[I_ARR_LENGTH] = {"addi", "subi", "ori", "andi", "movi", "mvbi", "lui"};
     char *j_type_inst[J_ARR_LENGTH] = {"jmp", "jz", "jc", "jnz", "jnc", "jal"};
 
-    int reg_a = 0;
-    int reg_b = 0;
-    int reg_c = 0;
-    int imm16 = 0;
-    int imm24 = 0;
-    
-
-    char whitespace[64] = {' ', ',', '\t', '\n', '\0'}; // always have null-terminating character
-
-    /*uint32_t *output_array = (int *) malloc(256*1024 * sizeof(uint8_t) + 65536*sizeof(uint8_t));
-    //printf("Code output array malloc\n");
-    if (output_array == NULL) {
-        printf("Memory allocation fail!\n");
-        exit(1);
-    } else {
-        //printf("Memory allocation successful at %p\n", output_array);
-    }
-    for (int i = 0; i < 65536; i++) {
-        output_array[i] = 0;
-    }*/
-
-    int run = 1;
-
-    int input_buf_ptr = 0;
-    int parse_string_ptr = 0;
-
-    int inst_type = NONE;
-
-    int opcode = 0x00;
-    int inst_shift = 0;
-    int code_pointer = 0;
-    int comment = 0;
-    
     int label_idx = 0;
     int current_address = start_address;
-    // second pass (evaluate label addresses and values, and assembler directives)
+    // first pass (evaluate label addresses and values, and assembler directives)
     Label labels[LABELS_SIZE] = {0};
     // jump labels are "jump_label:"
-    input_buf_ptr = 0;
+    int input_buf_ptr = 0;
     int adrs_offset_value = 0;
     int data_segment_size = 0;
     const int data_segment_base = 0x040000;
-    printf("Labels pass\n");
+    int first_string = 0;
+    int STRING_BASE = 0;
     while(input_buf_ptr < fsize) {
         
 
@@ -626,8 +590,11 @@ int main(int argc, char** argv) {
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             input_buf_ptr++;
             grab_quoted_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "Hello, World!\n"
-            int STRING_BASE = 262144;
-            push_labels(LABELS_SIZE, labels, directive_string, adrs_offset_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
+            if (first_string == 0) {
+                STRING_BASE = current_address+4;
+                first_string = 1;
+            }
+            push_labels(LABELS_SIZE, labels, directive_string, STRING_BASE + adrs_offset_value, STRING_BASE + adrs_offset_value, &dummy_idx, &label_idx, LABEL_STRING);
             int temp_str_i = 0;
             while (temp_str_i < strlen(temp_string)+1) {
                 data_segment_output[adrs_offset_value + temp_str_i] = temp_string[temp_str_i];
@@ -664,16 +631,16 @@ int main(int argc, char** argv) {
     data_segment_size = adrs_offset_value;
 
 
-    // third pass (machine code generation and label substitution)
+    // second pass (machine code generation and label substitution)
 
-     reg_a = 0;
-     reg_b = 0;
-     reg_c = 0;
-     imm16 = 0;
-     imm24 = 0;
+    int reg_a = 0;
+    int reg_b = 0;
+    int reg_c = 0;
+    int imm16 = 0;
+    int imm24 = 0;
     
 
-    // whitespace[64] = {' ', ',', '\t', '\n', '\0'}; // always have null-terminating character
+    char whitespace[64] = {' ', ',', '\t', '\n', '\0'}; // always have null-terminating character
 
     uint32_t *output_array = (int *) malloc(256*1024 * sizeof(uint8_t) + 65536*sizeof(uint8_t));
     //printf("Code output array malloc\n");
@@ -687,16 +654,16 @@ int main(int argc, char** argv) {
         output_array[i] = 0;
     }
 
-     run = 1;
+    int run = 1;
 
     input_buf_ptr = 0;
-     parse_string_ptr = 0;
+    int parse_string_ptr = 0;
 
-     inst_type = NONE;
+    int inst_type = NONE;
 
-     opcode = 0x00;
-     inst_shift = 0;
-     code_pointer = 0;
+    int opcode = 0x00;
+    int inst_shift = 0;
+    int code_pointer = 0;
     while(input_buf_ptr < fsize) {
         // read instruction until whitespace
         for (int i = 0; i < PARSE_LENGTH; i++) {
@@ -826,7 +793,7 @@ int main(int argc, char** argv) {
                             inst_shift = 1;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
+                            imm16 = eval_imm16(imm16_string, labels, STRING_BASE);
                         } else {
                             // r0, [r1 + offset] format for input
                             //printf("non bracket detected, memory load instruction\n");
@@ -843,7 +810,7 @@ int main(int argc, char** argv) {
                             inst_shift = 0;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
+                            imm16 = eval_imm16(imm16_string, labels, STRING_BASE);
                         }
                     }
                 }
@@ -866,7 +833,7 @@ int main(int argc, char** argv) {
                             inst_shift = 1;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
+                            imm16 = eval_imm16(imm16_string, labels, STRING_BASE);
                         } else {
                             // r0, [r1 + offset] format for input
                             //printf("non bracket detected, memory load instruction\n");
@@ -883,7 +850,7 @@ int main(int argc, char** argv) {
                             inst_shift = 0;
                             reg_a = eval_register(reg_a_string);
                             reg_b = eval_register(reg_b_string);
-                            imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
+                            imm16 = eval_imm16(imm16_string, labels, STRING_BASE);
                         }
                     }
                 }
@@ -898,7 +865,7 @@ int main(int argc, char** argv) {
                     inst_shift = 0;
                     reg_a = eval_register(reg_a_string);
                     reg_b = 0;
-                    imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
+                    imm16 = eval_imm16(imm16_string, labels, STRING_BASE);
                     break;
                 }
 
@@ -914,7 +881,7 @@ int main(int argc, char** argv) {
                     inst_shift = 0;
                     reg_a = eval_register(reg_a_string);
                     reg_b = eval_register(reg_b_string);
-                    imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
+                    imm16 = eval_imm16(imm16_string, labels, STRING_BASE);
                 }
 
                 break;
@@ -924,7 +891,7 @@ int main(int argc, char** argv) {
                 skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
                 grab_string(input_file_buf, fsize, imm16_string, &input_buf_ptr);
                 skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
-                imm16 = eval_imm16(imm16_string, labels, &input_buf_ptr);
+                imm16 = eval_imm16(imm16_string, labels, STRING_BASE);
                 break;
             }
         }
@@ -962,9 +929,8 @@ int main(int argc, char** argv) {
             code_pointer++;
         }
     }
-
-    // now write data binary in 0x04xxxx (data segment)
     
+    // now write data binary in 0x04xxxx (data segment)
     const int data_segment = 0x04;
     int data_pointer = 0;
     uint8_t *byte_output_array = (uint8_t *)output_array;
@@ -973,13 +939,6 @@ int main(int argc, char** argv) {
         data_pointer++;
     }
 
-    /*
-    while (data_pointer < data_segment_size) {
-        byte_output_array[(data_segment << 16) + data_pointer] = data_segment_output[data_pointer];
-        data_pointer++;
-    }
-    */
-    
 
 
 
