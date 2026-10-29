@@ -132,6 +132,9 @@ void _AST_List_new(AST_Node *self) {
         printf("ASTList Allocation error!\n");
         exit(1);
     }
+    for (int i = 0; i < NEW_LIST_SIZE; i++) {
+        new_array[i] = (char)NULL;
+    }
     //printf("Allocated ASTList\n");
     self->list->array = new_array;
     self->list->size = 0;
@@ -214,6 +217,7 @@ void clear_ast_node(AST_Node *node) {
     node->modifier = AST_NO_MODIFIER;
     node->datatype = AST_DATA_NODATA;
     AST_Node_init(node);
+    
 }
 
 AST_Node *generate_ast_node() {

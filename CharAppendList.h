@@ -66,6 +66,7 @@ void CharAppendListInit(CharAppendList *self) {
     self->append = &_CharAppendList_append;
     self->getList = &_CharAppendList_getList;
     self->build(self);
+    //self->array[0] = '\0';
 }
 
 CharAppendList *generateCharAppendList() {

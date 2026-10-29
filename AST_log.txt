@@ -24,17 +24,17 @@
 				* Declaration int
 					* Identifier print_bcd_x Local
 			* Body
-				* Declaration int
+				* Declaration int Local
 					* Identifier print_bcd_bcd_a Local
 				* Declaration int
 					* Identifier print_bcd_bcd_b Local
 				* Declaration int
 					* Identifier print_bcd_temp_x Local
 				* SetVariable
-					* Operator = Local
+					* Operator =
 						* Identifier print_bcd_temp_x
 						* Identifier print_bcd_x
-				* SetVariable
+				* SetVariable Local
 					* Operator =
 						* Identifier print_bcd_bcd_a
 						* Literal 0
@@ -42,11 +42,11 @@
 					* Operator =
 						* Identifier print_bcd_bcd_b
 						* Literal 0
-				* Declaration int Local
+				* Declaration int
 					* Identifier print_bcd_bcd_a_carry Local
 					* Operator =
 						* Identifier print_bcd_bcd_a_carry
-						* Literal 0
+						* Literal 0 Local
 				* Declaration int
 					* Identifier print_bcd_bcd_b_carry Local
 					* Operator =
@@ -55,11 +55,11 @@
 				* For
 					* Declaration int
 						* Identifier print_bcd_i Local
-						* Operator = Local
+						* Operator =
 							* Identifier print_bcd_i
 							* Literal 0
 					* Operator <
-						* Identifier print_bcd_i Local
+						* Identifier print_bcd_i
 						* Literal 16
 					* Operator =
 						* Identifier print_bcd_i
@@ -100,14 +100,14 @@
 									* Literal 3840
 								* Literal 1024
 							* Body
-								* SetVariable Local
+								* SetVariable
 									* Operator =
 										* Identifier print_bcd_bcd_a
 										* Operator +
 											* Identifier print_bcd_bcd_a
 											* Literal 768
 						* If
-							* Operator > Local
+							* Operator >
 								* Operator &
 									* Identifier print_bcd_bcd_a
 									* Literal 61440
@@ -211,6 +211,11 @@
 					* Operator =
 						* Identifier print_bcd_temp_print
 						* Literal 0
+				* Declaration int
+					* Identifier print_bcd_not_leading_zero Local
+					* Operator =
+						* Identifier print_bcd_not_leading_zero
+						* Literal 0
 				* SetVariable
 					* Operator =
 						* Identifier print_bcd_temp_print
@@ -219,209 +224,88 @@
 								* Identifier print_bcd_bcd_b
 								* Literal 15
 							* Literal 48
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_bcd_temp_print
-				* SetVariable
-					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator >>
-								* Identifier print_bcd_bcd_a
-								* Literal 12
-							* Literal 48
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_bcd_temp_print
-				* SetVariable
-					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator &
-								* Operator >>
-									* Identifier print_bcd_bcd_a
-									* Literal 8
-								* Literal 15
-							* Literal 48
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_bcd_temp_print
-				* SetVariable
-					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator &
-								* Operator >>
-									* Identifier print_bcd_bcd_a
-									* Literal 4
-								* Literal 15
-							* Literal 48
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_bcd_temp_print
-				* SetVariable
-					* Operator =
-						* Identifier print_bcd_temp_print
-						* Operator +
-							* Operator &
-								* Identifier print_bcd_bcd_a
-								* Literal 15
-							* Literal 48
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_bcd_temp_print
-	* FunctionDeclaration void
-		* Function print_hex
-			* Parameters
-				* Declaration int
-					* Identifier print_hex_x Local
-			* Body
-				* Declaration char
-					* Identifier print_hex_temp Local
-				* Declaration char
-					* Identifier print_hex_temp_b Local
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator >>
-							* Identifier print_hex_x
-							* Literal 12
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
 				* If
-					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
+					* Operator !=
+						* Identifier print_bcd_temp_print
+						* Literal 48
 					* Body
 						* SetVariable
 							* Operator =
-								* Identifier print_hex_temp
-								* Operator +
-									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator >>
-							* Identifier print_hex_x
-							* Literal 8
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
+								* Identifier print_bcd_not_leading_zero
+								* Literal 1
+						* FunctionCall print_char
+							* CallParameters
+								* Identifier print_bcd_temp_print
 				* If
-					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
+					* Operator &&
+						* Operator ==
+							* Identifier print_bcd_temp_print
+							* Literal 48
+						* Operator ==
+							* Identifier print_bcd_not_leading_zero
+							* Literal 1
 					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_hex_temp
-								* Operator +
-									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
-				* SetVariable
+						* FunctionCall print_char
+							* CallParameters
+								* Identifier print_bcd_temp_print
+				* For
+					* SetVariable
+						* Operator =
+							* Identifier print_bcd_i
+							* Literal 16
+					* Operator >
+						* Identifier print_bcd_i
+						* Literal 0
 					* Operator =
-						* Identifier print_hex_temp
-						* Operator >>
-							* Identifier print_hex_x
+						* Identifier print_bcd_i
+						* Operator -
+							* Identifier print_bcd_i
 							* Literal 4
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
-				* If
-					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
 					* Body
 						* SetVariable
 							* Operator =
-								* Identifier print_hex_temp
+								* Identifier print_bcd_temp_print
 								* Operator +
-									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Identifier print_hex_x
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator &
-							* Identifier print_hex_temp
-							* Literal 15
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp_b
-						* Identifier print_hex_temp
-				* SetVariable
-					* Operator =
-						* Identifier print_hex_temp
-						* Operator +
-							* Identifier print_hex_temp_b
-							* Literal 48
+									* Operator &
+										* Operator >>
+											* Identifier print_bcd_bcd_a
+											* Operator -
+												* Identifier print_bcd_i
+												* Literal 4
+										* Literal 15
+									* Literal 48
+						* If
+							* Operator !=
+								* Identifier print_bcd_temp_print
+								* Literal 48
+							* Body
+								* SetVariable
+									* Operator =
+										* Identifier print_bcd_not_leading_zero
+										* Literal 1
+								* FunctionCall print_char
+									* CallParameters
+										* Identifier print_bcd_temp_print
+						* If
+							* Operator &&
+								* Operator ==
+									* Identifier print_bcd_temp_print
+									* Literal 48
+								* Operator ==
+									* Identifier print_bcd_not_leading_zero
+									* Literal 1
+							* Body
+								* FunctionCall print_char
+									* CallParameters
+										* Identifier print_bcd_temp_print
 				* If
-					* Operator >
-						* Identifier print_hex_temp_b
-						* Literal 9
+					* Operator ==
+						* Identifier print_bcd_not_leading_zero
+						* Literal 0
 					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_hex_temp
-								* Operator +
-									* Identifier print_hex_temp_b
-									* Literal 55
-				* FunctionCall print_char
-					* CallParameters
-						* Identifier print_hex_temp
+						* FunctionCall print_char
+							* CallParameters
+								* Literal 48
 	* FunctionDeclaration void
 		* Function cr
 			* Parameters
@@ -441,285 +325,131 @@
 				* FunctionCall print_char
 					* CallParameters
 						* Identifier cr_temp
-	* FunctionDeclaration int
-		* Function multiply
-			* Parameters
-				* Declaration int
-					* Identifier multiply_a Local
-				* Declaration int
-					* Identifier multiply_b Local
-			* Body
-				* Declaration int
-					* Identifier multiply_result Local
-					* Operator =
-						* Identifier multiply_result
-						* Literal 0
-				* For
-					* Declaration int
-						* Identifier multiply_i Local
-						* Operator =
-							* Identifier multiply_i
-							* Literal 0
-					* Operator <
-						* Identifier multiply_i
-						* Identifier multiply_b
-					* Operator =
-						* Identifier multiply_i
-						* Operator +
-							* Identifier multiply_i
-							* Literal 1
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier multiply_result
-								* Operator +
-									* Identifier multiply_result
-									* Identifier multiply_a
-				* Return
-					* Identifier multiply_result
-	* FunctionDeclaration int
-		* Function divide
-			* Parameters
-				* Declaration int
-					* Identifier divide_a Local
-				* Declaration int
-					* Identifier divide_b Local
-			* Body
-				* Declaration int
-					* Identifier divide_result Local
-					* Operator =
-						* Identifier divide_result
-						* Literal 0
-				* Declaration int
-					* Identifier divide_diff Local
-					* Operator =
-						* Identifier divide_diff
-						* Identifier divide_a
-				* While
-					* Operator <
-						* Identifier divide_diff
-						* Literal 32768
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier divide_diff
-								* Operator -
-									* Identifier divide_diff
-									* Identifier divide_b
-						* SetVariable
-							* Operator =
-								* Identifier divide_result
-								* Operator +
-									* Identifier divide_result
-									* Literal 1
-				* Return
-					* Identifier divide_result
-	* FunctionDeclaration int
-		* Function mod
-			* Parameters
-				* Declaration int
-					* Identifier mod_a Local
-				* Declaration int
-					* Identifier mod_b Local
-			* Body
-				* Declaration int
-					* Identifier mod_result Local
-					* Operator =
-						* Identifier mod_result
-						* Literal 0
-				* Declaration int
-					* Identifier mod_diff Local
-					* Operator =
-						* Identifier mod_diff
-						* Identifier mod_a
-				* While
-					* Operator <
-						* Identifier mod_diff
-						* Literal 32768
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier mod_diff
-								* Operator -
-									* Identifier mod_diff
-									* Identifier mod_b
-						* SetVariable
-							* Operator =
-								* Identifier mod_result
-								* Operator +
-									* Identifier mod_result
-									* Literal 1
-				* SetVariable
-					* Operator =
-						* Identifier mod_result
-						* Operator +
-							* Identifier mod_diff
-							* Identifier mod_b
-				* Return
-					* Identifier mod_result
-	* FunctionDeclaration void
-		* Function print
-			* Parameters
-				* Declaration char
-					* Operator ~* Dereference
-						* Identifier print_str Local
-			* Body
-				* Declaration char
-					* Operator ~* Dereference
-						* Identifier print_uart Local
-					* Operator =
-						* Operator ~* Dereference
-							* Identifier print_uart
-						* Literal32 1245184
-				* Declaration char
-					* Identifier print_current_char Local
-				* While
-					* Operator >
-						* Operator ~* Dereference
-							* Identifier print_str
-						* Literal 0
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier print_current_char
-								* Operator ~* Dereference
-									* Identifier print_str
-						* FunctionCall print_char
-							* CallParameters
-								* Identifier print_current_char
-						* SetVariable
-							* Operator =
-								* Identifier print_str
-								* Operator +
-									* Identifier print_str
-									* Literal 1
-	* FunctionDeclaration void
-		* Function tab
-			* Parameters
-			* Body
-				* FunctionCall print_char
-					* CallParameters
-						* Literal 9
 	* FunctionDeclaration void
 		* Function main
 			* Parameters
 			* Body
 				* Declaration int
-					* Identifier main_a Local
+					* Identifier main_time Local
 					* Operator =
-						* Identifier main_a
-						* Literal 3
-				* Declaration int
-					* Identifier main_b Local
-					* Operator =
-						* Identifier main_b
-						* Literal 2
-				* Declaration int
-					* Identifier main_c Local
-					* Operator =
-						* Identifier main_c
-						* Literal 1
-				* Declaration int
-					* Identifier main_col Local
-					* Operator =
-						* Identifier main_col
+						* Identifier main_time
 						* Literal 0
-				* FunctionCall cr
-					* CallParameters
-						* Void
 				* Declaration int
-					* Identifier main_not_prime Local
+					* Identifier main_seconds Local
 					* Operator =
-						* Identifier main_not_prime
+						* Identifier main_seconds
 						* Literal 0
-				* Declaration char
-					* Operator ~* Dereference
-						* Identifier main_end_str Local
+				* Declaration int
+					* Identifier main_minutes Local
 					* Operator =
-						* Operator ~* Dereference
-							* Identifier main_end_str
-						* String string_0: "Finished!\n" Static
+						* Identifier main_minutes
+						* Literal 0
+				* Declaration int
+					* Identifier main_hours Local
+					* Operator =
+						* Identifier main_hours
+						* Literal 0
+				* Declaration int
+					* Identifier main_dummy Local
+					* Operator =
+						* Identifier main_dummy
+						* Literal 0
 				* While
 					* Operator <
-						* Identifier main_a
-						* Literal 32768
+						* Identifier main_time
+						* Literal32 99999
 					* Body
-						* SetVariable
-							* Operator =
-								* Identifier main_not_prime
-								* Literal 0
-						* While
+						* For
+							* Declaration int
+								* Identifier main_i Local
+								* Operator =
+									* Identifier main_i
+									* Literal 0
 							* Operator <
-								* Identifier main_b
-								* Operator >>
-									* Identifier main_a
+								* Identifier main_i
+								* Literal32 4650000
+							* Operator =
+								* Identifier main_i
+								* Operator +
+									* Identifier main_i
 									* Literal 1
 							* Body
 								* SetVariable
 									* Operator =
-										* Identifier main_c
-										* FunctionCall mod
-											* CallParameters
-												* Identifier main_a
-												* Identifier main_b
-								* If
-									* Operator ==
-										* Identifier main_c
+										* Identifier main_dummy
 										* Literal 0
-									* Body
-										* SetVariable
-											* Operator =
-												* Identifier main_not_prime
-												* Literal 1
+						* If
+							* Operator <
+								* Identifier main_seconds
+								* Literal 60
+							* Body
 								* SetVariable
 									* Operator =
-										* Identifier main_b
+										* Identifier main_seconds
 										* Operator +
-											* Identifier main_b
+											* Identifier main_seconds
 											* Literal 1
 						* If
 							* Operator ==
-								* Identifier main_not_prime
-								* Literal 0
+								* Identifier main_seconds
+								* Literal 60
 							* Body
-								* FunctionCall print_bcd
-									* CallParameters
-										* Identifier main_a
-								* FunctionCall tab
-									* CallParameters
-										* Void
 								* SetVariable
 									* Operator =
-										* Identifier main_col
+										* Identifier main_seconds
+										* Literal 0
+								* SetVariable
+									* Operator =
+										* Identifier main_minutes
 										* Operator +
-											* Identifier main_col
+											* Identifier main_minutes
 											* Literal 1
-								* If
-									* Operator ==
-										* Identifier main_col
-										* Literal 8
-									* Body
-										* FunctionCall cr
-											* CallParameters
-												* Void
-										* SetVariable
-											* Operator =
-												* Identifier main_col
-												* Literal 0
+						* If
+							* Operator ==
+								* Identifier main_minutes
+								* Literal 60
+							* Body
+								* SetVariable
+									* Operator =
+										* Identifier main_minutes
+										* Literal 0
+								* SetVariable
+									* Operator =
+										* Identifier main_hours
+										* Operator +
+											* Identifier main_hours
+											* Literal 1
+						* If
+							* Operator ==
+								* Identifier main_hours
+								* Literal 24
+							* Body
+								* SetVariable
+									* Operator =
+										* Identifier main_hours
+										* Literal 0
+						* FunctionCall print_bcd
+							* CallParameters
+								* Identifier main_hours
+						* FunctionCall print_char
+							* CallParameters
+								* Literal 32
+						* FunctionCall print_bcd
+							* CallParameters
+								* Identifier main_minutes
+						* FunctionCall print_char
+							* CallParameters
+								* Literal 32
+						* FunctionCall print_bcd
+							* CallParameters
+								* Identifier main_seconds
+						* FunctionCall cr
+							* CallParameters
+								* Void
 						* SetVariable
 							* Operator =
-								* Identifier main_a
+								* Identifier main_time
 								* Operator +
-									* Identifier main_a
+									* Identifier main_time
 									* Literal 1
-						* SetVariable
-							* Operator =
-								* Identifier main_b
-								* Literal 2
-				* FunctionCall cr
-					* CallParameters
-						* Void
-				* FunctionCall print
-					* CallParameters
-						* Identifier main_end_str
 * End

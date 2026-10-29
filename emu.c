@@ -127,7 +127,17 @@ void WriteSerialPort(uint8_t c) {
 // I/O emulation
 // 0x13xxxx is I/O region in memory
 // OFFSETS:
-// 0000 = Console decimal uint16_t out
+// 0x0000 - 0x0100: UART
+// 0x0000 = UART byte in/out
+
+// 0x0100 - 0x0200: Hard disk
+// 0x0100 = Hard disk LBA (32-bit but only low 24-bits used)
+// 0x0104 = Hard disk 512-byte address pointer in memory
+// 0x0108 = Read from disk command
+// 0x010C = Write to disk command
+// 0x0110 = Read status register
+
+
 
 void io_out(int address, uint32_t value) {
     if (address == 0x130000) {

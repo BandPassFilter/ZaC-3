@@ -349,7 +349,6 @@ void print_bcd(int x) {
             print_char(temp_print);
         }
     }
-
 }
 
 void cr() {

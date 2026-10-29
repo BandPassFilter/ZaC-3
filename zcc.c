@@ -4643,7 +4643,9 @@ char *asm_generator(AST_Node *start_node, DictionaryPointer *pointer_symbol_tabl
     extra_stuff.operator_stack_offset = 4;
     extra_stuff.EOF_data = generateCharAppendList();
     asm_generator_code_gen(start_node, asm_list, symbol_table, pointer_symbol_table, &stack, ASM_NONE, &jmp_label, 1, &pointer_layer_dereference, &ast_modifier, &visibility, current_function, &extra_stuff);
-    //asm_list->append(asm_list, extra_stuff.EOF_data->array);
+    if (extra_stuff.EOF_data->size > 0) {
+        asm_list->append(asm_list, extra_stuff.EOF_data->array);
+    }
     asm_list->append(asm_list, "halt\n");
     return asm_list->array;
 }
