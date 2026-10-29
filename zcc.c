@@ -1971,11 +1971,14 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     char buffer[300] = {0};
                     extra_stuff->operator_stack_offset += -1;
                     sprintf(buffer, "add r2, r0, r%d\n", extra_stuff->operator_stack_offset);
-                    extra_stuff->operator_stack_offset += -1;
                     pointer_arithmetic_shift_amount = ceil(log2(symbol_tables[7]->get(symbol_tables[7], current_node->getItem(current_node, 0)->ast_string))); // scale by datatype size
+                    extra_stuff->operator_stack_offset += 1;
                     if (pointer_arithmetic_shift_amount > 0) {
-                        sprintf(buffer+strlen(buffer), "sli r2, r2, %d\n", pointer_arithmetic_shift_amount);
+                        sprintf(buffer+strlen(buffer), "addi r%d, r0, %d\n", extra_stuff->operator_stack_offset, pointer_arithmetic_shift_amount);
+                        sprintf(buffer+strlen(buffer), "sl r2, r2, r%d\n", extra_stuff->operator_stack_offset);
                     }
+                    extra_stuff->operator_stack_offset += -1;
+                    extra_stuff->operator_stack_offset += -1;
                     sprintf(buffer+strlen(buffer), "add r1, r0, r%d\n", extra_stuff->operator_stack_offset);
                     sprintf(buffer+strlen(buffer), "add r1, r%i, r%i\n", 1, 2);
                     sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;ADD_POINTER\n\n", extra_stuff->operator_stack_offset);
@@ -5277,7 +5280,7 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-3 C Compiler\n");
     // Part 0 - initialisation
-    char *default_file = "os.c";
+    char *default_file = "disktest.c";
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
     } else if (argc == 2) {

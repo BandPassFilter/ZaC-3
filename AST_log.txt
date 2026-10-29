@@ -24,7 +24,7 @@
 				* Declaration int
 					* Identifier print_bcd_x Local
 			* Body
-				* Declaration int Local
+				* Declaration int
 					* Identifier print_bcd_bcd_a Local
 				* Declaration int
 					* Identifier print_bcd_bcd_b Local
@@ -34,7 +34,7 @@
 					* Operator =
 						* Identifier print_bcd_temp_x
 						* Identifier print_bcd_x
-				* SetVariable Local
+				* SetVariable
 					* Operator =
 						* Identifier print_bcd_bcd_a
 						* Literal 0
@@ -52,7 +52,7 @@
 					* Operator =
 						* Identifier print_bcd_bcd_b_carry
 						* Literal 0
-				* For
+				* For Local
 					* Declaration int
 						* Identifier print_bcd_i Local
 						* Operator =
@@ -326,130 +326,190 @@
 					* CallParameters
 						* Identifier cr_temp
 	* FunctionDeclaration void
+		* Function print
+			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier print_str Local
+			* Body
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier print_uart Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier print_uart
+						* Literal32 1245184
+				* Declaration char
+					* Identifier print_current_char Local
+				* While
+					* Operator >
+						* Operator ~* Dereference
+							* Identifier print_str
+						* Literal 0
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier print_current_char
+								* Operator ~* Dereference
+									* Identifier print_str
+						* FunctionCall print_char
+							* CallParameters
+								* Identifier print_current_char
+						* SetVariable
+							* Operator =
+								* Identifier print_str
+								* Operator +
+									* Identifier print_str
+									* Literal 1
+	* FunctionDeclaration void
 		* Function main
 			* Parameters
 			* Body
 				* Declaration int
-					* Identifier main_time Local
+					* Operator ~* Dereference
+						* Identifier main_disk_io Local
 					* Operator =
-						* Identifier main_time
-						* Literal 0
+						* Operator ~* Dereference
+							* Identifier main_disk_io
+						* Literal32 1245440
 				* Declaration int
-					* Identifier main_seconds Local
+					* Operator ~* Dereference
+						* Identifier main_disk_test_buffer Local
 					* Operator =
-						* Identifier main_seconds
-						* Literal 0
-				* Declaration int
-					* Identifier main_minutes Local
+						* Operator ~* Dereference
+							* Identifier main_disk_test_buffer
+						* Literal32 65536
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier main_disk_test_buffer_char Local
 					* Operator =
-						* Identifier main_minutes
-						* Literal 0
-				* Declaration int
-					* Identifier main_hours Local
+						* Operator ~* Dereference
+							* Identifier main_disk_test_buffer_char
+						* Identifier main_disk_test_buffer
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier main_output_str Local
 					* Operator =
-						* Identifier main_hours
-						* Literal 0
-				* Declaration int
-					* Identifier main_dummy Local
+						* Operator ~* Dereference
+							* Identifier main_output_str
+						* String string_0: "Disk test\n" Static
+				* FunctionCall print
+					* CallParameters
+						* Identifier main_output_str
+				* SetVariable
 					* Operator =
-						* Identifier main_dummy
-						* Literal 0
-				* While
+						* Operator ~* Dereference
+							* Identifier main_disk_io
+						* Literal 117
+				* SetVariable
+					* Operator =
+						* Operator ~* Dereference
+							* Operator +
+								* Identifier main_disk_io
+								* Literal 3
+						* Literal 1
+				* For
+					* Declaration int
+						* Identifier main_i Local
+						* Operator =
+							* Identifier main_i
+							* Literal 0
 					* Operator <
-						* Identifier main_time
-						* Literal32 99999
+						* Identifier main_i
+						* Literal 128
+					* Operator =
+						* Identifier main_i
+						* Operator +
+							* Identifier main_i
+							* Literal 1
 					* Body
-						* For
-							* Declaration int
-								* Identifier main_i Local
-								* Operator =
-									* Identifier main_i
-									* Literal 0
-							* Operator <
-								* Identifier main_i
-								* Literal32 4650000
-							* Operator =
-								* Identifier main_i
-								* Operator +
-									* Identifier main_i
-									* Literal 1
-							* Body
-								* SetVariable
-									* Operator =
-										* Identifier main_dummy
-										* Literal 0
-						* If
-							* Operator <
-								* Identifier main_seconds
-								* Literal 60
-							* Body
-								* SetVariable
-									* Operator =
-										* Identifier main_seconds
-										* Operator +
-											* Identifier main_seconds
-											* Literal 1
-						* If
-							* Operator ==
-								* Identifier main_seconds
-								* Literal 60
-							* Body
-								* SetVariable
-									* Operator =
-										* Identifier main_seconds
-										* Literal 0
-								* SetVariable
-									* Operator =
-										* Identifier main_minutes
-										* Operator +
-											* Identifier main_minutes
-											* Literal 1
-						* If
-							* Operator ==
-								* Identifier main_minutes
-								* Literal 60
-							* Body
-								* SetVariable
-									* Operator =
-										* Identifier main_minutes
-										* Literal 0
-								* SetVariable
-									* Operator =
-										* Identifier main_hours
-										* Operator +
-											* Identifier main_hours
-											* Literal 1
-						* If
-							* Operator ==
-								* Identifier main_hours
-								* Literal 24
-							* Body
-								* SetVariable
-									* Operator =
-										* Identifier main_hours
-										* Literal 0
-						* FunctionCall print_bcd
-							* CallParameters
-								* Identifier main_hours
-						* FunctionCall print_char
-							* CallParameters
-								* Literal 32
-						* FunctionCall print_bcd
-							* CallParameters
-								* Identifier main_minutes
-						* FunctionCall print_char
-							* CallParameters
-								* Literal 32
-						* FunctionCall print_bcd
-							* CallParameters
-								* Identifier main_seconds
-						* FunctionCall cr
-							* CallParameters
-								* Void
 						* SetVariable
 							* Operator =
-								* Identifier main_time
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier main_disk_io
+										* Literal 4
+								* Identifier main_i
+				* SetVariable
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier main_disk_io
+						* Literal 0
+				* SetVariable
+					* Operator =
+						* Operator ~* Dereference
+							* Operator +
+								* Identifier main_disk_io
+								* Literal 2
+						* Literal 1
+				* For
+					* SetVariable
+						* Operator =
+							* Identifier main_i
+							* Literal 0
+					* Operator <
+						* Identifier main_i
+						* Literal 128
+					* Operator =
+						* Identifier main_i
+						* Operator +
+							* Identifier main_i
+							* Literal 1
+					* Body
+						* SetVariable
+							* Operator =
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier main_disk_test_buffer
+										* Identifier main_i
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier main_disk_io
+										* Literal 4
+				* Declaration int
+					* Identifier main_col Local
+					* Operator =
+						* Identifier main_col
+						* Literal 0
+				* For
+					* SetVariable
+						* Operator =
+							* Identifier main_i
+							* Literal 0
+					* Operator <
+						* Identifier main_i
+						* Literal 512
+					* Operator =
+						* Identifier main_i
+						* Operator +
+							* Identifier main_i
+							* Literal 1
+					* Body
+						* FunctionCall print_bcd
+							* CallParameters
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier main_disk_test_buffer_char
+										* Identifier main_i
+						* FunctionCall print_char
+							* CallParameters
+								* Literal 9
+						* SetVariable
+							* Operator =
+								* Identifier main_col
 								* Operator +
-									* Identifier main_time
+									* Identifier main_col
 									* Literal 1
+						* If
+							* Operator ==
+								* Identifier main_col
+								* Literal 16
+							* Body
+								* FunctionCall cr
+									* CallParameters
+										* Void
+								* SetVariable
+									* Operator =
+										* Identifier main_col
+										* Literal 0
 * End

@@ -39,6 +39,7 @@ char szBuff[n] = {0};
 DCB dcbSerialParams = {0};
 DWORD dwBytesRead = 0;
 int debug_mode = 0;
+FILE *disk_file;
 
 int InitialiseSerialPort() {
     printf("Serial port program\n");
@@ -124,6 +125,62 @@ void WriteSerialPort(uint8_t c) {
     }
 }
 
+int disk_pointer_address = 0;
+int harddisk_read_block_mode = 0;
+int harddisk_write_block_mode = 0;
+uint32_t disk_buffer[128]; // word-addressable buffer, but disk seek position is byte-addressable
+int buffer_idx = 0;
+int LBA_address = 0;
+
+uint32_t HardDisk_Read(int address) {
+    if (address == 0x110) {
+        uint32_t output = disk_buffer[buffer_idx];
+        if (harddisk_read_block_mode) {
+            buffer_idx++;
+            if (buffer_idx == 128) {
+                harddisk_read_block_mode = 0;
+            }
+        }
+        return output;
+    }
+    if (address == 0x114) {
+        return harddisk_read_block_mode | harddisk_write_block_mode;
+    }
+}
+
+void HardDisk_Write(int address, uint32_t value) {
+    if (address == 0x100) {
+        LBA_address = value;
+        LBA_address = LBA_address % 128; // drive size is 64 KB for now
+    }
+    if (address == 0x104) {
+        disk_pointer_address = value; // disk pointer offset is byte-addressable
+    }
+    if (address == 0x108) {
+        harddisk_read_block_mode = 1;
+        fseek(disk_file, LBA_address * 512, SEEK_SET);
+        fread((uint8_t*)disk_buffer, 1, 512, disk_file);
+        buffer_idx = 0;
+    }
+    if (address == 0x10C) {
+        harddisk_write_block_mode = 1;
+        fseek(disk_file, LBA_address * 512, SEEK_SET);
+        buffer_idx = 0;
+    }
+    if (address == 0x110) {
+        disk_buffer[buffer_idx] = value;
+        if (harddisk_write_block_mode) {
+            buffer_idx++;
+            if (buffer_idx == 128) {
+                harddisk_write_block_mode = 0;
+                fwrite(disk_buffer, 4, 128, disk_file);
+                buffer_idx = 0;
+            }
+        }
+    }
+}
+
+
 // I/O emulation
 // 0x13xxxx is I/O region in memory
 // OFFSETS:
@@ -132,22 +189,31 @@ void WriteSerialPort(uint8_t c) {
 
 // 0x0100 - 0x0200: Hard disk
 // 0x0100 = Hard disk LBA (32-bit but only low 24-bits used)
-// 0x0104 = Hard disk 512-byte address pointer in memory
-// 0x0108 = Read from disk command
-// 0x010C = Write to disk command
-// 0x0110 = Read status register
+// 0x0104 = Hard disk 512-byte address pointer in memory (used for DMA)
+// 0x0108 = Start read 512 block command
+// 0x010C = Start write 512 block command
+// 0x0110 = Read 32-bit word from disk (128 32-bit words per seconds, or 512 bytes) (io_in)
+// 0x0110 = Write 32-bit word to disk (128 32-bit words per seconds, or 512 bytes) (io_out)
+// 0x0114 = Read status register
 
-
+#define IO_BASE 0x130000
 
 void io_out(int address, uint32_t value) {
-    if (address == 0x130000) {
+    if (address == IO_BASE + 0x0000) {
         WriteSerialPort((uint8_t)value);
     }
+    if ((address & 0xFFFFFFFF00) == IO_BASE + 0x0100) {
+        HardDisk_Write(address & 0x0000FFFF, value);
+    }
+
 }
 
 uint32_t io_in(int address) {
     if (address == 0x130000) {
         return (uint32_t)ReadSerialPort();
+    }
+    if ((address & 0xFFFFFFFF00) == IO_BASE + 0x0100) {
+        HardDisk_Read(address & 0x0000FFFF);
     }
 }
 
@@ -332,7 +398,7 @@ int main(int argc, char** argv) {
     printf("ZaC-3 Emulator\n");
 
     char *input_file_str;
-    char *default_file = "program.bin";
+    char *default_file = "disktest.bin";
 
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
@@ -376,6 +442,11 @@ int main(int argc, char** argv) {
     }
     fread(memory, 1, 320*1024, program_file);
     
+    disk_file = fopen("disk.img", "r+b");
+    if (!disk_file) {
+        printf("Error opening disk file!\n");
+        exit(1);
+    }
     
     // define 32-bit registers
     // R0-R7 = 8 32-bit GPR (R0 = zero register)

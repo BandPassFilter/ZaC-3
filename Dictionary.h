@@ -58,7 +58,7 @@ void _Dictionary_set(Dictionary *self, int key_value, char *key_string) {
     //printf("Dictionary: %p\n", self);
 
     if (_check_string_in_strings(self->number_of_keys, self->key_strings, key_string) != -1) {
-        printf("Key string already in dictionary!\n");
+        printf("Key string \"%s\" already in dictionary!\n", key_string);
         exit(1);
     }
     

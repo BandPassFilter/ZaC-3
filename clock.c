@@ -94,10 +94,14 @@ void main() {
     int minutes = 0;
     int hours = 0;
     int dummy = 0;
+    cr();
     while (time < 99999) {
-        for (int i = 0; i < 4650000; i = i + 1) {
-            dummy = 0;
-        }
+        print_bcd(hours);
+        print_char(32);
+        print_bcd(minutes);
+        print_char(32);
+        print_bcd(seconds);
+        cr();
         if (seconds < 60) {
             seconds = seconds + 1;
         }
@@ -112,12 +116,9 @@ void main() {
         if (hours == 24) {
             hours = 0;
         }
-        print_bcd(hours);
-        print_char(32);
-        print_bcd(minutes);
-        print_char(32);
-        print_bcd(seconds);
-        cr();
         time = time + 1;
+        for (int i = 0; i < 4650000; i = i + 1) {
+            dummy = 0;
+        }
     }
 }
