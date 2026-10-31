@@ -428,6 +428,7 @@ int main(int argc, char** argv) {
     }
 
     //int start_address = 0x20000; // TODO, make .org statement so that programs can run in single-tasking OS.
+    //int start_address = 0; // TODO, make .org statement so that programs can run in single-tasking OS.
     int start_address = 0; // TODO, make .org statement so that programs can run in single-tasking OS.
 
     char output_file_str[100] = {0};
