@@ -1024,7 +1024,7 @@ int main(int argc, char** argv) {
     printf("Data segment usage: %.2lf%%\n", ((double)data_pointer / (double)(65536))*100);
 
     // now generate final machine code binary file
-    fwrite(output_array, sizeof(uint8_t), 256*1024 + 65536, output_file);
+    fwrite(output_array, sizeof(uint8_t), code_pointer*4 + data_pointer, output_file);
 
     fclose(input_file);
     fclose(output_file);
