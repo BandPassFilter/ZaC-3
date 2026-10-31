@@ -24,6 +24,7 @@ section, so the final flat binary would be 256KB + 64KB, which is code + data, m
 last 64KB is where all the static data and strings reside and gets initialised immediately when the program starts.
 */
 
+int START_ADDRESS;
 
 enum label_type {
     LABEL_NUMBER,
@@ -114,6 +115,8 @@ int check_string_is_non_inst(char *instruction_string, int length) {
     } else if (compare_string(instruction_string, ".asciiz")) {
        return 1;
     } else if (compare_string(instruction_string, ".word")) {
+        return 1;
+    } else if (compare_string(instruction_string, ".org")) {
         return 1;
     }
     return 0;
@@ -414,7 +417,7 @@ int main(int argc, char** argv) {
 
     printf("Argc: %d\n", argc);
 
-    char *input_file_str = "string_test32.asm";
+    char *input_file_str = "clock.asm";
     if (argc > 2) {
         if (strcmp(argv[1], "-b") == 0) {
             boot_program = 1;
@@ -429,7 +432,7 @@ int main(int argc, char** argv) {
 
     //int start_address = 0x20000; // TODO, make .org statement so that programs can run in single-tasking OS.
     //int start_address = 0; // TODO, make .org statement so that programs can run in single-tasking OS.
-    int start_address = 0; // TODO, make .org statement so that programs can run in single-tasking OS.
+    //int start_address = 0; // TODO, make .org statement so that programs can run in single-tasking OS.
 
     char output_file_str[100] = {0};
     int i = 0;
@@ -517,16 +520,73 @@ int main(int argc, char** argv) {
     char *j_type_inst[J_ARR_LENGTH] = {"jmp", "jz", "jc", "jnz", "jnc", "jal"};
 
     int label_idx = 0;
-    int current_address = start_address;
+    int current_address = START_ADDRESS;
     // first pass (evaluate label addresses and values, and assembler directives)
     Label labels[LABELS_SIZE] = {0};
     // jump labels are "jump_label:"
+
     int input_buf_ptr = 0;
     int adrs_offset_value = 0;
     int data_segment_size = 0;
     const int data_segment_base = 0x040000;
     int first_string = 0;
     int STRING_BASE = 0;
+    while(input_buf_ptr < fsize) {
+        
+
+
+        
+        skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
+        grab_string(input_file_buf, fsize, instruction_string, &input_buf_ptr);
+        // detect and remove comments
+        char *temp_ptr = input_buf_ptr;
+        if (instruction_string[0] == ';') {
+            temp_ptr--;
+            remove_line_after(input_file_buf, fsize, &temp_ptr);
+        }
+        char directive_string[50] = {0};
+        char temp_string[50] = {0};
+        int directive_value = 0;
+        int dummy_idx = 0;
+        // evaluate address sensitive assembler directives (.byte, .word, .asciiz, etc.) before addresses
+        // are calculated (important for .org, so that .org is evaluated before everything else)
+        if (compare_string(instruction_string, ".define")) {
+            // ".define define_name 01234"
+            //printf(".define detected\n");
+            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
+            grab_string(input_file_buf, fsize, directive_string, &input_buf_ptr); // "word_name"
+            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
+            grab_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "1234"
+            directive_value = atoi(temp_string);
+            push_labels(LABELS_SIZE, labels, directive_string, directive_value, directive_value, &dummy_idx, &label_idx, LABEL_NUMBER);
+        } else if (compare_string(instruction_string, ".include")) {
+            // ".include "include_file.asm"
+            //printf(".include detected\n");
+            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
+            //push_labels(LABELS_SIZE, labels, instruction_string, 0, &input_buf_ptr, &label_idx);
+        } else if (compare_string(instruction_string, ".global")) {
+            // ".global global_name"
+            //printf(".global detected\n");
+            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
+            //push_labels(LABELS_SIZE, labels, instruction_string, 0, &input_buf_ptr, &label_idx);
+        } else if (compare_string(instruction_string, ".org")) {
+            // ".org 01234"
+            //printf(".define detected\n");
+            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
+            grab_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "1234"
+            directive_value = atoi(temp_string);
+            START_ADDRESS = directive_value;
+            current_address = START_ADDRESS;
+        }
+
+    }
+
+    input_buf_ptr = 0;
+    adrs_offset_value = 0;
+    data_segment_size = 0;
+    first_string = 0;
+    STRING_BASE = 0;
+
     while(input_buf_ptr < fsize) {
         
 
@@ -613,6 +673,14 @@ int main(int argc, char** argv) {
             //printf(".global detected\n");
             skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
             //push_labels(LABELS_SIZE, labels, instruction_string, 0, &input_buf_ptr, &label_idx);
+        } else if (compare_string(instruction_string, ".org")) {
+            // ".org 01234"
+            //printf(".define detected\n");
+            skip_whitespace(input_file_buf, fsize, &input_buf_ptr);
+            grab_string(input_file_buf, fsize, temp_string, &input_buf_ptr); // "1234"
+            //directive_value = atoi(temp_string);
+            //START_ADDRESS = directive_value;
+            //current_address = START_ADDRESS;
         } else if (check_string_is_non_inst(instruction_string, PARSE_LENGTH)) {
             //printf("%s %d\n", &instruction_string, current_address);
             push_labels(LABELS_SIZE, labels, instruction_string, 0, current_address, &input_buf_ptr, &label_idx, LABEL_NUMBER);

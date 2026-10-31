@@ -8,6 +8,8 @@ lui io, 19
 
 jmp _main
 
+.org 131072
+
 _print_char:
 subi sp, sp, 4
 movi [sp + 0], fp

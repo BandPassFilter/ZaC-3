@@ -232,10 +232,12 @@ void write_command(char *shell_buf, int shell_buf_offset) {
     char current_char = *(shell_buf + shell_buf_offset);
     // 32-bit address input
 
-    for (int i = 32; i > 0; i = i - 4) {
-        input_a = input_a + get_hex_int(*(shell_buf + shell_buf_offset)) << (i - 4);
-        shell_buf_offset = shell_buf_offset + 1;
-    }
+    //for (int i = 32; i > 0; i = i - 4) {
+    //    input_a = input_a + get_hex_int(*(shell_buf + shell_buf_offset)) << (i - 4);
+    //    shell_buf_offset = shell_buf_offset + 1;
+    //}
+
+    input_a = get_int(shell_buf + shell_buf_offset);
 
     char *write_ptr = input_a;
     int display_ptr = write_ptr;
@@ -282,8 +284,12 @@ void write_command(char *shell_buf, int shell_buf_offset) {
 void run_command(char *shell_buf, int shell_buf_offset) {
     char *run_str = "run command detected\n";
     int run_address = 131072;
+    //char *debug = 9000000;
     print(run_str);
-    $run run_address;
+    //$run run_address;
+    asm("addi r1, r0, 0");
+    asm("lui r1, 2");
+    asm("jr r1");
 }
 
 int multiply(int a, int b) {

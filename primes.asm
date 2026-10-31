@@ -8,6 +8,8 @@ lui io, 19
 
 jmp _main
 
+.org 131072
+
 _print_char:
 subi sp, sp, 4
 movi [sp + 0], fp
@@ -1227,7 +1229,7 @@ add r4, r0, r1 ;RETURN_SET
 addi r4, r0, 0 ;GET
 movi [fp + 16], r4 ;SET
 
-addi r4, r0, string_0
+addi r4, r0, string_1
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 20], r4 ;SET
 
@@ -1440,5 +1442,5 @@ add r4, r0, r1 ;RETURN_SET
 
 halt
 
-.asciiz string_0 = "Finished!\n"
+.asciiz string_1 = "Finished!\n"
 halt

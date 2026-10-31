@@ -5,7 +5,7 @@ ZaC-3 supports 1 types of pointer, 32-bit.
 
 NEAR TODO:
 
-- Make a "C lowering" stage where this takes in the source C and outputs more simpler C that performs operations in explicit verbose tasks.
+- (CANCELLED, too inefficient) Make a "C lowering" stage where this takes in the source C and outputs more simpler C that performs operations in explicit verbose tasks.
     An example is taking i++; and converting it to i = i + 1;
     This would be done exactly the same way as the AST/ASM code gen, but instead of outputting ASM codegen, it's outputing "lowered C"
     or "simpler C" codegen.
@@ -152,7 +152,7 @@ PROBLEMS:
 
     - (FIXED) immediate values doesn't work in function (divide(5, 2)), you have to go (divide(a, b)) and make sure a and b have 5 and 2 respectfully.
 
-    - expressions doesn't work on return (return a + b; doesn't work, only return a;).
+    - (FIXED) expressions doesn't work on return (return a + b; doesn't work, only return a;).
 
     - (FIXED) Expressions don't work on compare operators, like "if *(str_a_base + i) == *(str_b_base + i)".
         You have to go 
@@ -169,7 +169,8 @@ PROBLEMS:
 
     - Bracket balance checking doesn't work yet, it doens't detect if "Expected ')'" or "Missing '('" etc.
 
-    - Functions calls about 3 deep doesn't work, the 3rd function doesn't work.
+    - (FIXED) Functions calls about 3 deep doesn't work, the 3rd function doesn't work.
+        This was fixed by saving the scratch registers currently in use to the stack so they don't get overwritten by other functions.
 */
 
 #include <stdio.h>
@@ -1206,6 +1207,27 @@ int statement(TokenList *tokenList, int tokenList_idx, AST_Node *current_node, i
             AST_statement->append(AST_statement, AST_return_operand);
             current_node->append(current_node, AST_statement);
             local_idx++;
+        } else if (strcmp(current_token.token_string, "asm") == 0) {
+            //printf("return\n");
+            AST_Node *AST_statement = generate_ast_node();
+            AST_statement->type = AST_ASM;
+            AST_statement->subtype = AST_NOSUBTYPE;
+            
+            TokenList token_operands;
+            TokenListInit(&token_operands, 0);
+            local_idx++;
+            while (tokenList->getItem(tokenList, local_idx).token_string[0] != ';') {
+                token_operands.append(&token_operands, tokenList->getItem(tokenList, local_idx));
+                local_idx++;
+            }
+            for (int i = 0; i < token_operands.getSize(&token_operands); i++) {
+                //printf("%s ", token_operands.getItem(&token_operands, i).token_string);
+            }
+            AST_Node *AST_return_operand = generate_ast_node();
+            AST_return_operand = expression(&token_operands, AST_return_operand);
+            AST_statement->append(AST_statement, AST_return_operand);
+            current_node->append(current_node, AST_statement);
+            local_idx++;
         } else if (strcmp(current_token.token_string, "in") == 0) {
             
         } else if (strcmp(current_token.token_string, "out") == 0) {
@@ -1436,6 +1458,9 @@ void print_AST_type(FILE *file, AST_Node *node) {
     }
     if (node->type == AST_PROGRAM_START) {
         fprintf(file, "ProgramStart");
+    }
+    if (node->type == AST_ASM) {
+        fprintf(file, "Asm");
     }
 }
 
@@ -3145,6 +3170,16 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         
         //extra_stuff->operator_stack_offset = extra_stuff->operator_stack_offset - 1;
         sprintf(buffer+strlen(buffer), ".org %s\n", current_node->getItem(current_node, 0)->ast_string);
+        asm_list->append(asm_list, buffer);
+    } else if (current_node->type == AST_ASM) {
+        char buffer[300] = {0};
+        CharAppendList *dummy = generateCharAppendList();
+        CharAppendList *dummy_eof = generateCharAppendList();
+        ExtraStuff dummy_extra;
+        memcpy(&dummy_extra, extra_stuff, sizeof(ExtraStuff));
+        dummy_extra.EOF_data = dummy_eof;
+        asm_generator_code_gen(current_node->getItem(current_node, 0), dummy, symbol_tables, pointer_symbol_table, stack, ASM_GET, jmp_label, register_select, pointer_layer_dereference, ast_modifier, visibility, current_function, &dummy_extra);
+        sprintf(buffer, "%s\n", current_node->getItem(current_node, 0)->ast_string);
         asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_VOID) {
         // do nothing
@@ -5301,7 +5336,7 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-3 C Compiler\n");
     // Part 0 - initialisation
-    char *default_file = "disktest.c";
+    char *default_file = "asmtest.c";
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
     } else if (argc == 2) {

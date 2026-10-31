@@ -13,9 +13,9 @@
 						* Operator ~* Dereference
 							* Identifier print_char_uart
 						* Literal32 1245184
-				* SetVariable Local
+				* SetVariable
 					* Operator =
-						* Operator ~* Dereference
+						* Operator ~* Dereference Local
 							* Identifier print_char_uart
 						* Identifier print_char_value
 	* FunctionDeclaration char
@@ -26,11 +26,11 @@
 					* Operator ~* Dereference
 						* Identifier get_char_uart Local
 					* Operator =
-						* Operator ~* Dereference Local
-							* Identifier get_char_uart
+						* Operator ~* Dereference
+							* Identifier get_char_uart Local
 						* Literal32 1245184
 				* Return
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier get_char_uart
 	* FunctionDeclaration int
 		* Function get_hex_int
@@ -38,11 +38,11 @@
 				* Declaration char
 					* Identifier get_hex_int_c Local
 			* Body
-				* Declaration char Local
+				* Declaration char
 					* Operator ~* Dereference
 						* Identifier get_hex_int_hex_to_dec Local
 					* Operator =
-						* Operator ~* Dereference
+						* Operator ~* Dereference Local
 							* Identifier get_hex_int_hex_to_dec
 						* String string_0: "0123456789       :;<=>?" Static
 				* Declaration int
@@ -50,8 +50,8 @@
 					* Operator =
 						* Identifier get_hex_int_number
 						* Operator -
-							* Operator ~* Dereference
-								* Operator - Local
+							* Operator ~* Dereference Local
+								* Operator -
 									* Operator +
 										* Identifier get_hex_int_hex_to_dec
 										* Identifier get_hex_int_c
@@ -61,23 +61,23 @@
 					* Identifier get_hex_int_number
 	* FunctionDeclaration void
 		* Function cr
-			* Parameters Local
+			* Parameters
 			* Body
 				* Declaration char
 					* Identifier cr_temp Local
 					* Operator =
-						* Identifier cr_temp Local
+						* Identifier cr_temp
 						* Literal 10
 				* FunctionCall print_char
-					* CallParameters Local
+					* CallParameters
 						* Identifier cr_temp
 				* SetVariable
-					* Operator =
+					* Operator = Local
 						* Identifier cr_temp
-						* Literal 13
+						* Literal 13 Local
 				* FunctionCall print_char
 					* CallParameters
-						* Identifier cr_temp Local
+						* Identifier cr_temp
 	* FunctionDeclaration void
 		* Function print
 			* Parameters
@@ -85,17 +85,17 @@
 					* Operator ~* Dereference
 						* Identifier print_str Local
 			* Body
-				* Declaration char Local
+				* Declaration char
 					* Operator ~* Dereference
 						* Identifier print_uart Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier print_uart
-						* Literal32 1245184 Local
-				* Declaration char Local
+						* Literal32 1245184
+				* Declaration char
 					* Identifier print_current_char Local
 				* While
-					* Operator >
+					* Operator > Local
 						* Operator ~* Dereference
 							* Identifier print_str
 						* Literal 0
@@ -110,17 +110,17 @@
 								* Identifier print_current_char
 						* SetVariable
 							* Operator =
-								* Identifier print_str
+								* Identifier print_str Local
 								* Operator +
 									* Identifier print_str
 									* Literal 1
 	* FunctionDeclaration void
 		* Function print_hex_byte
-			* Parameters
+			* Parameters Local
 				* Declaration char
 					* Identifier print_hex_byte_x Local
 			* Body
-				* Declaration char Local
+				* Declaration char
 					* Identifier print_hex_byte_temp Local
 				* Declaration char
 					* Identifier print_hex_byte_temp_b Local
@@ -133,9 +133,9 @@
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
-						* Operator &
+						* Operator & Local
 							* Identifier print_hex_byte_temp
-							* Literal 15
+							* Literal 15 Local
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp_b
@@ -143,7 +143,7 @@
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
-						* Operator +
+						* Operator + Local
 							* Identifier print_hex_byte_temp_b
 							* Literal 48
 				* If
@@ -154,30 +154,30 @@
 						* SetVariable
 							* Operator =
 								* Identifier print_hex_byte_temp
-								* Operator +
+								* Operator + Local
 									* Identifier print_hex_byte_temp_b
 									* Literal 55
-				* FunctionCall print_char Local
+				* FunctionCall print_char
 					* CallParameters
 						* Identifier print_hex_byte_temp
 				* SetVariable
 					* Operator =
-						* Identifier print_hex_byte_temp
-						* Identifier print_hex_byte_x Local
+						* Identifier print_hex_byte_temp Local
+						* Identifier print_hex_byte_x
 				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
 						* Operator &
-							* Identifier print_hex_byte_temp Local
+							* Identifier print_hex_byte_temp
 							* Literal 15
-				* SetVariable
+				* SetVariable Local
 					* Operator =
 						* Identifier print_hex_byte_temp_b
 						* Identifier print_hex_byte_temp
-				* SetVariable Local
+				* SetVariable
 					* Operator =
 						* Identifier print_hex_byte_temp
-						* Operator +
+						* Operator + Local
 							* Identifier print_hex_byte_temp_b
 							* Literal 48
 				* If
@@ -896,42 +896,14 @@
 							* Operator +
 								* Identifier write_command_shell_buf
 								* Identifier write_command_shell_buf_offset
-				* For
-					* Declaration int
-						* Identifier write_command_i Local
-						* Operator =
-							* Identifier write_command_i
-							* Literal 32
-					* Operator >
-						* Identifier write_command_i
-						* Literal 0
+				* SetVariable
 					* Operator =
-						* Identifier write_command_i
-						* Operator -
-							* Identifier write_command_i
-							* Literal 4
-					* Body
-						* SetVariable
-							* Operator =
-								* Identifier write_command_input_a
+						* Identifier write_command_input_a
+						* FunctionCall get_int
+							* CallParameters
 								* Operator +
-									* Identifier write_command_input_a
-									* Operator <<
-										* FunctionCall get_hex_int
-											* CallParameters
-												* Operator ~* Dereference
-													* Operator +
-														* Identifier write_command_shell_buf
-														* Identifier write_command_shell_buf_offset
-										* Operator -
-											* Identifier write_command_i
-											* Literal 4
-						* SetVariable
-							* Operator =
-								* Identifier write_command_shell_buf_offset
-								* Operator +
+									* Identifier write_command_shell_buf
 									* Identifier write_command_shell_buf_offset
-									* Literal 1
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier write_command_write_ptr Local
@@ -1109,8 +1081,12 @@
 				* FunctionCall print
 					* CallParameters
 						* Identifier run_command_run_str
-				* Run
-					* Identifier run_command_run_address
+				* Asm
+					* String string_10: "addi r1, r0, 0" Static
+				* Asm
+					* String string_11: "lui r1, 2" Static
+				* Asm
+					* String string_12: "jr r1" Static
 	* FunctionDeclaration int
 		* Function multiply
 			* Parameters
@@ -1606,35 +1582,35 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_x
-						* String string_10: "\nZaC-3 OS\n" Static
+						* String string_13: "\nZaC-3 OS\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_dump Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_dump
-						* String string_11: "dump" Static
+						* String string_14: "dump" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_write Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_write
-						* String string_12: "write" Static
+						* String string_15: "write" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_run Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_run
-						* String string_13: "run" Static
+						* String string_16: "run" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_primes_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_primes_str
-						* String string_14: "primes" Static
+						* String string_17: "primes" Static
 				* FunctionCall print
 					* CallParameters
 						* Identifier main_x
@@ -1644,21 +1620,21 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_output_str
-						* String string_15: "Typed string is: " Static
+						* String string_18: "Typed string is: " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_invalid_command_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_invalid_command_str
-						* String string_16: "Invalid command\n" Static
+						* String string_19: "Invalid command\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_cr_string Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_cr_string
-						* String string_17: "\ncarriage return\n" Static
+						* String string_20: "\ncarriage return\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_shell_buf Local
@@ -1672,7 +1648,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_cr
-						* String string_18: "\n" Static
+						* String string_21: "\n" Static
 				* Declaration char
 					* Identifier main_space Local
 					* Operator =
@@ -1917,7 +1893,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_end
-						* String string_19: "end\n" Static
+						* String string_22: "end\n" Static
 				* FunctionCall print
 					* CallParameters
 						* Identifier main_end
