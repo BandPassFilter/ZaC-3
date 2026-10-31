@@ -108,6 +108,21 @@ void print(char *str) {
     }
 }
 
+void print_hex(uint8_t x) {
+    char temp;
+    char temp_b;
+    for (int i = 8; i > 0; i = i - 4) {
+        temp = x >> (i - 4);
+        temp = temp & 15;
+        temp_b = temp;
+        temp = temp_b + 48;
+        if (temp_b > 9) {
+            temp = temp_b + 55;
+        }
+        print_char(temp);
+    }
+}
+
 void main() {
     int *disk_io = 1245440;
     int *disk_test_buffer = 65536;
@@ -117,13 +132,13 @@ void main() {
 
 
     *disk_io = 117; // LBA to 0
-    *(disk_io + 3) = 1; // start write to disk
+    //*(disk_io + 3) = 1; // start write to disk
+    //for (int i = 0; i < 128; i = i + 1) {
+     //   *(disk_io + 4) = i;
+    //}
+    *disk_io = 2; // LBA to 0
+    *(disk_io + 2) = 1; // start read to disk
     for (int i = 0; i < 128; i = i + 1) {
-        *(disk_io + 4) = i;
-    }
-    *disk_io = 0; // LBA to 0
-    *(disk_io + 2) = 1; // start write to disk
-    for (i = 0; i < 128; i = i + 1) {
         *(disk_test_buffer + i) = *(disk_io + 4);
     }
 
@@ -131,12 +146,28 @@ void main() {
 
     int col = 0;
     for (i = 0; i < 512; i = i + 1) {
-        print_bcd(*(disk_test_buffer_char + i));
-        print_char(9);
+        print_hex(*(disk_test_buffer_char + i));
+        print_char(32);
         col = col + 1;
         if (col == 16) {
+            for (int j = i - 16; j < i; j = j + 1) {
+                uint8_t current_byte = *(disk_test_buffer_char + j + 1);
+                int show_dot = 1;
+                if (current_byte > 31 && current_byte < 127) {
+                    print_char(current_byte);
+                    show_dot = 0;
+                }
+                if (show_dot == 1) {
+                    print_char(46);
+                    show_dot = 0;
+                }
+
+            }
             cr();
             col = 0;
         }
     }
+
+
+
 }

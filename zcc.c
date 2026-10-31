@@ -113,14 +113,16 @@ NEAR TODO:
   and then when the register file gets full (r20 is maximum I think, everything past is system registers) then it "spills" onto the stack. However
   that's a future thing. For now just keep it explicit register or memory via enum.
 
-  - Make a unique keyword that only my ZaC-3 C compiler sees so that way gcc won't compile all my ZaC-3-only C programs into x86.
-    This would be #ZaC-3 or something. Also I would have "run 0x00200000" keyword that allows C to set the program counter to any
-    value to run programs from the OS. In modern C I would use function pointers but I don't have function pointers in my compiler
-    so I would make my own simple keyword instead.
- 
-  - Make #START_PROGRAM 0x0020000 that would allow the C program to start at any arbitrary address, this is to allow user programs
-    to start above the OS code. This would be in a single-tasking system with no MMU. In an MMU system with multi-tasking OS, all
-    tasks would start at 0x00000000 in their own virtual space and wouldn't need #START_PROGRAM 0x00200000.
+- Make a unique keyword that only my ZaC-3 C compiler sees so that way gcc won't compile all my ZaC-3-only C programs into x86.
+This would be #ZaC-3 or something. Also I would have "run 0x00200000" keyword that allows C to set the program counter to any
+value to run programs from the OS. In modern C I would use function pointers but I don't have function pointers in my compiler
+so I would make my own simple keyword instead.
+
+- Make #START_PROGRAM 0x0020000 that would allow the C program to start at any arbitrary address, this is to allow user programs
+to start above the OS code. This would be in a single-tasking system with no MMU. In an MMU system with multi-tasking OS, all
+tasks would start at 0x00000000 in their own virtual space and wouldn't need #START_PROGRAM 0x00200000.
+
+- Make #include, I'm starting to copy and paste common code all the time, like print_char, print, print_bcd, etc.
 
 FAR TODO:
     - ZaC-3 will be fully 32-bit CPU, and so 32-bit ints, 32-bit pointers, etc. Although it will still use the same backplane, but it will have a different bus protocol.
@@ -732,7 +734,7 @@ int declaration(TokenList *tokenList, int tokenList_idx, AST_Node *current_node,
     } else if (tokenList->getItem(tokenList, tokenList_idx).token_type == KEYWORD) {
         current_node->token_value = tokenList->getItem(tokenList, tokenList_idx).token_value;
         current_node->modifier = tokenList->getItem(tokenList, tokenList_idx).token_modifier;
-        if (tokenList->getItem(tokenList, tokenList_idx).token_value == INT || tokenList->getItem(tokenList, tokenList_idx).token_value == CHAR) {    
+        if (tokenList->getItem(tokenList, tokenList_idx).token_value == INT || tokenList->getItem(tokenList, tokenList_idx).token_value == CHAR || tokenList->getItem(tokenList, tokenList_idx).token_value == UINT8_T) {    
             AST_Node *nextNode = current_node;
             int declare_idx = local_idx;
             local_idx++;
@@ -1540,7 +1542,7 @@ void asm_generator_symbol_table_call_params(AST_Node *current_node, Dictionary *
         if (current_node->token_value == INT) {
             // int datatype has 2 bytes
             dereferenced_var_size = 4;
-        } else if (current_node->token_value == CHAR) {
+        } else if (current_node->token_value == CHAR || current_node->token_value == UINT8_T) {
             dereferenced_var_size = 1;
         }
         if (declare_node->visibility == AST_LOCAL) {
@@ -1661,7 +1663,7 @@ void asm_generator_symbol_table(AST_Node *current_node, Dictionary **symbol_tabl
         if (current_node->token_value == INT) {
             // int datatype has 4 bytes
             dereferenced_var_size = 4;
-        } else if (current_node->token_value == CHAR) {
+        } else if (current_node->token_value == CHAR || current_node->token_value == UINT8_T) {
             dereferenced_var_size = 1;
         }
         if (declare_node->visibility == AST_LOCAL) {
@@ -2138,9 +2140,9 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 }
             }
         } else {*/
-         
+            int current_type = symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string);
             if (status == ASM_GET) {
-                if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                if (current_type == CHAR || current_type == UINT8_T) {
                     sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
@@ -2148,7 +2150,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                if (current_type == CHAR || current_type == UINT8_T) {
                     sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset-1, extra_stuff->operator_stack_offset-1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
@@ -2156,7 +2158,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_SET) {
-                if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                if (current_type == CHAR || current_type == UINT8_T) {
                     extra_stuff->operator_stack_offset += -1;
                     sprintf(buffer+strlen(buffer), "mvbi [r%d + 0], r%d ;SET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset-1);
                 } else {
@@ -2515,7 +2517,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -2548,7 +2551,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         } else {
             // setting variable (char, int, uint8_t, etc.)
             if (status == ASM_GET) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -2578,7 +2582,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     }
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -2610,7 +2615,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 }
             } else if (status == ASM_SET) {
                 //if (symbol_tables[4].get(&symbol_tables[4], tail_node->ast_string) == AST_
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "mvbi [sp + %d], r%i\n", symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack, register_select);
@@ -2683,7 +2689,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -2720,7 +2727,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         } else {
             // setting variable (char, int, uint8_t, etc.)
             if (status == ASM_GET) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -2756,7 +2764,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     }
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -2792,7 +2801,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                 }
             } else if (status == ASM_SET) {
                 //if (symbol_tables[4].get(&symbol_tables[4], tail_node->ast_string) == AST_
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "mvbi [sp + %d], r%i\n", symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack, register_select);
@@ -3535,8 +3545,9 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                 }
             }
         } else {*/
+            int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
             if (status == ASM_GET) {
-                if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                if (current_type == CHAR || current_type == UINT8_T) {
                     sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET\n", extra_stuff->operator_stack_offset - 1, extra_stuff->operator_stack_offset - 1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
@@ -3544,7 +3555,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                if (current_type == CHAR || current_type == UINT8_T) {
                     sprintf(buffer+strlen(buffer), "mvbi r%d, [r%d + 0] ;GET_MEMORY\n", extra_stuff->operator_stack_offset - 1, extra_stuff->operator_stack_offset - 1);
                     extra_stuff->operator_stack_offset += 1;
                 } else {
@@ -3552,7 +3563,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                     extra_stuff->operator_stack_offset += 1;
                 }
             } else if (status == ASM_SET) {
-                if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                if (current_type == CHAR || current_type == UINT8_T) {
                     extra_stuff->operator_stack_offset += -1;
                     sprintf(buffer+strlen(buffer), "mvbi [r%d + 0], r%d ;SET\n", extra_stuff->operator_stack_offset, extra_stuff->operator_stack_offset - 1);
                 } else {
@@ -3614,7 +3625,8 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                     
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -3647,7 +3659,8 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
         } else {
             // setting variable (char, int, uint8_t, etc.)
             if (status == ASM_GET) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
@@ -3677,7 +3690,8 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                     }
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -3709,7 +3723,8 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                 }
             } else if (status == ASM_SET) {
                 //if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == AST_
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "mvbi [sp + %d], r%i\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, register_select);
@@ -4255,13 +4270,15 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                 }
             } else {*/
                 if (status == ASM_GET) {
-                    if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                    int current_type = symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string);
+                    if (current_type == CHAR || current_type == UINT8_T) {
                         sprintf(buffer+strlen(buffer), "mvbi r1, [i0 + 0]\n");
                     } else {
                         sprintf(buffer+strlen(buffer), "movi r1, [i0 + 0]\n");
                     }
                 } else if (status == ASM_SET) {
-                    if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == CHAR) {
+                    int current_type = symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string);
+                    if (current_type == CHAR || current_type == UINT8_T) {
                         sprintf(buffer+strlen(buffer), "mvbi [i0 + 0], r1\n");
                     } else {
                         sprintf(buffer+strlen(buffer), "movi [i0 + 0], r1\n");
@@ -4321,7 +4338,8 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                     
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -4357,7 +4375,8 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         } else {
             // setting variable (char, int, uint8_t, etc.)
             if (status == ASM_GET) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack);
@@ -4387,7 +4406,8 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                     }
                 }
             } else if (status == ASM_GET_MEMORY) {
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "mvbi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
@@ -4418,7 +4438,8 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
                 }
             } else if (status == ASM_SET) {
                 //if (symbol_tables[4]->get(symbol_tables[4], tail_node->ast_string) == AST_
-                if (symbol_tables[4]->get(symbol_tables[4], current_node->ast_string) == CHAR) {
+                int current_type = symbol_tables[4]->get(symbol_tables[4], current_node->ast_string);
+                if (current_type == CHAR || current_type == UINT8_T) {
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "mvbi [sp + %d], r%i\n", symbol_tables[0]->get(symbol_tables[0], current_node->ast_string) + *stack, register_select);

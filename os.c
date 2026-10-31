@@ -26,6 +26,14 @@ int get_hex_int(char c) {
     return number;
 }
 
+void cr() {
+    char temp = 10;
+    print_char(temp);
+    temp = 13;
+    print_char(temp);
+}
+
+
 void print(char *str) {
     char *uart = 1245184;
     char current_char;
@@ -77,6 +85,25 @@ void print_int_hex(int x) {
     print_hex(x & 65535);
 }
 
+int get_int(char *shell_buf) {
+    int shell_buf_offset = 0;
+    int result = 0;
+    int int_length = 0;
+    while (*(shell_buf + shell_buf_offset) > 32) {
+        //print_char(*(shell_buf + shell_buf_offset));
+        shell_buf_offset = shell_buf_offset + 1;
+        int_length = int_length + 1;
+    }
+    //cr();
+    int_length = int_length << 2;
+    for (int i = 0; i < int_length; i = i + 4) {
+        shell_buf_offset = shell_buf_offset - 1;
+        result = result + get_hex_int(*(shell_buf + shell_buf_offset)) << (i);
+        
+    }
+    return result;
+}
+
 int compare_string(char *str_a, char *str_b) {
     int i = 0;
 
@@ -119,6 +146,22 @@ int read_halfword_hex(char *string_buf) {
     return input_a;
 }
 
+int skip_space(char *shell_buf) {
+    int offset = 0;
+    while (*(shell_buf + offset) < 33) {
+        offset = offset + 1;
+    }
+    return offset;
+}
+
+int skip_non_space(char *shell_buf) {
+    int offset = 0;
+    while (*(shell_buf + offset) > 32) {
+        offset = offset + 1;
+    }
+    return offset;
+}
+
 void dump_command(char *shell_buf, int shell_buf_offset) {
     char *cr = "\n";
     char *space = " ";
@@ -133,31 +176,26 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
     int input_a = 0;
     char current_char = *(shell_buf + shell_buf_offset);
 
-    for (int i = 16; i > 0; i = i - 4) {
-        input_a = input_a + get_hex_int(*(shell_buf + shell_buf_offset)) << (i - 4);
-        shell_buf_offset = shell_buf_offset + 1;
-    }
-
-    //print_hex(input_a);
+    
+    input_a = get_int(shell_buf + shell_buf_offset);
+    shell_buf_offset = shell_buf_offset + skip_non_space(shell_buf + shell_buf_offset);
+    //print_int_hex(input_a);
     shell_buf_offset = shell_buf_offset + 1;
-    int input_b = 0;
-    for (i = 16; i > 0; i = i - 4) {
-        input_b = input_b + get_hex_int(*(shell_buf + shell_buf_offset)) << (i - 4);
-        shell_buf_offset = shell_buf_offset + 1;
-    }
 
-    //print_char(32);
-    //print_hex(input_b);
-    //print(cr);
+    int input_b = 0;
+    input_b = get_int(shell_buf + shell_buf_offset);
+    //cr();
+    //print_int_hex(input_b);
+    //cr();
     char *dump_ptr = input_a;
     int col_ctr = 0;
-    while (dump_ptr < input_b) {
+    while (dump_ptr < input_a + input_b) {
         if (((col_ctr - 1) & 7) == 7) {
             print_char(32);
         }
         if (((col_ctr - 1) & 15) == 15) {
             print(cr);
-            print_hex(dump_ptr);
+            print_int_hex(dump_ptr);
             print_char(58);
             print_char(32);
             print_char(32);
@@ -351,12 +389,6 @@ void print_bcd(int x) {
     }
 }
 
-void cr() {
-    char temp = 10;
-    print_char(temp);
-    temp = 13;
-    print_char(temp);
-}
 
 
 void primes() {

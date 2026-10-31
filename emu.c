@@ -151,7 +151,7 @@ uint32_t HardDisk_Read(int address) {
 void HardDisk_Write(int address, uint32_t value) {
     if (address == 0x100) {
         LBA_address = value;
-        LBA_address = LBA_address % 128; // drive size is 64 KB for now
+        LBA_address = LBA_address % 262144; // drive size is 128 MB for now
     }
     if (address == 0x104) {
         disk_pointer_address = value; // disk pointer offset is byte-addressable
@@ -817,7 +817,7 @@ int main(int argc, char** argv) {
                     }
                     case 0b11111: {
                         // HALT
-                        printf("SYSTEM HALTED\n");
+                        //printf("SYSTEM HALTED\n");
                         run = 0;
                         break;
                     }
@@ -839,5 +839,7 @@ int main(int argc, char** argv) {
         }
     }
     fclose(program_file);
+    fclose(disk_file);
+    printf("SYSTEM HALTED\n");
     return 0;
 }
