@@ -1,1 +1,2 @@
-LBA_address
+
+    fclose(disk_file);

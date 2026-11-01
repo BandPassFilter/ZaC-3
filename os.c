@@ -395,43 +395,23 @@ void print_bcd(int x) {
     }
 }
 
-
-
-void primes() {
-    int a = 3;
-    int b = 2;
-    int c = 1;
-    cr();
-    int not_prime = 0;
-
-    while (a < 32768) {
-        not_prime = 0;
-        while (b < (a >> 1)) {
-            c = mod(a, b);
-            if (c == 0) {
-                not_prime = 1;
-            }
-            b = b + 1;
-        }
-        if (not_prime == 0) {
-            print_bcd(a);
-            cr();
-        }
-        a = a + 1;
-        b = 2;
+void system_call(int func_number) {
+    //print_bcd(func_number);
+    //char *syscall_str = "System call test\n";
+    //print(syscall_str);
+    if (func_number == 10) {
+        //char *reset_str = "Return to system call\n";
+        //print(reset_str);
+        asm("addi r1, r0, _shell");
+        asm("jr r1");
     }
-    cr();
 }
 
-
-void main() {
-    char *x = "\nZaC-3 OS\n";
+void shell() {
 	char *dump = "dump";
     char *write = "write";
     char *run = "run";
-    char *primes_str = "primes";
-    
-    print(x);
+
 
     char *output_str = "Typed string is: ";
     char *invalid_command_str = "Invalid command\n";
@@ -492,12 +472,6 @@ void main() {
                     run_command();
                     command_success = 1;
                 }
-                result = compare_string(shell_buf, primes_str);
-                if (result == 1) {
-                    shell_buf_offset = 3;
-                    primes();
-                    command_success = 1;
-                }
                 if (command_success == 0) {
                     print(invalid_command_str);
                 }
@@ -508,4 +482,12 @@ void main() {
     }
     char *end = "end\n";
     print(end);
+}
+
+
+void main() {
+    asm("addi sys, r0, _system_call");
+    char *x = "\nZaC-3 OS\n";
+    print(x);
+	shell();
 }

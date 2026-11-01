@@ -1,9 +1,9 @@
-lui fp, 18
+lui fp, 3
 addi sp, r0, 65532
-lui sp, 18
+lui sp, 3
 addi ssp, r0, 65532
-lui ssp, 17
-lui dp, 4
+lui ssp, 4
+lui dp, 5
 lui io, 19
 
 jmp _main

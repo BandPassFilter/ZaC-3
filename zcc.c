@@ -200,7 +200,7 @@ void pause() {
 #define WHITE_SPACE_SIZE 3
 #define MODIFIERS_SIZE 4
 #define PRE_PROCESSOR_KEYWORDS_SIZE 1
-char *PRE_PROCESSOR_KEYWORDS[PRE_PROCESSOR_KEYWORDS_SIZE] = {"#PROGRAM_START"};
+char *PRE_PROCESSOR_KEYWORDS[PRE_PROCESSOR_KEYWORDS_SIZE] = {"#include"};
 char *KEYWORDS[KEYWORDS_SIZE] = {"void", "int", "char", "uint8_t", "uint16_t", "int8_t", "int16_t", "static", "if", "while", "for", "else", "asm", "struct", "return", "$run"};
 char *SEPARATORS[SEPARATORS_SIZE] = {"{", "}", "(", ")", ";", ","};
 char *OPERATORS[OPERATORS_SIZE] = {"++", "--", "==", ">=", "<=", "!=", "&&", "<<", ">>", "||", "->", ".", "+", "-", "<", "*", "/", ">", "!", "=", "&", "|", "[", "]"};
@@ -1761,12 +1761,12 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
             asm_list->append(asm_list, "lui r5, 4\n");
             asm_list->append(asm_list, "lui r6, 4\n");
             asm_list->append(asm_list, "lui r7, 4\n");*/
-            asm_list->append(asm_list, "lui fp, 18\n");
+            asm_list->append(asm_list, "lui fp, 3\n");
             asm_list->append(asm_list, "addi sp, r0, 65532\n");
-            asm_list->append(asm_list, "lui sp, 18\n");
+            asm_list->append(asm_list, "lui sp, 3\n");
             asm_list->append(asm_list, "addi ssp, r0, 65532\n");
-            asm_list->append(asm_list, "lui ssp, 17\n");
-            asm_list->append(asm_list, "lui dp, 4\n");
+            asm_list->append(asm_list, "lui ssp, 4\n");
+            asm_list->append(asm_list, "lui dp, 5\n");
             asm_list->append(asm_list, "lui io, 19\n\n");
             
             

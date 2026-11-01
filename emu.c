@@ -25,6 +25,7 @@ Implement sign extension for 16-bit immediates (-32768 to 32767)
 #define RA registers[24]
 #define SP registers[25]
 #define FP registers[23]
+#define SYS registers[29]
 #define FLAGS registers[20]
 #define MEMORY_SIZE 1024*1024*16
 #define reg_a_sel (IR_1 & 0b000001111100000) >> 5
@@ -350,7 +351,7 @@ int eval_segment(int register_sel, int *registers) {
     // ssp R26 = supervisor stack (at fixed base 0x11xxxx)
     // dp R27 = data pointer (statics and globals go here, 0x04xxxx)
     // io R28 = I/O (at fixed base 0x13xxxx)
-    // I0 R29
+    // sys R29
     // I1 R30 = 24-bit index register
     // pc R31 = 16-bit instruction pointer (points in terms of instruction words, not bytes) (0x000000 - 0x03ffff)
 
@@ -779,6 +780,13 @@ int main(int argc, char** argv) {
                         ring = 0;
                         break;
                     }
+                    case 0b10111: {
+                        // SYSCALL
+                        RA = PC;
+                        PC = registers[29];
+                        ring = 0;
+                        break;
+                    }
                     case 0b11000: {
                         // MVBI a [b+i], a = mem[b+i]
                         seg_eval = eval_segment(reg_b_sel, registers);
@@ -833,7 +841,7 @@ int main(int argc, char** argv) {
             printf("PC: %d,  IR: %d,  MEMORY[PC]: %d\n", PC, IR, load_memory(memory, PC));
             printf("R0: %d, R1: %d,  R2: %d,  R3: %d,  R4: %d,  R5: %d,  R6: %d,  R7: %d,  I0: %d,  I1: %d\n", registers[0], registers[1], registers[2], registers[3], registers[4], registers[5], registers[6], registers[7], registers[29], registers[30]);
             printf("R8: %d, R9: %d, R10: %d, R11: %d, R12: %d, R13: %d, R14: %d, R15: %d, R16: %d, R17: %d\n", registers[8], registers[9], registers[10], registers[11], registers[12], registers[13], registers[14], registers[15], registers[16], registers[17]);
-            printf("fp: %d, sp: %d, ra: %d, flags: %d\n", FP, SP, RA, FLAGS);
+            printf("fp: %d, sp: %d, ra: %d, flags: %d, syscall: %d\n", FP, SP, RA, FLAGS, SYS);
             printf("sp[%d]: %d\n", SP, load_memory(memory, SP));
             getchar();
         }

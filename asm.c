@@ -254,9 +254,9 @@ int eval_register(char *reg_string) {
     // sp = r25
     // ssp = r26
     // dp = r27
-    // io = r28
-    // i0 = r29
-    // i1 = r30
+    // io = r28 unused
+    // sys = r29 used for syscall entry address
+    // i1 = r30 unused
     // pc = r31
 
     if (compare_string(reg_string, "r0")) {
@@ -317,7 +317,7 @@ int eval_register(char *reg_string) {
         return 0b11011;
     } else if (compare_string(reg_string, "io")) {
         return 0b11100;
-    } else if (compare_string(reg_string, "i0")) {
+    } else if (compare_string(reg_string, "sys")) {
         return 0b11101;
     } else if (compare_string(reg_string, "i1")) {
         return 0b11110;
@@ -337,14 +337,14 @@ int eval_opcode(int inst_type, int instruction_number, int inst_shift) {
 
     int opcode_lut_0[5][10] = {
         {0},
-        {0b00000, 0b11111},
+        {0b00000, 0b11111, 0b10111},
         {0b00001, 0b00010, 0b00011, 0b00100, 0b00101, 0b00110, 0b01011, 0b01100, 0b01101, 0b10110},
         {0b00111, 0b01000, 0b01001, 0b01010, 0b01110, 0b11000, 0b11010},
         {0b10000, 0b10001, 0b10010, 0b10011, 0b10100, 0b10101}
     };
     int opcode_lut_1[5][10] = {
         {0},
-        {0b00000, 0b11111},
+        {0b00000, 0b11111, 0b10111},
         {0b00001, 0b00010, 0b00011, 0b00100, 0b00101, 0b00110, 0b01011, 0b01100, 0b01101, 0b10110},
         {0b00111, 0b01000, 0b01001, 0b01010, 0b01111, 0b11001, 0b11010},
         {0b10000, 0b10001, 0b10010, 0b10011, 0b10100, 0b10101}
@@ -417,7 +417,7 @@ int main(int argc, char** argv) {
 
     printf("Argc: %d\n", argc);
 
-    char *input_file_str = "clock.asm";
+    char *input_file_str = "syscall_test.asm";
     if (argc > 2) {
         if (strcmp(argv[1], "-b") == 0) {
             boot_program = 1;
@@ -510,11 +510,11 @@ int main(int argc, char** argv) {
     char imm24_string[PARSE_LENGTH] = {0};
     char offset_math_string[PARSE_LENGTH] = {0};
 
-    #define NOP_ARR_LENGTH 2
+    #define NOP_ARR_LENGTH 3
     #define R_ARR_LENGTH 10
     #define I_ARR_LENGTH 7
     #define J_ARR_LENGTH 6
-    char *nop_type_inst[NOP_ARR_LENGTH] = {"nop", "halt"};
+    char *nop_type_inst[NOP_ARR_LENGTH] = {"nop", "halt", "syscall"};
     char *r_type_inst[R_ARR_LENGTH] = {"mov", "add", "sub", "or", "and", "not", "sl", "sr", "sra", "jr"};
     char *i_type_inst[I_ARR_LENGTH] = {"addi", "subi", "ori", "andi", "movi", "mvbi", "lui"};
     char *j_type_inst[J_ARR_LENGTH] = {"jmp", "jz", "jc", "jnz", "jnc", "jal"};
@@ -804,6 +804,8 @@ int main(int argc, char** argv) {
             case (NOP_TYPE): {
                 if (compare_string(instruction_string, "halt")) {
                     break;
+                } else if (compare_string(instruction_string, "syscall")) {
+                    break;
                 }
             }
             case(R_TYPE): {
@@ -1024,7 +1026,7 @@ int main(int argc, char** argv) {
     printf("Data segment usage: %.2lf%%\n", ((double)data_pointer / (double)(65536))*100);
 
     // now generate final machine code binary file
-    fwrite(output_array, sizeof(uint8_t), code_pointer*4 + data_pointer, output_file);
+    fwrite(output_array, sizeof(uint8_t), code_pointer*4 + data_pointer + 4, output_file);
 
     fclose(input_file);
     fclose(output_file);
