@@ -1,32 +1,45 @@
 asm(".org 131072");
 
-void print_char(char x) {
-    char *uart = 1245184;
-    *uart = x;
-}
+void syscall_execute(int func_number, int arg0, int arg1, int arg2, int arg3) {
+    // R16 - R20 = Syscall arguments / returns
+    // R16 = function number
+    char *debug = 9000000;
+    //*debug = 0;
 
-void print(char *str) {
-    char *uart = 1245184;
-    char current_char;
-    while (*str > 0) {
-        current_char = *str;
-        print_char(current_char);
-        str = str + 1;
-    }
-}
+    static int sfunc = 0;
+    static int sarg0 = 0;
+    static int sarg1 = 0;
+    static int sarg2 = 0;
+    static int sarg3 = 0;
 
-void syscall_func() {
-    asm("subi sp, sp, 4");
-    asm("addi r4, r0, 10 ;SYSCALL_GET");
-    asm("movi [sp + 0], r4 ;SYSCALL_SET");
+    sfunc = func_number;
+    sarg0 = arg0;
+    sarg1 = arg1;
+    sarg2 = arg2;
+    sarg3 = arg3;
+
+
+
+    asm("movi r16, [dp + syscall_execute_sfunc] ;GET");
+    asm("movi r17, [dp + syscall_execute_sarg0] ;GET");
+    asm("movi r18, [dp + syscall_execute_sarg1] ;GET");
+    asm("movi r19, [dp + syscall_execute_sarg2] ;GET");
+    asm("movi r20, [dp + syscall_execute_sarg3] ;GET");
     asm("syscall");
-    asm("addi sp, sp, 4 ;SYSCALL_POP_PARAM");
+}
+
+void syscall_print(char *str) {
+    syscall_execute(0, str, 0, 0, 0);
+}
+
+void syscall_prompt() {
+    syscall_execute(10, 0, 0, 0, 0);
 }
 
 
 void main() {
     char *debug = 9000000;
-    syscall_func();
-    char *syscall_success = "Syscall return\n";
-    print(syscall_success);
+    char *syscall_success = "Syscall print string test\n";
+    syscall_print(syscall_success);
+    syscall_prompt();
 }

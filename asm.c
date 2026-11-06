@@ -417,7 +417,7 @@ int main(int argc, char** argv) {
 
     printf("Argc: %d\n", argc);
 
-    char *input_file_str = "syscall_test.asm";
+    char *input_file_str = "os.asm";
     if (argc > 2) {
         if (strcmp(argv[1], "-b") == 0) {
             boot_program = 1;
@@ -632,7 +632,7 @@ int main(int argc, char** argv) {
             push_labels(LABELS_SIZE, labels, directive_string, directive_value, adrs_offset_value, &dummy_idx, &label_idx, LABEL_NUMBER);
             data_segment_output[adrs_offset_value] = directive_value % 256;
             data_segment_output[adrs_offset_value+1] = (directive_value >> 8) % 256;
-            adrs_offset_value = adrs_offset_value + 2;
+            adrs_offset_value = adrs_offset_value + 4;
         } else if (compare_string(instruction_string, ".define")) {
             // ".define define_name 01234"
             //printf(".define detected\n");

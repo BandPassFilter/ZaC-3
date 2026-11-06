@@ -393,12 +393,35 @@ void print_bcd(int x) {
             print_char(temp_print);
         }
     }
+    if (not_leading_zero == 0) {
+        print_char(48);
+    }
 }
 
-void system_call(int func_number) {
+void system_call() {
     //print_bcd(func_number);
     //char *syscall_str = "System call test\n";
+    //char *print_test_str = "print call test\n";
     //print(syscall_str);
+    // function_number in r17
+    // arguments and returns in r17,r18,r19,r20
+
+    
+
+    static int func_number;
+    static int arg0;
+    static int arg1;
+    static int arg2;
+    static int arg3;
+    asm("movi [dp + system_call_func_number], r16");
+    asm("movi [dp + system_call_arg0], r17");
+    asm("movi [dp + system_call_arg1], r18");
+    asm("movi [dp + system_call_arg2], r19");
+    asm("movi [dp + system_call_arg3], r20");
+
+    if (func_number == 0) {
+        print(arg0);
+    }
     if (func_number == 10) {
         //char *reset_str = "Return to system call\n";
         //print(reset_str);

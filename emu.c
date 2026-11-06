@@ -21,12 +21,13 @@ Implement sign extension for 16-bit immediates (-32768 to 32767)
 #include <windows.h>
 #include <conio.h>
 
-#define PC registers[15]
+#define PC registers[31]
 #define RA registers[24]
 #define SP registers[25]
 #define FP registers[23]
 #define SYS registers[29]
-#define FLAGS registers[20]
+#define FLAGS registers[26]
+#define DP registers[27]
 #define MEMORY_SIZE 1024*1024*16
 #define reg_a_sel (IR_1 & 0b000001111100000) >> 5
 #define reg_b_sel (IR_1 & 0b000000000011111)
@@ -100,7 +101,7 @@ int InitialiseSerialPort() {
     }
 }
 
-int serial_port_mode = 0;
+int serial_port_mode = 1;
 
 uint8_t ReadSerialPort() {
     if (!serial_port_mode) {
@@ -275,10 +276,9 @@ uint32_t load_memory(uint32_t *memory, int index) {
         if ((index >> 16) == 0x13) {
             // memory-mapped I/O
             return io_in(index);
-        }
-        if (index % 2 == 0) { // even address, load the 16-bit word
+        } if (index % 2 == 0) { // even address, load the 16-bit word
             return memory[index >> 2];
-        } else { // odd address, access the next 8-bits
+        } if (index % 2 == 1) { // odd address, access the next 8-bits
             return memory[index >> 2];
         }
     } else {
@@ -292,22 +292,23 @@ void store_memory(uint32_t *memory, int index, uint32_t data) {
         if ((index >> 16) == 0x13) {
             // memory-mapped I/O
             io_out(index, data);
-        }
-        if (index % 2 == 0) { // even address, load the 16-bit word
+            return;
+        } if (index % 2 == 0) { // even address, load the 16-bit word
             //*(memory + (index >> 2)) = data;
 
             memory[index >> 2] = data;
-        } else { // odd address, access the next 8-bits
+            return;
+        } if (index % 2 == 1) { // odd address, access the next 8-bits
             //*(memory + (index >> 2)) = data;
             memory[index >> 2] = data;
-        }
-        if (index > 9000000) {
+            return;
+        } if (index > 9000000) {
             debug_mode = 1;
+            return;
         }
-    } else {
-        printf("Memory store word index out of bounds!\n");
-        exit(1);
     }
+    printf("Memory store word index out of bounds!\n");
+    exit(1);
 }  
 
 uint8_t load_memory_byte(uint32_t *memory, int index) {
@@ -329,20 +330,24 @@ void store_memory_byte(uint32_t *memory, int index, uint8_t data) {
         if ((index >> 16) == 0x13) {
             // memory-mapped I/O
             io_out(index, data);
+            return;
         }
         if (index == 9000000) {
             debug_mode = 1;
+            return;
         }
         *((uint8_t*)memory + index) = data;
-    } else {
-        printf("Memory store byte index out of bounds!\n");
-        exit(1);
+        return;
     }
+    printf("Memory store byte index out of bounds!\n");
+    exit(1);
 }  
 
 int eval_segment(int register_sel, int *registers) {
     // R0-R7 = user data registers
+
     // system registers
+    // R16 - R20 = Syscall function number (r16), arguments / returns (r17 - r20)
 	// fp R22 = frame pointer
     // flags R23 = flags register
     // fp r23 = frame pointer (same as stack segment 0x12xxxx)
@@ -351,7 +356,7 @@ int eval_segment(int register_sel, int *registers) {
     // ssp R26 = supervisor stack (at fixed base 0x11xxxx)
     // dp R27 = data pointer (statics and globals go here, 0x04xxxx)
     // io R28 = I/O (at fixed base 0x13xxxx)
-    // sys R29
+    // sys R29 = syscall address
     // I1 R30 = 24-bit index register
     // pc R31 = 16-bit instruction pointer (points in terms of instruction words, not bytes) (0x000000 - 0x03ffff)
 
@@ -399,7 +404,7 @@ int main(int argc, char** argv) {
     printf("ZaC-3 Emulator\n");
 
     char *input_file_str;
-    char *default_file = "disktest.bin";
+    char *default_file = "os.bin";
 
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
@@ -436,6 +441,7 @@ int main(int argc, char** argv) {
     }
 
     // now load input program into memory
+    FILE *memory_dump_file = fopen("memory_dump.bin", "wb");
     FILE *program_file = fopen(input_file_str, "rb");
     if (!program_file) {
         printf("Error opening program file!\n");
@@ -700,7 +706,7 @@ int main(int argc, char** argv) {
                         if (offset_eval & 0x8000) {
                             offset_eval |= 0xFFFF0000; // sign extension on negative numbers
                         }
-                        address_calc = (seg_eval << 16) + (reg_b_eval + offset_eval);
+                        address_calc = (reg_b_eval + offset_eval);
                         registers[reg_a_sel] = load_memory(memory, reg_b_eval + offset_eval);
                         ring = 0;
                         break;
@@ -718,7 +724,7 @@ int main(int argc, char** argv) {
                         if (offset_eval & 0x8000) {
                             offset_eval |= 0xFFFF0000; // sign extension on negative numbers
                         }
-                        address_calc = (seg_eval << 16) + (reg_b_eval + offset_eval);
+                        address_calc = (reg_b_eval + offset_eval);
                         store_memory(memory, reg_b_eval + offset_eval, reg_a_eval);
                         ring = 0;
                         break;
@@ -841,13 +847,18 @@ int main(int argc, char** argv) {
             printf("PC: %d,  IR: %d,  MEMORY[PC]: %d\n", PC, IR, load_memory(memory, PC));
             printf("R0: %d, R1: %d,  R2: %d,  R3: %d,  R4: %d,  R5: %d,  R6: %d,  R7: %d,  I0: %d,  I1: %d\n", registers[0], registers[1], registers[2], registers[3], registers[4], registers[5], registers[6], registers[7], registers[29], registers[30]);
             printf("R8: %d, R9: %d, R10: %d, R11: %d, R12: %d, R13: %d, R14: %d, R15: %d, R16: %d, R17: %d\n", registers[8], registers[9], registers[10], registers[11], registers[12], registers[13], registers[14], registers[15], registers[16], registers[17]);
-            printf("fp: %d, sp: %d, ra: %d, flags: %d, syscall: %d\n", FP, SP, RA, FLAGS, SYS);
+            printf("R18: %d, R19: %d, R20: %d, R21: %d, R22: %d, R23: %d, R24: %d, R25: %d, R26: %d, R27: %d\n", registers[18], registers[19], registers[20], registers[21], registers[22], registers[23], registers[24], registers[25], registers[26], registers[27]);
+            printf("fp: %d, sp: %d, ra: %d, flags: %d, syscall: %d, dp: %d\n", FP, SP, RA, FLAGS, SYS, DP);
             printf("sp[%d]: %d\n", SP, load_memory(memory, SP));
-            getchar();
+            if (getchar() == '~') {
+                printf("memory_dump\n");
+                fwrite((uint8_t*)memory, sizeof(uint8_t), MEMORY_SIZE, memory_dump_file);
+            };
         }
     }
     fclose(program_file);
     fclose(disk_file);
+    fclose(memory_dump_file);
     printf("SYSTEM HALTED\n");
     return 0;
 }

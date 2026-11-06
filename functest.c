@@ -2,9 +2,16 @@ int func_b(int a) {
 	return a + 1;
 }
 
+int func_d(int a, int b) {
+	int c = 0;
+	c = a + b;
+	return c;
+}
+
 int func_a(int a, int b) {
 	int c = 0;
 	c = a + b;
+	func_d(a, b);
 	return c;
 }
 
