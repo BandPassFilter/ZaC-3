@@ -2564,13 +2564,13 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "movi r%d, [fp + %d] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
+                        sprintf(buffer, "movi r%d, [fp + %d] ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {
                         
                         //sprintf(buffer, "movi r%i, [dp + %s]\n", register_select, current_node->ast_string);
-                        sprintf(buffer, "movi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[1]->get(symbol_tables[1], current_node->ast_string));
+                        sprintf(buffer, "movi r%d, [dp + %s] ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     }
@@ -3659,7 +3659,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                     extra_stuff->operator_stack_offset += -1;
                     //sprintf(buffer, "movi [dp + %s], r%i\n", current_node->ast_string, register_select);
                     //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                    sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                    sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;SET\n", 0, extra_stuff->operator_stack_offset);
                     
                 }
             } else if (status == ASM_GET_MEMORY) {
@@ -3773,7 +3773,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "mvbi [dp + %s], r%i\n", current_node->ast_string, register_select);
                         //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                        sprintf(buffer+strlen(buffer), "mvbi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                        sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;SET\n", 0, extra_stuff->operator_stack_offset);
                         
                         
                     }
@@ -3789,7 +3789,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
                         //sprintf(buffer, "movi [dp + %s], r%i\n", current_node->ast_string, register_select);
                         extra_stuff->operator_stack_offset += -1;
                         //sprintf(buffer, "add r1, r0, r%d ;SET\n", extra_stuff->operator_stack_offset);
-                        sprintf(buffer+strlen(buffer), "movi [dp + %s], r%d ;SET\n", current_node->ast_string, extra_stuff->operator_stack_offset);
+                        sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;SET\n", 0, extra_stuff->operator_stack_offset);
                         
                     }
                 }

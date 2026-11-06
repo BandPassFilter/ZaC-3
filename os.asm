@@ -3087,6 +3087,7 @@ subi sp, sp, 4
 movi [sp + 0], fp
 subi sp, sp, 4
 movi [sp + 0], ra
+subi sp, sp, 4
 add fp, r0, sp
 
 
@@ -3102,6 +3103,10 @@ movi [dp + system_call_arg1], r18
 movi [dp + system_call_arg2], r19
 
 movi [dp + system_call_arg3], r20
+
+addi r4, r0, 21568 ;GET_32
+lui r4, 137 ;GET_32
+movi [fp + 0], r4 ;SET
 
 movi r4, [dp + system_call_func_number] ;GET
 addi r5, r0, 0 ;GET
@@ -3121,7 +3126,7 @@ subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi r4, [dp + system_call_arg0] ;GET_MEMORY
-movi [dp + system_call_arg0], r4 ;SET
+movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END
 jal _print
 addi sp, sp, 4
@@ -3151,7 +3156,7 @@ jr r1
 
 51_false:
 
-addi sp, sp, 0
+addi sp, sp, 4
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]

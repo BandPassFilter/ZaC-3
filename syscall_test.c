@@ -6,17 +6,12 @@ void syscall_execute(int func_number, int arg0, int arg1, int arg2, int arg3) {
     char *debug = 9000000;
     //*debug = 0;
 
-    static int sfunc = 0;
-    static int sarg0 = 0;
-    static int sarg1 = 0;
-    static int sarg2 = 0;
-    static int sarg3 = 0;
-
-    sfunc = func_number;
-    sarg0 = arg0;
-    sarg1 = arg1;
-    sarg2 = arg2;
-    sarg3 = arg3;
+    static int sfunc = func_number;
+    static int sarg0 = arg0;
+    static int sarg1 = arg1;
+    static int sarg2 = arg2;
+    static int sarg3 = arg3;
+    
 
 
 

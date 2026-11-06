@@ -22,21 +22,6 @@ addi r4, r0, 21568 ;GET_32
 lui r4, 137 ;GET_32
 movi [fp + 0], r4 ;SET
 
-addi r4, r0, 0 ;GET
-movi [dp + syscall_execute_sfunc], r4 ;SET
-
-addi r4, r0, 0 ;GET
-movi [dp + syscall_execute_sarg0], r4 ;SET
-
-addi r4, r0, 0 ;GET
-movi [dp + syscall_execute_sarg1], r4 ;SET
-
-addi r4, r0, 0 ;GET
-movi [dp + syscall_execute_sarg2], r4 ;SET
-
-addi r4, r0, 0 ;GET
-movi [dp + syscall_execute_sarg3], r4 ;SET
-
 movi r4, [fp + 12] ;GET
 movi [dp + syscall_execute_sfunc], r4 ;SET
 

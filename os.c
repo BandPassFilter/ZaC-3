@@ -419,6 +419,9 @@ void system_call() {
     asm("movi [dp + system_call_arg2], r19");
     asm("movi [dp + system_call_arg3], r20");
 
+    char *debug = 9000000;
+    //*debug = 0;
+
     if (func_number == 0) {
         print(arg0);
     }
