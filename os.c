@@ -274,15 +274,26 @@ void system_call() {
     char *debug = 9000000;
     //*debug = 0;
 
+    static int return_value = 0;
+
     if (func_number == 0) {
+        print_char(arg0);
+    }
+    if (func_number == 1) {
+        return_value = get_char();
+    }
+    if (func_number == 2) {
         print(arg0);
     }
+
     if (func_number == 10) {
         //char *reset_str = "Return to system call\n";
         //print(reset_str);
         asm("addi r1, r0, _shell");
         asm("jr r1");
     }
+
+    asm("movi r17, [dp + system_call_return_value]"); // return int goes into r17
 }
 
 void shell() {

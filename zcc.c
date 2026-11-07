@@ -3026,8 +3026,8 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
         CharAppendList *function_total = generateCharAppendList();
         char buffer[300] = {0};
         char buffer_b[300] = {0};
-        char register_buf[300] = {0};
-        char register_buf_pop[300] = {0};
+        char register_buf[1000] = {0};
+        char register_buf_pop[1000] = {0};
         int old_operator_stack_offset = extra_stuff->operator_stack_offset;
         // save registers
         for (int i = 3; i <= old_operator_stack_offset; i++) {
