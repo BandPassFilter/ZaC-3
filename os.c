@@ -11,6 +11,7 @@
 //   method instead of just making my own special keywords.
 
 #include "bios.h"
+#include "stdio.h"
 
 int get_int(char *shell_buf) {
     int shell_buf_offset = 0;
@@ -54,7 +55,7 @@ void reset_shell(char *shell_buf) {
         shell_buf_offset = shell_buf_offset + 1;
     }
     char *prompt = ">";
-    print(prompt);
+    printString(prompt);
 }
 
 int read_halfword_hex(char *string_buf) {
@@ -95,10 +96,10 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
     char *dump_success = "dump command detected\n";
     char *offset_str = "shell_buf_offset: ";
     char *debug = 9000000;
-    //print(dump_success);
-    //print(offset_str);
+    //printString(dump_success);
+    //printString(offset_str);
     //print_hex(shell_buf_offset);
-    //print(cr);
+    //printString(cr);
     shell_buf_offset = shell_buf_offset + 1;
     int input_a = 0;
     char current_char = *(shell_buf + shell_buf_offset);
@@ -121,7 +122,7 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
             print_char(32);
         }
         if (((col_ctr - 1) & 15) == 15) {
-            print(cr);
+            printString(cr);
             print_int_hex(dump_ptr);
             print_char(58);
             print_char(32);
@@ -133,7 +134,7 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
         col_ctr = col_ctr + 1;
         dump_ptr = dump_ptr + 1;
         if ((dump_ptr > input_a) && (((col_ctr - 1) & 15) == 15)) {
-            //print(cr);
+            //printString(cr);
             col_ctr = 0;
             while (col_ctr < 16) {
                 char dump_char = *(dump_ptr + col_ctr - 16);
@@ -147,13 +148,13 @@ void dump_command(char *shell_buf, int shell_buf_offset) {
             }
         }
     }
-    print(cr);
+    printString(cr);
 }
 
 void write_command(char *shell_buf, int shell_buf_offset) {
     char *write_str = "write command detected\n";
     char *cr = "\n";
-    print(write_str);
+    printString(write_str);
     shell_buf_offset = shell_buf_offset + 1;
     int input_a = 0;
     char current_char = *(shell_buf + shell_buf_offset);
@@ -204,7 +205,7 @@ void write_command(char *shell_buf, int shell_buf_offset) {
 
 
         //print_hex_byte(write_value);
-        print(cr);
+        printString(cr);
     }
 }
 
@@ -212,7 +213,7 @@ void run_command(char *shell_buf, int shell_buf_offset) {
     char *run_str = "run command detected\n";
     int run_address = 131072;
     //char *debug = 9000000;
-    print(run_str);
+    printString(run_str);
     //$run run_address;
     asm("addi r1, r0, 0");
     asm("lui r1, 2");
@@ -254,7 +255,7 @@ void system_call() {
     //print_bcd(func_number);
     //char *syscall_str = "System call test\n";
     //char *print_test_str = "print call test\n";
-    //print(syscall_str);
+    //printString(syscall_str);
     // function_number in r17
     // arguments and returns in r17,r18,r19,r20
 
@@ -283,12 +284,12 @@ void system_call() {
         return_value = get_char();
     }
     if (func_number == 2) {
-        print(arg0);
+        printString(arg0);
     }
 
     if (func_number == 10) {
         //char *reset_str = "Return to system call\n";
-        //print(reset_str);
+        //printString(reset_str);
         asm("addi r1, r0, _shell");
         asm("jr r1");
     }
@@ -296,11 +297,136 @@ void system_call() {
     asm("movi r17, [dp + system_call_return_value]"); // return int goes into r17
 }
 
+
+int mount_command() {
+    int *disk_io = 1245440;
+    int *disk_test_buffer_int = 65536;
+    char *disk_test_buffer = disk_test_buffer_int;
+    char *output_str = "Disk test\n";
+    printString(output_str);
+
+
+    diskRead(disk_test_buffer_int, 0);
+
+    int sectors_per_cluster;
+    int BPB_number_of_fats;
+    int root_dir_count;
+    int BPB_FATSz;
+    int BPB_ResvdSecCnt;
+    int BPB_RootEntCnt;
+    int BPB_BytsPerSec = 512;
+
+    sectors_per_cluster = *(disk_test_buffer + 13);
+    BPB_number_of_fats = *(disk_test_buffer + 16);
+    root_dir_count = *(disk_test_buffer + 17) + (*(disk_test_buffer + 18) << 8);
+    BPB_FATSz = *(disk_test_buffer + 22) + (*(disk_test_buffer + 23) << 8);
+    BPB_ResvdSecCnt = *(disk_test_buffer + 14) + (*(disk_test_buffer + 15) << 8);
+    BPB_RootEntCnt = *(disk_test_buffer + 17) + (*(disk_test_buffer + 18) << 8);
+    
+
+    int FAT_start;
+    int root_start;
+    int data_start;
+
+    FAT_start = BPB_ResvdSecCnt;
+    int FatSectors;
+    FatSectors = BPB_FATSz << 1;
+    
+    root_start = FAT_start + FatSectors;
+
+    int RootDirSectors;
+
+    RootDirSectors = ((BPB_RootEntCnt << 5) + BPB_BytsPerSec - 1) >> 9;
+
+    //print_bcd(RootDirSectors);
+
+    data_start = root_start + RootDirSectors;
+
+    print_bcd(FAT_start);
+    cr();
+    print_bcd(root_start);
+    cr();
+    print_bcd(data_start);
+    cr();
+
+    int return_value = FAT_start + (root_start << 8) + (data_start << 16); // hacky way to return 3 8-bit integers, just store them in a 32-bit word shifted accross.
+    return return_value;
+}
+
+int dir_command(int mount_values) {
+    int *disk_io = 1245440;
+    int *disk_test_buffer_int = 65536;
+    char *disk_test_buffer = disk_test_buffer_int;
+    char *output_str = "Disk test\n";
+
+    int FAT_start;
+    int root_start;
+    int data_start;
+
+    FAT_start = mount_values & 255;
+    root_start = (mount_values >> 8) & 255;
+    data_start = (mount_values >> 16) & 255;
+
+    if (FAT_start != 2) {
+        char *error = "Disk not mounted!\n";
+        printString(error);
+        return 0;
+    }
+
+    
+    //cr();
+    int number_of_files = 0;
+    for (int sectors = root_start; sectors < data_start; sectors = sectors + 1) {
+        diskRead(disk_test_buffer_int, sectors);
+        
+        for (int i = 0; i < 512; i = i + 32) {
+            int dir_attrib = *(disk_test_buffer + i + 11);
+            int first_dir_char = *(disk_test_buffer + i);
+
+            if ((dir_attrib != 15) && (first_dir_char < 128) && (first_dir_char > 0)) {
+                
+                if (number_of_files > 0) {
+                if (dir_attrib != 8) {
+                        printChar(32);
+                        printChar(58);
+                        printChar(32);
+                }
+                }
+
+                if ((dir_attrib & 16) == 16) {
+                    printChar(42);
+                }
+
+                if (dir_attrib == 8) {
+                    char *volume_msg = "Volume name: ";
+                    printString(volume_msg);
+                }
+                if (dir_attrib != 8) {
+                    number_of_files = number_of_files + 1;
+                }
+                for (int j = 0; j < 11; j = j + 1) {
+                    printChar(*(disk_test_buffer + i + j));
+                }
+                if (dir_attrib == 8) {
+                    cr();
+                    cr();
+                }
+            } 
+        }
+    }
+    cr();
+    char *number_of_files_str = "file(s)\n";
+    cr();
+    return 0;
+}
+
 void shell() {
 	char *dump = "dump";
     char *write = "write";
     char *run = "run";
-
+    char *mount = "mount";
+    char *dir = "dir";
+    int mount_values;
 
     char *output_str = "Typed string is: ";
     char *invalid_command_str = "Invalid command\n";
@@ -340,7 +466,7 @@ void shell() {
             int command_success = 0;
             shell_buf = 400000;
             
-            print(cr);
+            printString(cr);
             if (shell_buf_offset > 0) {
                 
                 result = compare_string(shell_buf, dump);
@@ -361,8 +487,21 @@ void shell() {
                     run_command();
                     command_success = 1;
                 }
+                result = compare_string(shell_buf, mount);
+                if (result == 1) {
+                    shell_buf_offset = 3;
+                    
+                    mount_values = mount_command();
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, dir);
+                if (result == 1) {
+                    shell_buf_offset = 3;
+                    dir_command(mount_values);
+                    command_success = 1;
+                }
                 if (command_success == 0) {
-                    print(invalid_command_str);
+                    printString(invalid_command_str);
                 }
             }
             shell_buf_offset = 0;
@@ -370,13 +509,13 @@ void shell() {
         }
     }
     char *end = "end\n";
-    print(end);
+    printString(end);
 }
 
 
 void main() {
     asm("addi sys, r0, _system_call");
     char *x = "\nZaC-3 OS\n";
-    print(x);
+    printString(x);
 	shell();
 }

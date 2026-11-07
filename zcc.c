@@ -118,11 +118,14 @@ This would be #ZaC-3 or something. Also I would have "run 0x00200000" keyword th
 value to run programs from the OS. In modern C I would use function pointers but I don't have function pointers in my compiler
 so I would make my own simple keyword instead.
 
-- Make #START_PROGRAM 0x0020000 that would allow the C program to start at any arbitrary address, this is to allow user programs
-to start above the OS code. This would be in a single-tasking system with no MMU. In an MMU system with multi-tasking OS, all
-tasks would start at 0x00000000 in their own virtual space and wouldn't need #START_PROGRAM 0x00200000.
+- (DONE) (instead using inline asm ".org") Make #START_PROGRAM 0x0020000 that would allow the C program to start at any arbitrary address, 
+this is to allow user programs to start above the OS code. This would be in a single-tasking system with no MMU. In an MMU system with 
+multi-tasking OS, all tasks would start at 0x00000000 in their own virtual space and wouldn't need #START_PROGRAM 0x00200000.
 
-- Make #include, I'm starting to copy and paste common code all the time, like print_char, print, print_bcd, etc.
+- (DONE) Make #include, I'm starting to copy and paste common code all the time, like print_char, print, print_bcd, etc.
+
+- Make global variables by static variables outside main() and all functions. This would be insanely useful in the OS for things like
+  holding widely used information like disk sectors, FAT mount information and so on.
 
 FAR TODO:
     - ZaC-3 will be fully 32-bit CPU, and so 32-bit ints, 32-bit pointers, etc. Although it will still use the same backplane, but it will have a different bus protocol.
@@ -2564,7 +2567,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
                     if (symbol_tables[3]->get(symbol_tables[3], current_node->ast_string) == AST_LOCAL) {
                         
                         //sprintf(buffer, "movi r%i, [sp + %d]\n", register_select, symbol_tables[0].get(&symbol_tables[0], current_node->ast_string) + *stack);
-                        sprintf(buffer, "movi r%d, [fp + %d] ;GET\n", extra_stuff->operator_stack_offset, current_node->ast_string);
+                        sprintf(buffer, "movi r%d, [fp + %d] ;GET\n", extra_stuff->operator_stack_offset, symbol_tables[0]->get(symbol_tables[0], current_node->ast_string));
                         //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
                         extra_stuff->operator_stack_offset += 1;
                     } else {

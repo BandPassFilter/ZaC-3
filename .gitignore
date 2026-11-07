@@ -1,5 +1,6 @@
 # disk images
 *.img
+disk.img
 
 # Prerequisites
 *.d

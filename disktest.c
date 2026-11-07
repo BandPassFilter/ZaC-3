@@ -9,148 +9,100 @@
 // 0x0110 = Write 32-bit word to disk (128 32-bit words per seconds, or 512 bytes) (io_out)
 // 0x0114 = Read status register
 
+#include "stdio.h"
+
 asm(".org 131072");
 
-void print_char(char x) {
-    char *uart = 1245184;
-    *uart = x;
-}
-
-void print_bcd(int x) {
-    int bcd_a;
-    int bcd_b;
-    int temp_x;
-
-    temp_x = x;
-    bcd_a = 0;
-    bcd_b = 0;
-
-    int bcd_a_carry = 0;
-    int bcd_b_carry = 0;
-
-    for (int i = 0; i < 16; i = i + 1) {
-        if ((bcd_a & 15) > 4) {
-            bcd_a = bcd_a + 3;
-        }
-        if ((bcd_a & 240) > 64) {
-            bcd_a = bcd_a + 48;
-        }
-        if ((bcd_a & 3840) > 1024) {
-            bcd_a = bcd_a + 768;
-        }
-        if ((bcd_a & 61440) > 16384) {
-            bcd_a = bcd_a + 12288;
-        }
-        if ((bcd_b & 15) > 4) {
-            bcd_b = bcd_b + 3;
-        }
-        
-        if ((temp_x & 32768) == 32768) {
-            bcd_a_carry = 1;
-        }
-        if ((temp_x & 32768) == 0) {
-            bcd_a_carry = 0;
-        }
-        if ((bcd_a & 32768) == 32768) {
-            bcd_b_carry = 1;
-        }
-        if ((bcd_a & 32768) == 0) {
-            bcd_b_carry = 0;
-        }
-        temp_x = temp_x << 1;
-        bcd_a = bcd_a << 1;
-        bcd_a = bcd_a | bcd_a_carry;
-        bcd_b = bcd_b << 1;
-        bcd_b = bcd_b | bcd_b_carry;
-        
-
-    }
-        
-    char temp_print = 0;
-    int not_leading_zero = 0;
-
-    temp_print = (bcd_b & 15) + 48;
-    if (temp_print != 48) {
-        not_leading_zero = 1;
-        print_char(temp_print);
-    }
-    if (temp_print == 48 && not_leading_zero == 1) {
-        print_char(temp_print);
-    }
-
-    for (i = 16; i > 0; i = i - 4) {
-        temp_print = ((bcd_a >> (i - 4)) & 15) + 48;
-        if (temp_print != 48) {
-            not_leading_zero = 1;
-            print_char(temp_print);
-        }
-        if (temp_print == 48 && not_leading_zero == 1) {
-            print_char(temp_print);
-        }
-    }
-    if (not_leading_zero == 0) {
-        print_char(48);
+void diskRead(int *buffer, int LBA_address) {
+    int *disk_io = 1245440;
+    char *output_str = "DiskRead test\n";
+    printString(output_str);
+    //debug();
+    *disk_io = LBA_address;
+    *(disk_io + 2) = 1; // start read to disk
+    for (int i = 0; i < 128; i = i + 1) {
+        *(buffer + i) = *(disk_io + 4);
     }
 }
 
-void cr() {
-    char temp = 10;
-    print_char(temp);
-    temp = 13;
-    print_char(temp);
-}
+void diskWrite(char *buffer, int LBA_address) {
+    int *disk_io = 1245440;
+    char *output_str = "DiskWrite test\n";
+    printString(output_str);
 
-void print(char *str) {
-    char *uart = 1245184;
-    char current_char;
-    while (*str > 0) {
-        current_char = *str;
-        print_char(current_char);
-        str = str + 1;
+    *disk_io = LBA_address;
+    *(disk_io + 3) = 1; // start write to disk
+    for (int i = 0; i < 128; i = i + 1) {
+       *(disk_io + 4) = *(buffer + i);
     }
 }
 
-void print_hex(uint8_t x) {
-    char temp;
-    char temp_b;
-    for (int i = 8; i > 0; i = i - 4) {
-        temp = x >> (i - 4);
-        temp = temp & 15;
-        temp_b = temp;
-        temp = temp_b + 48;
-        if (temp_b > 9) {
-            temp = temp_b + 55;
-        }
-        print_char(temp);
-    }
-}
-
-void syscall_func() {
-    asm("subi sp, sp, 4");
-    asm("addi r4, r0, 10 ;SYSCALL_GET");
-    asm("movi [sp + 0], r4 ;SYSCALL_SET");
-    asm("syscall");
-    asm("addi sp, sp, 4 ;SYSCALL_POP_PARAM");
-}
 
 void main() {
     int *disk_io = 1245440;
-    int *disk_test_buffer = 65536;
-    char *disk_test_buffer_char = disk_test_buffer;
+    int *disk_test_buffer_int = 65536;
+    char *disk_test_buffer = disk_test_buffer_int;
     char *output_str = "Disk test\n";
-    print(output_str);
+    printString(output_str);
 
 
-    *disk_io = 117; // LBA to 0
-    //*(disk_io + 3) = 1; // start write to disk
-    //for (int i = 0; i < 128; i = i + 1) {
-     //   *(disk_io + 4) = i;
-    //}
-    *disk_io = 0; // LBA to 0
-    *(disk_io + 2) = 1; // start read to disk
-    for (int i = 0; i < 128; i = i + 1) {
-        *(disk_test_buffer + i) = *(disk_io + 4);
+    diskRead(disk_test_buffer_int, 0);
+
+    int sectors_per_cluster;
+    int BPB_number_of_fats;
+    int root_dir_count;
+    int BPB_FATSz;
+    int BPB_ResvdSecCnt;
+    int BPB_RootEntCnt;
+    int BPB_BytsPerSec = 512;
+
+    sectors_per_cluster = *(disk_test_buffer + 13);
+    BPB_number_of_fats = *(disk_test_buffer + 16);
+    root_dir_count = *(disk_test_buffer + 17) + (*(disk_test_buffer + 18) << 8);
+    BPB_FATSz = *(disk_test_buffer + 22) + (*(disk_test_buffer + 23) << 8);
+    BPB_ResvdSecCnt = *(disk_test_buffer + 14) + (*(disk_test_buffer + 15) << 8);
+    BPB_RootEntCnt = *(disk_test_buffer + 17) + (*(disk_test_buffer + 18) << 8);
+    
+
+    int FAT_start;
+    int root_start;
+    int data_start;
+
+    FAT_start = BPB_ResvdSecCnt;
+    int FatSectors;
+    FatSectors = BPB_FATSz << 1;
+    
+    root_start = FAT_start + FatSectors;
+
+    int RootDirSectors;
+
+    RootDirSectors = ((BPB_RootEntCnt << 5) + BPB_BytsPerSec - 1) >> 9;
+
+    //print_bcd(RootDirSectors);
+
+    data_start = root_start + RootDirSectors;
+
+    print_bcd(FAT_start);
+    cr();
+    print_bcd(root_start);
+    cr();
+    print_bcd(data_start);
+    cr();
+
+    diskRead(disk_test_buffer_int, root_start);
+    cr();
+    for (int i = 0; i < 512; i = i + 32) {
+        int dir_attrib = *(disk_test_buffer + i + 11);
+        int first_dir_char = *(disk_test_buffer + i);
+        if ((dir_attrib != 15) && (first_dir_char < 128) && (first_dir_char > 0)) {
+            cr();
+            for (int j = 0; j < 11; j = j + 1) {
+                printChar(*(disk_test_buffer + i + j));
+            }
+        } 
     }
-    syscall_func();
+
+    cr();
+    exit();
 
 }
