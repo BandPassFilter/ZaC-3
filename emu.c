@@ -101,7 +101,7 @@ int InitialiseSerialPort() {
     }
 }
 
-int serial_port_mode = 1;
+int serial_port_mode = 0;
 
 uint8_t ReadSerialPort() {
     if (!serial_port_mode) {
@@ -402,6 +402,11 @@ void print_binary(int x) {
 
 int main(int argc, char** argv) {
     printf("ZaC-3 Emulator\n");
+    if (serial_port_mode == 1) {
+        printf("stdio mode: serial port\n");
+    } else {
+        printf("stdio mode: console\n");
+    }
 
     char *input_file_str;
     char *default_file = "os.bin";

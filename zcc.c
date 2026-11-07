@@ -5035,11 +5035,13 @@ TokenList *lexer(char *input_file_buf, long fsize) {
     return tokenList;
 }
 
-char *pre_processor(char *input_file_buf, int size) {
+char *pre_processor(char *input_file_buf, long *size_ptr) {
     // pre processor
     // for now it'll just remove comments
-
+    long size = *size_ptr;
     int i = 0;
+    CharAppendList *full_file = generateCharAppendList();
+    input_file_buf[size] = '\0';
     while (i < size) {
         if (input_file_buf[i] == '/' && input_file_buf[i+1] == '/') {
             while (i < size && input_file_buf[i] != '\n') {
@@ -5047,8 +5049,74 @@ char *pre_processor(char *input_file_buf, int size) {
                 i++;
             }
         }
+        
+        char sub_string[300] = {0};
+        char filename[300] = {0};
+        int j = 0;
+        int pre_directive_idx = i;
+        // now check pre-processor directives (#include, #define, etc.)
+        while (i < size && check_letter_is_not_alphabet(input_file_buf[i]) == 0) {
+            sub_string[j] = input_file_buf[i];
+            
+            i++;
+            j++;
+        }
+
+        for (j = 0; j < PRE_PROCESSOR_KEYWORDS_SIZE; j++) {
+            if (strcmp(sub_string, PRE_PROCESSOR_KEYWORDS[0]) == 0) {
+                // #include keyword
+                printf("#include keyword\n");
+                while (pre_directive_idx < size && check_letter_is_not_alphabet(input_file_buf[pre_directive_idx]) == 0) {
+                    input_file_buf[pre_directive_idx] = ' ';
+                    
+                    pre_directive_idx++;
+                }
+                int k = i;
+                while (k < size && check_letter_is_separator(input_file_buf[k])) {
+                    input_file_buf[k] = ' ';
+                    k++;
+                }
+                int w = 0;
+                while (k < size && (check_letter_is_separator(input_file_buf[k]) == 0)) {
+                    
+                    filename[w] = input_file_buf[k];
+                    input_file_buf[k] = ' ';
+                    w++;
+                    k++;
+                }
+                input_file_buf[k] = ' ';
+                i = k;
+                
+                // now import library into main file
+                FILE *library_file = fopen(filename, "rb");
+                if (!library_file) {
+                    printf("Include file open error: \"%s\"\n", filename);
+                    exit(1);
+                }
+                printf("include file: \"%s\"\n", filename);
+
+                fseek(library_file, 0, SEEK_END);
+                long library_file_size = ftell(library_file);
+                fseek(library_file, 0, SEEK_SET);
+
+                char *library_file_string = calloc(library_file_size + 100, sizeof(char));
+                fread(library_file_string, sizeof(char), library_file_size, library_file);
+
+
+                full_file->append(full_file, library_file_string);
+
+            }
+        }
+
+        
+
+
         i++;
     }
+    full_file->append(full_file, input_file_buf);
+
+
+
     /*
     if (check_letter_is_not_alphabet(input_file_buf[i])) {
             // now to lexical analysis on sub_string
@@ -5073,7 +5141,12 @@ char *pre_processor(char *input_file_buf, int size) {
         clear_string(50, sub_string);
         j = 0;
         */
-    return input_file_buf;
+
+    // remove comments with all the includes in
+
+
+    *size_ptr = full_file->size;
+    return full_file->array;
 }
 
 Dictionary **symbol_pass(AST_Node *start_node) {
@@ -5339,7 +5412,7 @@ int main(int argc, char* argv[]) {
     char *input_file_str;
     printf("ZaC-3 C Compiler\n");
     // Part 0 - initialisation
-    char *default_file = "os.c";
+    char *default_file = "syscall_test.c";
     if (argc < 2) {
         input_file_str = default_file; // default filename for testing
     } else if (argc == 2) {
@@ -5429,7 +5502,8 @@ int main(int argc, char* argv[]) {
     // Part 1 - Pre-processor
     // Evalulates macros, defines, includes and removes comments
     //printf("Preprocessing... ");
-    input_file_buf = pre_processor(input_file_buf, fsize);
+    input_file_buf = pre_processor(input_file_buf, &fsize);
+    input_file_buf = pre_processor(input_file_buf, &fsize); // pre-processor second time to remove comments with all the includes inside
     //printf("Done\n");
 
     // Part 2 and 3 - Lexer and tokenList modifier

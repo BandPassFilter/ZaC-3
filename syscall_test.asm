@@ -9,8 +9,6 @@ lui io, 19
 
 jmp _main
 
-.org 131072
-
 _syscall_execute:
 subi sp, sp, 4
 movi [sp + 0], fp
@@ -56,7 +54,7 @@ movi fp, [sp + 0]
 addi sp, sp, 4
 jr ra
 
-_syscall_print:
+_printString:
 subi sp, sp, 4
 movi [sp + 0], fp
 subi sp, sp, 4
@@ -101,7 +99,7 @@ movi fp, [sp + 0]
 addi sp, sp, 4
 jr ra
 
-_syscall_prompt:
+_exit:
 subi sp, sp, 4
 movi [sp + 0], fp
 subi sp, sp, 4
@@ -146,6 +144,8 @@ movi fp, [sp + 0]
 addi sp, sp, 4
 jr ra
 
+.org 131072
+
 _main:
 subi sp, sp, 8
 add fp, r0, sp
@@ -165,7 +165,7 @@ subi sp, sp, 4
 movi r4, [fp + 4] ;GET_MEMORY
 movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END_A
-jal _syscall_print
+jal _printString
 addi sp, sp, 4
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
@@ -177,7 +177,7 @@ subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-jal _syscall_prompt
+jal _exit
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
