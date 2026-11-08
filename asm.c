@@ -1016,9 +1016,9 @@ int main(int argc, char** argv) {
 
 
     printf("Finished!\n\n");
-    printf("Code segment size: %d bytes\n", (65536*4));
+    printf("Code segment size: %d bytes\n", (65536*2));
     printf("Code size: %d bytes\n", code_pointer*4);
-    printf("Code segment usage: %.2lf%%\n", ((double)code_pointer / (double)(65536))*100);
+    printf("Code segment usage: %.2lf%%\n", ((double)code_pointer / (double)(65536/2))*100);
     printf("\n");
 
     printf("Data segment size: %d bytes\n", (65536));

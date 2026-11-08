@@ -127,6 +127,12 @@ multi-tasking OS, all tasks would start at 0x00000000 in their own virtual space
 - Make global variables by static variables outside main() and all functions. This would be insanely useful in the OS for things like
   holding widely used information like disk sectors, FAT mount information and so on.
 
+- make a c debugger. This would be done by compiling the source file with the -d flag which means debug mode. After the breakpoint,
+  the compiler inserts a debug() function in between each line of the c source file. This would then make the program call the debug
+  function after each line naturally.
+
+- implement hexadecimal numbers in the c compiler. hex would be 0x12345, and decimal would be regular 12345.
+
 FAR TODO:
     - ZaC-3 will be fully 32-bit CPU, and so 32-bit ints, 32-bit pointers, etc. Although it will still use the same backplane, but it will have a different bus protocol.
     32-bit A/D. It will flip-flop 32-bit address and 32-bit data depending on the A/D signal (A/D low = address, A/D high = data). And since this only takes 33 pins

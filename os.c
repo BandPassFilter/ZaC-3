@@ -32,6 +32,19 @@ int get_int(char *shell_buf) {
     return result;
 }
 
+int compare_fixed_string(char *str_a, char *str_b, int size) {
+    int i = 0;
+    //printChar(43);
+    while ((i < size) && (*(str_a + i) == *(str_b + i))) {
+        i = i + 1;
+        //printChar(42);
+    }
+    if (i == size) {
+        return 1;
+    }
+    return 0;
+}
+
 int compare_string(char *str_a, char *str_b) {
     int i = 0;
 
@@ -74,7 +87,7 @@ int read_halfword_hex(char *string_buf) {
     return input_a;
 }
 
-int skip_space(char *shell_buf) {
+int skip_space_old(char *shell_buf) {
     int offset = 0;
     while (*(shell_buf + offset) < 33) {
         offset = offset + 1;
@@ -307,17 +320,24 @@ int getMountValues() {
     // mount_values: xxxxxxxxAAAAAAAABBBBBBBBCCCCCCCC, A = data_start, B = root_start, C = FAT_start
     int *mount_values_ptr = 459008;
     int mount_values = *mount_values_ptr;
+    char *error = "Disk not mounted!\n";
+
+    if (mount_values == 0) {
+        printString(error);
+        exit();
+    }
+
     return mount_values;
 }
 
-int getFileInstaceTable() {
+int getFileInstanceTable() {
     return 458752;
 }
 
 int mount_command() {
     // 0x00070100: Mount variables
     int *disk_io = 1245440;
-    int *disk_test_buffer_int = 65536;
+    int *disk_test_buffer_int = getDiskBufferBase();
     char *disk_test_buffer = disk_test_buffer_int;
     char *output_str = "Disk test\n";
     printString(output_str);
@@ -359,11 +379,22 @@ int mount_command() {
 
     data_start = root_start + RootDirSectors;
 
+    char *FAT_str = "FAT offset: ";
+    char *root_str = "Root offset: ";
+    char *data_str = "Data offset: ";
+    char *sectors_per_cluster_str = "Sectors per cluster: ";
+
+    printString(FAT_str);
     print_bcd(FAT_start);
     cr();
+    printString(root_str);
     print_bcd(root_start);
     cr();
+    printString(data_str);
     print_bcd(data_start);
+    cr();
+    printString(sectors_per_cluster_str);
+    print_bcd(sectors_per_cluster);
     cr();
 
     int return_value = FAT_start + (root_start << 8) + (data_start << 16); // hacky way to return 3 8-bit integers, just store them in a 32-bit word shifted accross.
@@ -374,14 +405,20 @@ int mount_command() {
     return return_value;
 }
 
+int getDiskIOBase() {
+    return 1245440;
+}
 
+int getDiskBufferBase() {
+    return 524288;
+}
 
 int dir_command() {
     int mount_values = getMountValues();
 
 
     int *disk_io = 1245440;
-    int *disk_test_buffer_int = 65536;
+    int *disk_test_buffer_int = getDiskBufferBase();
     char *disk_test_buffer = disk_test_buffer_int;
     char *output_str = "Disk test\n";
 
@@ -450,7 +487,38 @@ int dir_command() {
     return 0;
 }
 
+void searchfile_command(char *shell_buf, int shell_buf_offset) {
+    int dir_value = searchFile(shell_buf + shell_buf_offset);
+    int lba_offset = dir_value >> 9;
+    int buf_offset = dir_value & 511;
 
+    print_hex(lba_offset);
+    cr();
+    print_hex(buf_offset);
+    cr();
+}
+
+int getDirectoryStart(int mount_values) {
+    return (mount_values >> 8) & 255;
+}
+
+int getDataStart(int mount_values) {
+    return (mount_values >> 16) & 255;
+}
+
+int getFATStart(int mount_values) {
+    return mount_values & 255;
+}
+
+void makeUppercase(char *string) {
+    int i = 0;
+    while ((i < 256) && ((*(string + i) != 0))) {
+        if ((*(string + i) > 96) && (*(string + i) < 123)) {
+            *(string + i) = *(string + i) - 32;
+        }
+        i = i + 1;
+    }
+}
 
 int searchFile(char *filename_str) {
     // Search file
@@ -458,29 +526,86 @@ int searchFile(char *filename_str) {
     // returns: 0-0xFFFE = File index in root, 0xFFFFFFFF = File not found
 
     // filename_str requires dot separator and filename extension (e.g. "filename.txt")
-    int mount_vales = getMountValues();
+    int mount_values = getMountValues();
+    int dir_start = getDirectoryStart(mount_values);
+    int data_start = getDataStart(mount_values);
     char *filename_main = "        ";
     char *filename_ext  = "   ";
+    char *filename_total = "           ";
+    //debug();
+
+    makeUppercase(filename_str);
+
 
     int i = 0;
-    while ((i < 8) && (*(filename_str + i) != 46)) {
+    for (i = 0; i < 8; i = i + 1) {
+        *(filename_main + i) = 32;
+    }
+    for (i = 0; i < 3; i = i + 1) {
+        *(filename_ext + i) = 32;
+    }
+    i = 0;
+    while ((i < 8) && (*(filename_str + i) != 46) && (*(filename_str + i) > 0)) {
         *(filename_main + i) = *(filename_str + i);
+        i = i + 1;
     }
     i = i + 1;
     int j = 0;
-    while ((i < 11) && ((*(filename_str + i) != 0) || (*(filename_str + i) != 32))) {
+    while ((i < 11) && ((*(filename_str + i) != 0) || (*(filename_str + i) != 32)) && (*(filename_str + i) > 0)) {
         *(filename_ext + j) = *(filename_str + i);
+        i = i + 1;
+        j = j + 1;
     }
 
+    for (i = 0; i < 8; i = i + 1) {
+        *(filename_total + i) = *(filename_main + i);
+    }
+    j = i;
+
+    for (i = 0; i < 3; i = i + 1) {
+        *(filename_total + j) = *(filename_ext + i);
+        j = j + 1;
+    }
+
+    //printString(filename_main);
+    //cr();
+    //printString(filename_ext);
+    //cr();
+    //printString(filename_total);
+    //cr();
+
+    char *disk_test_buffer = getDiskBufferBase();
+    
 
 
+    // now compare filename_total to directory entry filenames
+   int number_of_files = 0;
+   int FILENAME_FIXED_SIZE = 11;
+    for (int sectors = dir_start; sectors < data_start; sectors = sectors + 1) {
+        diskRead(disk_test_buffer, sectors);
+        
+        for (i = 0; i < 512; i = i + 32) {
+            int dir_attrib = *(disk_test_buffer + i + 11);
+            int first_dir_char = *(disk_test_buffer + i);
+
+            if ((dir_attrib != 15) && (first_dir_char < 128) && (first_dir_char > 0)) {
+                number_of_files = number_of_files + 1;
+                int result = compare_fixed_string(disk_test_buffer + i, filename_total, FILENAME_FIXED_SIZE);
+                if (result == 1) {
+                    //print_bcd(number_of_files);
+                    return (sectors << 9) + i; // AAAAAAAA BBBBBBBBB: A = LBA offset, B = buffer offset in sector
+                }
+            }
+        }
+    }
+    return 65536;
 }
 
-int open_command(char *filename_str) {
-    // open_command
-    // opens a file instance
-    // inputs: char *filename_str = filename string
-    // returns: file handle
+int openFile(char *filename_str) {
+    // openFile function
+    // opens a file
+    // inputs: char *filename_str = asciiz filename string
+    // outputs: filehandle 32-bit integer
 
     // 0x00070000 - 0x000700FF: Open file instance list
     // 0x00070100: Mount variables
@@ -491,24 +616,102 @@ int open_command(char *filename_str) {
     // A = Open file valid (0 = closed, 1 = open)
     // B:F = reserved
 
-    char *file_instance_list = getFileInstaceTable();
+    // get all the first_cluster information for the file
+    char *file_instance_list = getFileInstanceTable();
+    int *file_instance_list_int = file_instance_list;
     int mount_values = getMountValues();
-    int root_start = (mount_values >> 8) & 255;
+    int root_start = getDirectoryStart(mount_values);
+    int FAT_start = getFATStart(mount_values);
+    int dir_position;
 
-    searchFile(filename_str);
+    dir_position = searchFile(filename_str);
+    if (dir_position == 65536) {
+        return 255;
+    }
+    int lba_offset = dir_position >> 9;
+    int buf_offset = dir_position & 511;
+    int disk_buffer_base = getDiskBufferBase();
+    char *dir_offset = disk_buffer_base + buf_offset;
+    diskRead(disk_buffer_base, lba_offset);
+
+    int cluster_offset = (*(dir_offset + 26)) + (*(dir_offset + 27) << 8);
+    int filesize = (*(dir_offset + 28)) + (*(dir_offset + 29) << 8) + (*(dir_offset + 30) << 16) + (*(dir_offset + 31) << 24);
+
+    // now create file instance
+    int i = 0;
+    while ((i < 256) && (*(file_instance_list + i + 10) != 0)) {
+        i = i + 16;
+    }
+    if (i == 256) {
+        return 256;
+    }
+
+    // now write to file instance table
+    *(file_instance_list + i + 0) = filesize & 255;
+    *(file_instance_list + i + 1) = (filesize >> 8) & 255;
+    *(file_instance_list + i + 2) = (filesize >> 16) & 255;
+    *(file_instance_list + i + 3) = (filesize >> 24) & 255;
+    
+    *(file_instance_list + i + 4) = 0;
+    *(file_instance_list + i + 5) = 0;
+    *(file_instance_list + i + 6) = 0;
+    *(file_instance_list + i + 7) = 0;
+
+    *(file_instance_list + i + 8) = cluster_offset & 255;
+    *(file_instance_list + i + 9) = (cluster_offset >> 8) & 255;
+
+    *(file_instance_list + i + 10) = 1; // set file open attribute to true
+    return i;
+}
+
+int closeFile(int filehandle) {
+    char *file_instance_list = getFileInstanceTable();
+
+    for (int i = 0; i < 16; i = i + 1) {
+        *(file_instance_list + filehandle + i) = 0;
+    }
 
 }
 
-void close_command() {
+int readFile(char *buffer, int count, int filehandle) {
+
+}
+
+int writeFile(char *buffer, int count, int filehandle) {
+}
+
+int open_command(char *shell_buf, int shell_buf_offset) {
+    // open_command
+    // opens a file instance
+    // inputs: char *filename_str = filename string
+    // returns: file handle
+
+
+    int cluster_offset = openFile(shell_buf + shell_buf_offset);
+    print_hex(cluster_offset);
+    cr();
+
+}
+
+void close_command(char *shell_buf, int shell_buf_offset) {
+    int filehandle = get_int(shell_buf + shell_buf_offset);
+    closeFile(filehandle);
+}
+
+void filerd_command(char *shell_buf, int shell_buf_offset) {
     
 }
 
-void filerd_command(char *buffer, int byte_count, int filehandle) {
+void filewr_command(char *shell_buf, int shell_buf_offset) {
     
 }
 
-void filewr_command(char *buffer, int byte_count, int filehandle) {
-    
+int skip_space(char *shell_buf, int shell_buf_offset) {
+    int i = shell_buf_offset;
+    while ((i < 256) && ((*(shell_buf + i)) == 32)) {
+        i = i + 1;
+    }
+    return i;
 }
 
 void reset() {
@@ -528,6 +731,7 @@ void shell() {
     char *close_str = "close";
     char *filerd_str = "filerd";
     char *filewr_str = "filewr";
+    char *searchfile_str = "search";
     int mount_values = 0;
 
     char *output_str = "Typed string is: ";
@@ -604,26 +808,30 @@ void shell() {
                 }
                 result = compare_string(shell_buf, open_str);
                 if (result == 1) {
-                    shell_buf_offset = 3;
-                    open_command();
+                    shell_buf_offset = 4;
+                    shell_buf_offset = skip_space(shell_buf, shell_buf_offset);
+                    open_command(shell_buf, shell_buf_offset);
                     command_success = 1;
                 }
                 result = compare_string(shell_buf, close_str);
                 if (result == 1) {
-                    shell_buf_offset = 3;
-                    close_command();
+                    shell_buf_offset = 5;
+                    shell_buf_offset = skip_space(shell_buf, shell_buf_offset);
+                    close_command(shell_buf, shell_buf_offset);
                     command_success = 1;
                 }
                 result = compare_string(shell_buf, filerd_str);
                 if (result == 1) {
-                    shell_buf_offset = 3;
+                    shell_buf_offset = 6;
+                    shell_buf_offset = skip_space(shell_buf, shell_buf_offset);
                     filerd_command();
                     command_success = 1;
                 }
-                result = compare_string(shell_buf, filewr_str);
+                result = compare_string(shell_buf, searchfile_str);
                 if (result == 1) {
-                    shell_buf_offset = 3;
-                    filewr_command();
+                    shell_buf_offset = 6;
+                    shell_buf_offset = skip_space(shell_buf, shell_buf_offset);
+                    searchfile_command(shell_buf, shell_buf_offset);
                     command_success = 1;
                 }
                 if (command_success == 0) {
