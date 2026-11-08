@@ -16,14 +16,14 @@
 				* SetVariable
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier print_char_uart Local
+							* Identifier print_char_uart
 						* Identifier print_char_value
 	* FunctionDeclaration char
 		* Function get_char
 			* Parameters
 			* Body
 				* Declaration char
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier get_char_uart Local
 					* Operator =
 						* Operator ~* Dereference
@@ -34,7 +34,7 @@
 						* Identifier get_char_uart
 	* FunctionDeclaration void
 		* Function diskRead
-			* Parameters Local
+			* Parameters
 				* Declaration int
 					* Operator ~* Dereference
 						* Identifier diskRead_buffer Local
@@ -44,7 +44,7 @@
 				* Declaration int
 					* Operator ~* Dereference
 						* Identifier diskRead_disk_io Local
-					* Operator = Local
+					* Operator =
 						* Operator ~* Dereference
 							* Identifier diskRead_disk_io
 						* Literal32 1245440
@@ -58,7 +58,7 @@
 				* SetVariable
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier diskRead_disk_io Local
+							* Identifier diskRead_disk_io
 						* Identifier diskRead_LBA_address
 				* SetVariable
 					* Operator =
@@ -80,13 +80,13 @@
 						* Identifier diskRead_i
 						* Operator +
 							* Identifier diskRead_i
-							* Literal 1 Local
+							* Literal 1
 					* Body
 						* SetVariable
 							* Operator =
 								* Operator ~* Dereference
 									* Operator +
-										* Identifier diskRead_buffer Local
+										* Identifier diskRead_buffer
 										* Identifier diskRead_i
 								* Operator ~* Dereference
 									* Operator +
@@ -95,7 +95,7 @@
 	* FunctionDeclaration void
 		* Function diskWrite
 			* Parameters
-				* Declaration char Local
+				* Declaration char
 					* Operator ~* Dereference
 						* Identifier diskWrite_buffer Local
 				* Declaration int
@@ -111,12 +111,12 @@
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier diskWrite_output_str Local
-					* Operator = Local
+					* Operator =
 						* Operator ~* Dereference
 							* Identifier diskWrite_output_str
 						* String string_1: "DiskWrite test\n" Static
 				* SetVariable
-					* Operator = Local
+					* Operator =
 						* Operator ~* Dereference
 							* Identifier diskWrite_disk_io
 						* Identifier diskWrite_LBA_address
@@ -134,7 +134,7 @@
 							* Identifier diskWrite_i
 							* Literal 0
 					* Operator <
-						* Identifier diskWrite_i Local
+						* Identifier diskWrite_i
 						* Literal 128
 					* Operator =
 						* Identifier diskWrite_i
@@ -145,7 +145,7 @@
 						* SetVariable
 							* Operator =
 								* Operator ~* Dereference
-									* Operator + Local
+									* Operator +
 										* Identifier diskWrite_disk_io
 										* Literal 4
 								* Operator ~* Dereference
@@ -154,12 +154,12 @@
 										* Identifier diskWrite_i
 	* FunctionDeclaration int
 		* Function syscall_execute
-			* Parameters Local
+			* Parameters
 				* Declaration int
 					* Identifier syscall_execute_func_number Local
 				* Declaration int
 					* Identifier syscall_execute_arg0 Local
-				* Declaration int Local
+				* Declaration int
 					* Identifier syscall_execute_arg1 Local
 				* Declaration int
 					* Identifier syscall_execute_arg2 Local
@@ -181,7 +181,7 @@
 				* Declaration int
 					* Identifier syscall_execute_sarg0 Static
 					* Operator =
-						* Identifier syscall_execute_sarg0 Local
+						* Identifier syscall_execute_sarg0
 						* Identifier syscall_execute_arg0
 				* Declaration int
 					* Identifier syscall_execute_sarg1 Static
@@ -220,9 +220,9 @@
 				* Return
 					* Identifier syscall_execute_return_value
 	* FunctionDeclaration void
-		* Function printChar Local
+		* Function printChar
 			* Parameters
-				* Declaration char Local
+				* Declaration char
 					* Identifier printChar_value Local
 			* Body
 				* FunctionCall syscall_execute
@@ -248,11 +248,11 @@
 		* Function _printString
 			* Parameters
 				* Declaration char
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier _printString_str Local
 			* Body
 				* FunctionCall syscall_execute
-					* CallParameters Local
+					* CallParameters
 						* Literal 2
 						* Identifier _printString_str
 						* Literal 0
@@ -269,10 +269,10 @@
 						* Literal 0
 						* Literal 0
 						* Literal 0
-	* FunctionDeclaration int Local
+	* FunctionDeclaration int
 		* Function get_hex_int
 			* Parameters
-				* Declaration char Local
+				* Declaration char
 					* Identifier get_hex_int_c Local
 			* Body
 				* Declaration char
@@ -293,18 +293,18 @@
 										* Identifier get_hex_int_hex_to_dec
 										* Identifier get_hex_int_c
 									* Literal 48
-							* Literal 48 Local
+							* Literal 48
 				* Return
 					* Identifier get_hex_int_number
 	* FunctionDeclaration void
 		* Function cr
 			* Parameters
 			* Body
-				* Declaration char Local
+				* Declaration char
 					* Identifier cr_temp Local
 					* Operator =
 						* Identifier cr_temp
-						* Literal 10 Local
+						* Literal 10
 				* FunctionCall printChar
 					* CallParameters
 						* Identifier cr_temp
@@ -316,7 +316,7 @@
 					* CallParameters
 						* Identifier cr_temp
 	* FunctionDeclaration void
-		* Function printString Local
+		* Function printString
 			* Parameters
 				* Declaration char
 					* Operator ~* Dereference
@@ -1178,12 +1178,14 @@
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier skip_non_space_shell_buf Local
+				* Declaration int
+					* Identifier skip_non_space_shell_buf_offset Local
 			* Body
 				* Declaration int
 					* Identifier skip_non_space_offset Local
 					* Operator =
 						* Identifier skip_non_space_offset
-						* Literal 0
+						* Identifier skip_non_space_shell_buf_offset
 				* While
 					* Operator >
 						* Operator ~* Dereference
@@ -1274,13 +1276,10 @@
 				* SetVariable
 					* Operator =
 						* Identifier dump_command_shell_buf_offset
-						* Operator +
-							* Identifier dump_command_shell_buf_offset
-							* FunctionCall skip_non_space
-								* CallParameters
-									* Operator +
-										* Identifier dump_command_shell_buf
-										* Identifier dump_command_shell_buf_offset
+						* FunctionCall skip_non_space
+							* CallParameters
+								* Identifier dump_command_shell_buf
+								* Identifier dump_command_shell_buf_offset
 				* SetVariable
 					* Operator =
 						* Identifier dump_command_shell_buf_offset
@@ -1927,6 +1926,35 @@
 				* Return
 					* Literal32 458752
 	* FunctionDeclaration int
+		* Function getMountValuesBase
+			* Parameters
+			* Body
+				* Return
+					* Literal32 459008
+	* FunctionDeclaration int
+		* Function getSectorsPerCluster
+			* Parameters
+			* Body
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier getSectorsPerCluster_mount_values_base Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier getSectorsPerCluster_mount_values_base
+						* FunctionCall getMountValuesBase
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier getSectorsPerCluster_sectors_per_cluster Local
+					* Operator =
+						* Identifier getSectorsPerCluster_sectors_per_cluster
+						* Operator ~* Dereference
+							* Operator +
+								* Identifier getSectorsPerCluster_mount_values_base
+								* Literal 4
+				* Return
+					* Identifier getSectorsPerCluster_sectors_per_cluster
+	* FunctionDeclaration int
 		* Function mount_command
 			* Parameters
 			* Body
@@ -1937,6 +1965,15 @@
 						* Operator ~* Dereference
 							* Identifier mount_command_disk_io
 						* Literal32 1245440
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier mount_command_mount_values_base Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier mount_command_mount_values_base
+						* FunctionCall getMountValuesBase
+							* CallParameters
+								* Void
 				* Declaration int
 					* Operator ~* Dereference
 						* Identifier mount_command_disk_test_buffer_int Local
@@ -2054,6 +2091,13 @@
 										* Identifier mount_command_disk_test_buffer
 										* Literal 18
 								* Literal 8
+				* SetVariable
+					* Operator =
+						* Operator ~* Dereference
+							* Operator +
+								* Identifier mount_command_mount_values_base
+								* Literal 4
+						* Identifier mount_command_sectors_per_cluster
 				* Declaration int
 					* Identifier mount_command_FAT_start Local
 				* Declaration int
@@ -3266,6 +3310,13 @@
 						* FunctionCall getFileInstanceTable
 							* CallParameters
 								* Void
+				* If
+					* Operator >
+						* Identifier closeFile_filehandle
+						* Literal 240
+					* Body
+						* Return
+							* Literal 1
 				* For
 					* Declaration int
 						* Identifier closeFile_i Local
@@ -3290,13 +3341,383 @@
 											* Identifier closeFile_filehandle
 										* Identifier closeFile_i
 								* Literal 0
+				* Return
+					* Literal 0
+	* FunctionDeclaration int
+		* Function isFileOpen
+			* Parameters
+				* Declaration int
+					* Identifier isFileOpen_filehandle Local
+			* Body
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier isFileOpen_file_instance_list Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier isFileOpen_file_instance_list
+						* FunctionCall getFileInstanceTable
+							* CallParameters
+								* Void
+				* Return
+					* Operator ~* Dereference
+						* Operator +
+							* Operator +
+								* Identifier isFileOpen_file_instance_list
+								* Identifier isFileOpen_filehandle
+							* Literal 10
+	* FunctionDeclaration void
+		* Function checkFileHandleValid
+			* Parameters
+				* Declaration int
+					* Identifier checkFileHandleValid_filehandle Local
+			* Body
+				* If
+					* Operator >
+						* Identifier checkFileHandleValid_filehandle
+						* Literal 240
+					* Body
+						* Declaration char
+							* Operator ~* Dereference
+								* Identifier checkFileHandleValid_error_1 Local
+							* Operator =
+								* Operator ~* Dereference
+									* Identifier checkFileHandleValid_error_1
+								* String string_43: "Invalid filehandle\n" Static
+						* FunctionCall printString
+							* CallParameters
+								* Identifier checkFileHandleValid_error_1
+						* FunctionCall exit
+							* CallParameters
+								* Void
+				* If
+					* Operator ==
+						* FunctionCall isFileOpen
+							* CallParameters
+								* Identifier checkFileHandleValid_filehandle
+						* Literal 0
+					* Body
+						* Declaration char
+							* Operator ~* Dereference
+								* Identifier checkFileHandleValid_error Local
+							* Operator =
+								* Operator ~* Dereference
+									* Identifier checkFileHandleValid_error
+								* String string_44: "File not open!\n" Static
+						* FunctionCall printString
+							* CallParameters
+								* Identifier checkFileHandleValid_error
+						* FunctionCall exit
+							* CallParameters
+								* Void
+	* FunctionDeclaration int
+		* Function getFileSeek
+			* Parameters
+				* Declaration int
+					* Identifier getFileSeek_filehandle Local
+			* Body
+				* FunctionCall checkFileHandleValid
+					* CallParameters
+						* Identifier getFileSeek_filehandle
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier getFileSeek_file_instance_list Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier getFileSeek_file_instance_list
+						* FunctionCall getFileInstanceTable
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier getFileSeek_seek Local
+					* Operator =
+						* Identifier getFileSeek_seek
+						* Literal 0
+				* SetVariable
+					* Operator =
+						* Operator =
+							* Identifier getFileSeek_seek
+							* Operator ~* Dereference
+								* Operator +
+									* Operator +
+										* Identifier getFileSeek_file_instance_list
+										* Identifier getFileSeek_filehandle
+									* Literal 4
+						* Literal 0
+				* SetVariable
+					* Operator =
+						* Identifier getFileSeek_seek
+						* Operator +
+							* Identifier getFileSeek_seek
+							* Operator <<
+								* Operator ~* Dereference
+									* Operator +
+										* Operator +
+											* Identifier getFileSeek_file_instance_list
+											* Identifier getFileSeek_filehandle
+										* Literal 5
+								* Literal 8
+				* SetVariable
+					* Operator =
+						* Identifier getFileSeek_seek
+						* Operator +
+							* Identifier getFileSeek_seek
+							* Operator <<
+								* Operator ~* Dereference
+									* Operator +
+										* Operator +
+											* Identifier getFileSeek_file_instance_list
+											* Identifier getFileSeek_filehandle
+										* Literal 6
+								* Literal 16
+				* SetVariable
+					* Operator =
+						* Identifier getFileSeek_seek
+						* Operator +
+							* Identifier getFileSeek_seek
+							* Operator <<
+								* Operator ~* Dereference
+									* Operator +
+										* Operator +
+											* Identifier getFileSeek_file_instance_list
+											* Identifier getFileSeek_filehandle
+										* Literal 7
+								* Literal 24
+				* Return
+					* Identifier getFileSeek_seek
+	* FunctionDeclaration void
+		* Function setFileSeek
+			* Parameters
+				* Declaration int
+					* Identifier setFileSeek_seek Local
+				* Declaration int
+					* Identifier setFileSeek_filehandle Local
+			* Body
+	* FunctionDeclaration int
+		* Function getCurrentFileCluster
+			* Parameters
+				* Declaration int
+					* Identifier getCurrentFileCluster_filehandle Local
+			* Body
+				* FunctionCall checkFileHandleValid
+					* CallParameters
+						* Identifier getCurrentFileCluster_filehandle
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier getCurrentFileCluster_file_instance_list Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier getCurrentFileCluster_file_instance_list
+						* FunctionCall getFileInstanceTable
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier getCurrentFileCluster_current_cluster Local
+					* Operator =
+						* Identifier getCurrentFileCluster_current_cluster
+						* Literal 0
+				* SetVariable
+					* Operator =
+						* Identifier getCurrentFileCluster_current_cluster
+						* Operator +
+							* Operator ~* Dereference
+								* Operator +
+									* Identifier getCurrentFileCluster_file_instance_list
+									* Literal 8
+							* Operator <<
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier getCurrentFileCluster_file_instance_list
+										* Literal 9
+								* Literal 8
+				* Return
+					* Identifier getCurrentFileCluster_current_cluster
+	* FunctionDeclaration void
+		* Function setCurrentFileCluster
+			* Parameters
+				* Declaration int
+					* Identifier setCurrentFileCluster_cluster Local
+				* Declaration int
+					* Identifier setCurrentFileCluster_filehandle Local
+			* Body
+	* FunctionDeclaration int
+		* Function getFileHandleSize
+			* Parameters
+				* Declaration int
+					* Identifier getFileHandleSize_filehandle Local
+			* Body
+				* FunctionCall checkFileHandleValid
+					* CallParameters
+						* Identifier getFileHandleSize_filehandle
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier getFileHandleSize_file_instance_list Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier getFileHandleSize_file_instance_list
+						* FunctionCall getFileInstanceTable
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier getFileHandleSize_size Local
+					* Operator =
+						* Identifier getFileHandleSize_size
+						* Literal 0
+				* SetVariable
+					* Operator =
+						* Identifier getFileHandleSize_size
+						* Operator +
+							* Operator +
+								* Operator +
+									* Operator ~* Dereference
+										* Operator +
+											* Identifier getFileHandleSize_file_instance_list
+											* Literal 0
+									* Operator <<
+										* Operator ~* Dereference
+											* Operator +
+												* Identifier getFileHandleSize_file_instance_list
+												* Literal 1
+										* Literal 8
+								* Operator <<
+									* Operator ~* Dereference
+										* Operator +
+											* Identifier getFileHandleSize_file_instance_list
+											* Literal 2
+									* Literal 16
+							* Operator <<
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier getFileHandleSize_file_instance_list
+										* Literal 3
+								* Literal 24
+				* Return
+					* Identifier getFileHandleSize_size
+	* FunctionDeclaration void
+		* Function setFileHandleSize
+			* Parameters
+				* Declaration int
+					* Identifier setFileHandleSize_filehandle Local
+			* Body
 	* FunctionDeclaration int
 		* Function readFile
 			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier readFile_buffer Local
+				* Declaration int
+					* Identifier readFile_count Local
+				* Declaration int
+					* Identifier readFile_filehandle Local
 			* Body
+				* FunctionCall checkFileHandleValid
+					* CallParameters
+						* Identifier readFile_filehandle
+				* Declaration int
+					* Identifier readFile_seek Local
+					* Operator =
+						* Identifier readFile_seek
+						* FunctionCall getFileSeek
+							* CallParameters
+								* Identifier readFile_filehandle
+				* Declaration int
+					* Identifier readFile_current_cluster Local
+					* Operator =
+						* Identifier readFile_current_cluster
+						* FunctionCall getCurrentFileCluster
+							* CallParameters
+								* Identifier readFile_filehandle
+				* Declaration int
+					* Identifier readFile_size Local
+					* Operator =
+						* Identifier readFile_size
+						* FunctionCall getFileHandleSize
+							* CallParameters
+								* Identifier readFile_filehandle
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier readFile_disk_buffer Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier readFile_disk_buffer
+						* FunctionCall getDiskBufferBase
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier readFile_mount_values Local
+					* Operator =
+						* Identifier readFile_mount_values
+						* FunctionCall getMountValues
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier readFile_data_region Local
+					* Operator =
+						* Identifier readFile_data_region
+						* FunctionCall getDataStart
+							* CallParameters
+								* Identifier readFile_mount_values
+				* Declaration int
+					* Identifier readFile_sectors_per_cluster Local
+					* Operator =
+						* Identifier readFile_sectors_per_cluster
+						* FunctionCall getSectorsPerCluster
+							* CallParameters
+								* Identifier readFile_mount_values
+				* FunctionCall print_bcd
+					* CallParameters
+						* Identifier readFile_sectors_per_cluster
+				* FunctionCall cr
+					* CallParameters
+						* Void
+				* FunctionCall print_bcd
+					* CallParameters
+						* Identifier readFile_seek
+				* FunctionCall cr
+					* CallParameters
+						* Void
+				* FunctionCall print_hex
+					* CallParameters
+						* Identifier readFile_current_cluster
+				* FunctionCall cr
+					* CallParameters
+						* Void
+				* FunctionCall print_bcd
+					* CallParameters
+						* Identifier readFile_size
+				* FunctionCall cr
+					* CallParameters
+						* Void
+				* Declaration int
+					* Identifier readFile_current_cluster_sector Local
+					* Operator =
+						* Identifier readFile_current_cluster_sector
+						* Operator +
+							* Identifier readFile_data_region
+							* Operator <<
+								* Operator -
+									* Identifier readFile_current_cluster
+									* Literal 2
+								* Literal 6
+				* FunctionCall print_int_hex
+					* CallParameters
+						* Identifier readFile_current_cluster_sector
+				* FunctionCall cr
+					* CallParameters
+						* Void
+				* FunctionCall diskRead
+					* CallParameters
+						* Identifier readFile_disk_buffer
+						* Identifier readFile_current_cluster_sector
 	* FunctionDeclaration int
 		* Function writeFile
 			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier writeFile_buffer Local
+				* Declaration int
+					* Identifier writeFile_count Local
+				* Declaration int
+					* Identifier writeFile_filehandle Local
 			* Body
 	* FunctionDeclaration int
 		* Function open_command
@@ -3348,22 +3769,85 @@
 			* Parameters
 				* Declaration char
 					* Operator ~* Dereference
-						* Identifier filerd_command_buffer Local
+						* Identifier filerd_command_shell_buf Local
 				* Declaration int
-					* Identifier filerd_command_byte_count Local
+					* Identifier filerd_command_shell_buf_offset Local
+			* Body
+				* SetVariable
+					* Operator =
+						* Identifier filerd_command_shell_buf_offset
+						* FunctionCall skip_space
+							* CallParameters
+								* Identifier filerd_command_shell_buf
+								* Identifier filerd_command_shell_buf_offset
+				* Declaration int
+					* Identifier filerd_command_buffer Local
+					* Operator =
+						* Identifier filerd_command_buffer
+						* FunctionCall get_int
+							* CallParameters
+								* Operator +
+									* Identifier filerd_command_shell_buf
+									* Identifier filerd_command_shell_buf_offset
+				* SetVariable
+					* Operator =
+						* Identifier filerd_command_shell_buf_offset
+						* FunctionCall skip_non_space
+							* CallParameters
+								* Identifier filerd_command_shell_buf
+								* Identifier filerd_command_shell_buf_offset
+				* SetVariable
+					* Operator =
+						* Identifier filerd_command_shell_buf_offset
+						* FunctionCall skip_space
+							* CallParameters
+								* Identifier filerd_command_shell_buf
+								* Identifier filerd_command_shell_buf_offset
+				* Declaration int
+					* Identifier filerd_command_count Local
+					* Operator =
+						* Identifier filerd_command_count
+						* FunctionCall get_int
+							* CallParameters
+								* Operator +
+									* Identifier filerd_command_shell_buf
+									* Identifier filerd_command_shell_buf_offset
+				* SetVariable
+					* Operator =
+						* Identifier filerd_command_shell_buf_offset
+						* FunctionCall skip_non_space
+							* CallParameters
+								* Identifier filerd_command_shell_buf
+								* Identifier filerd_command_shell_buf_offset
+				* SetVariable
+					* Operator =
+						* Identifier filerd_command_shell_buf_offset
+						* FunctionCall skip_space
+							* CallParameters
+								* Identifier filerd_command_shell_buf
+								* Identifier filerd_command_shell_buf_offset
 				* Declaration int
 					* Identifier filerd_command_filehandle Local
-			* Body
+					* Operator =
+						* Identifier filerd_command_filehandle
+						* FunctionCall get_int
+							* CallParameters
+								* Operator +
+									* Identifier filerd_command_shell_buf
+									* Identifier filerd_command_shell_buf_offset
+				* FunctionCall readFile
+					* CallParameters
+						* Identifier filerd_command_buffer
+						* Identifier filerd_command_count
+						* Identifier filerd_command_filehandle
 	* FunctionDeclaration void
 		* Function filewr_command
 			* Parameters
 				* Declaration char
 					* Operator ~* Dereference
-						* Identifier filewr_command_buffer Local
+						* Identifier filewr_command_shell_buf Local
 				* Declaration int
-					* Identifier filewr_command_byte_count Local
-				* Declaration int
-					* Identifier filewr_command_filehandle Local
+					* Identifier filewr_command_shell_buf_offset Local
 			* Body
 	* FunctionDeclaration int
 		* Function skip_space
@@ -3442,70 +3926,70 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_dump_str
-						* String string_43: "dump" Static
+						* String string_45: "dump" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_write_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_write_str
-						* String string_44: "write" Static
+						* String string_46: "write" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_run_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_run_str
-						* String string_45: "run" Static
+						* String string_47: "run" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_mount_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_mount_str
-						* String string_46: "mount" Static
+						* String string_48: "mount" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_dir_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_dir_str
-						* String string_47: "dir" Static
+						* String string_49: "dir" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_open_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_open_str
-						* String string_48: "open" Static
+						* String string_50: "open" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_close_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_close_str
-						* String string_49: "close" Static
+						* String string_51: "close" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_filerd_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_filerd_str
-						* String string_50: "filerd" Static
+						* String string_52: "filerd" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_filewr_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_filewr_str
-						* String string_51: "filewr" Static
+						* String string_53: "filewr" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_searchfile_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_searchfile_str
-						* String string_52: "search" Static
+						* String string_54: "search" Static
 				* Declaration int
 					* Identifier shell_mount_values Local
 					* Operator =
@@ -3517,21 +4001,21 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_output_str
-						* String string_53: "Typed string is: " Static
+						* String string_55: "Typed string is: " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_invalid_command_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_invalid_command_str
-						* String string_54: "Invalid command\n" Static
+						* String string_56: "Invalid command\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_cr_string Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_cr_string
-						* String string_55: "\ncarriage return\n" Static
+						* String string_57: "\ncarriage return\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_shell_buf Local
@@ -3545,7 +4029,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_cr
-						* String string_56: "\n" Static
+						* String string_58: "\n" Static
 				* Declaration char
 					* Identifier shell_space Local
 					* Operator =
@@ -3879,7 +4363,39 @@
 																* Identifier shell_shell_buf_offset
 												* FunctionCall filerd_command
 													* CallParameters
-														* Void
+														* Identifier shell_shell_buf
+														* Identifier shell_shell_buf_offset
+												* SetVariable
+													* Operator =
+														* Identifier shell_command_success
+														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier shell_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_filewr_str
+										* If
+											* Operator ==
+												* Identifier shell_result
+												* Literal 1
+											* Body
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* Literal 6
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* FunctionCall skip_space
+															* CallParameters
+																* Identifier shell_shell_buf
+																* Identifier shell_shell_buf_offset
+												* FunctionCall filewr_command
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_shell_buf_offset
 												* SetVariable
 													* Operator =
 														* Identifier shell_command_success
@@ -3936,7 +4452,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_end
-						* String string_57: "end\n" Static
+						* String string_59: "end\n" Static
 				* FunctionCall printString
 					* CallParameters
 						* Identifier shell_end
@@ -3945,14 +4461,14 @@
 			* Parameters
 			* Body
 				* Asm
-					* String string_58: "addi sys, r0, _system_call" Static
+					* String string_60: "addi sys, r0, _system_call" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_x Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_x
-						* String string_59: "\nZaC-3 OS\n" Static
+						* String string_61: "\nZaC-3 OS\n" Static
 				* FunctionCall printString
 					* CallParameters
 						* Identifier main_x

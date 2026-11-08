@@ -2420,7 +2420,7 @@ subi sp, sp, 4
 movi [sp + 0], ra
 subi sp, sp, 4
 add fp, r0, sp
-addi r5, r0, 0 ;GET
+movi r5, [fp + 16] ;GET
 movi [fp + 0], r5 ;SET
 
 35_start:
@@ -2544,37 +2544,25 @@ addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 movi [fp + 20], r4 ;SET
 
-movi r4, [fp + 56] ;GET
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
 subi sp, sp, 4
-movi r5, [fp + 52] ;GET
-movi r6, [fp + 56] ;GET
-add r2, r0, r6
-add r1, r0, r5
-add r1, r1, r2
-add r5, r0, r1 ;ADD_POINTER
-
-movi [sp + 0], r5 ;SET
-;CALL_PARAM_END
+movi r4, [fp + 52] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
 jal _skip_non_space
-addi sp, sp, 4
-movi r5, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
+addi sp, sp, 8
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-add r5, r0, r1 ;RETURN_SET
-add r2, r0, r5
-add r1, r0, r4
-add r1, r1, r2
-add r4, r0, r1 ;ADD
-
+add r4, r0, r1 ;RETURN_SET
 movi [fp + 56], r4 ;SET
 
 movi r4, [fp + 56] ;GET
@@ -3963,16 +3951,96 @@ movi fp, [sp + 0]
 addi sp, sp, 4
 jr ra
 
+_getMountValuesBase:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+add fp, r0, sp
+addi r6, r0, 256 ;GET_32
+lui r6, 7 ;GET_32
+add r1, r0, r6
+addi sp, sp, 0
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+addi sp, sp, 0
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_getSectorsPerCluster:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+subi sp, sp, 8
+add fp, r0, sp
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r7 ;REGISTER_SAVE_PUSH
+jal _getMountValuesBase
+movi r7, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r7, r0, r1 ;RETURN_SET
+movi [fp + 0], r7 ;SET
+
+movi r7, [fp + 0] ;GET
+addi r8, r0, 4 ;GET
+add r2, r0, r8
+add r1, r0, r7
+add r1, r1, r2
+add r7, r0, r1 ;ADD_POINTER
+
+mvbi r7, [r7 + 0] ;GET
+movi [fp + 4], r7 ;SET
+
+movi r7, [fp + 4] ;GET
+add r1, r0, r7
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
 _mount_command:
 subi sp, sp, 4
 movi [sp + 0], fp
 subi sp, sp, 4
 movi [sp + 0], ra
-subi sp, sp, 84
+subi sp, sp, 88
 add fp, r0, sp
-addi r6, r0, 256 ;GET_32
-lui r6, 19 ;GET_32
-movi [fp + 0], r6 ;SET
+addi r8, r0, 256 ;GET_32
+lui r8, 19 ;GET_32
+movi [fp + 0], r8 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -3982,7 +4050,15 @@ subi sp, sp, 4
 movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
-jal _getDiskBufferBase
+subi sp, sp, 4
+movi [sp + 0], r7 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r8 ;REGISTER_SAVE_PUSH
+jal _getMountValuesBase
+movi r8, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r7, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
 movi r6, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r5, [sp + 0] ;REGISTER_SAVE_POP
@@ -3991,15 +4067,8 @@ movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-add r6, r0, r1 ;RETURN_SET
-movi [fp + 4], r6 ;SET
-
-movi r6, [fp + 4] ;GET
-movi [fp + 8], r6 ;SET
-
-addi r6, r0, string_31
-lui r6, _string_hi_adrs ;GET_32
-movi [fp + 12], r6 ;SET
+add r8, r0, r1 ;RETURN_SET
+movi [fp + 4], r8 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -4010,11 +4079,54 @@ movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r6, [fp + 12] ;GET_MEMORY
-movi [sp + 0], r6 ;SET
+movi [sp + 0], r7 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r8 ;REGISTER_SAVE_PUSH
+jal _getDiskBufferBase
+movi r8, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r7, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r8, r0, r1 ;RETURN_SET
+movi [fp + 8], r8 ;SET
+
+movi r8, [fp + 8] ;GET
+movi [fp + 12], r8 ;SET
+
+addi r8, r0, string_31
+lui r8, _string_hi_adrs ;GET_32
+movi [fp + 16], r8 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r7 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r8 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r8, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r8 ;SET
 ;CALL_PARAM_END_A
 jal _printString
 addi sp, sp, 4
+movi r8, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r7, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
 movi r6, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r5, [sp + 0] ;REGISTER_SAVE_POP
@@ -4023,7 +4135,7 @@ movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-add r6, r0, r1 ;RETURN_SET
+add r8, r0, r1 ;RETURN_SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -4034,15 +4146,23 @@ movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-addi r6, r0, 0 ;GET
-movi [sp + 0], r6 ;SET
+movi [sp + 0], r7 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r8 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+addi r8, r0, 0 ;GET
+movi [sp + 0], r8 ;SET
 ;CALL_PARAM_END
 subi sp, sp, 4
-movi r6, [fp + 4] ;GET
-movi [sp + 0], r6 ;SET
+movi r8, [fp + 8] ;GET
+movi [sp + 0], r8 ;SET
 ;CALL_PARAM_END_A
 jal _diskRead
 addi sp, sp, 8
+movi r8, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r7, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
 movi r6, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r5, [sp + 0] ;REGISTER_SAVE_POP
@@ -4051,7 +4171,7 @@ movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-add r6, r0, r1 ;RETURN_SET
+add r8, r0, r1 ;RETURN_SET
 
 
 
@@ -4059,21 +4179,11 @@ add r6, r0, r1 ;RETURN_SET
 
 
 
-addi r6, r0, 512 ;GET
-movi [fp + 40], r6 ;SET
+addi r8, r0, 512 ;GET
+movi [fp + 44], r8 ;SET
 
-movi r4, [fp + 8] ;GET
+movi r4, [fp + 12] ;GET
 addi r5, r0, 13 ;GET
-add r2, r0, r5
-add r1, r0, r4
-add r1, r1, r2
-add r4, r0, r1 ;ADD_POINTER
-
-mvbi r4, [r4 + 0] ;GET
-movi [fp + 16], r4 ;SET
-
-movi r4, [fp + 8] ;GET
-addi r5, r0, 16 ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
@@ -4082,7 +4192,17 @@ add r4, r0, r1 ;ADD_POINTER
 mvbi r4, [r4 + 0] ;GET
 movi [fp + 20], r4 ;SET
 
-movi r4, [fp + 8] ;GET
+movi r4, [fp + 12] ;GET
+addi r5, r0, 16 ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD_POINTER
+
+mvbi r4, [r4 + 0] ;GET
+movi [fp + 24], r4 ;SET
+
+movi r4, [fp + 12] ;GET
 addi r5, r0, 17 ;GET
 add r2, r0, r5
 add r1, r0, r4
@@ -4090,37 +4210,8 @@ add r1, r1, r2
 add r4, r0, r1 ;ADD_POINTER
 
 mvbi r4, [r4 + 0] ;GET
-movi r5, [fp + 8] ;GET
+movi r5, [fp + 12] ;GET
 addi r6, r0, 18 ;GET
-add r2, r0, r6
-add r1, r0, r5
-add r1, r1, r2
-add r5, r0, r1 ;ADD_POINTER
-
-mvbi r5, [r5 + 0] ;GET
-addi r6, r0, 8 ;GET
-add r2, r0, r6
-add r1, r0, r5
-sl r1, r1, r2
-add r5, r0, r1 ;LEFT_SHIFT
-
-add r2, r0, r5
-add r1, r0, r4
-add r1, r1, r2
-add r4, r0, r1 ;ADD
-
-movi [fp + 24], r4 ;SET
-
-movi r4, [fp + 8] ;GET
-addi r5, r0, 22 ;GET
-add r2, r0, r5
-add r1, r0, r4
-add r1, r1, r2
-add r4, r0, r1 ;ADD_POINTER
-
-mvbi r4, [r4 + 0] ;GET
-movi r5, [fp + 8] ;GET
-addi r6, r0, 23 ;GET
 add r2, r0, r6
 add r1, r0, r5
 add r1, r1, r2
@@ -4140,16 +4231,16 @@ add r4, r0, r1 ;ADD
 
 movi [fp + 28], r4 ;SET
 
-movi r4, [fp + 8] ;GET
-addi r5, r0, 14 ;GET
+movi r4, [fp + 12] ;GET
+addi r5, r0, 22 ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD_POINTER
 
 mvbi r4, [r4 + 0] ;GET
-movi r5, [fp + 8] ;GET
-addi r6, r0, 15 ;GET
+movi r5, [fp + 12] ;GET
+addi r6, r0, 23 ;GET
 add r2, r0, r6
 add r1, r0, r5
 add r1, r1, r2
@@ -4169,16 +4260,16 @@ add r4, r0, r1 ;ADD
 
 movi [fp + 32], r4 ;SET
 
-movi r4, [fp + 8] ;GET
-addi r5, r0, 17 ;GET
+movi r4, [fp + 12] ;GET
+addi r5, r0, 14 ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD_POINTER
 
 mvbi r4, [r4 + 0] ;GET
-movi r5, [fp + 8] ;GET
-addi r6, r0, 18 ;GET
+movi r5, [fp + 12] ;GET
+addi r6, r0, 15 ;GET
 add r2, r0, r6
 add r1, r0, r5
 add r1, r1, r2
@@ -4198,40 +4289,79 @@ add r4, r0, r1 ;ADD
 
 movi [fp + 36], r4 ;SET
 
+movi r4, [fp + 12] ;GET
+addi r5, r0, 17 ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD_POINTER
 
+mvbi r4, [r4 + 0] ;GET
+movi r5, [fp + 12] ;GET
+addi r6, r0, 18 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 8 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi [fp + 40], r4 ;SET
+
+movi r4, [fp + 20] ;GET
+movi r5, [fp + 4] ;GET
+addi r6, r0, 4 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+mvbi [r5 + 0], r4 ;SET
+
+
+
+
+movi r4, [fp + 36] ;GET
+movi [fp + 48], r4 ;SET
 
 
 movi r4, [fp + 32] ;GET
-movi [fp + 44], r4 ;SET
-
-
-movi r4, [fp + 28] ;GET
 addi r5, r0, 1 ;GET
 add r2, r0, r5
 add r1, r0, r4
 sl r1, r1, r2
 add r4, r0, r1 ;LEFT_SHIFT
 
-movi [fp + 56], r4 ;SET
+movi [fp + 60], r4 ;SET
 
-movi r4, [fp + 44] ;GET
-movi r5, [fp + 56] ;GET
+movi r4, [fp + 48] ;GET
+movi r5, [fp + 60] ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD
 
-movi [fp + 48], r4 ;SET
+movi [fp + 52], r4 ;SET
 
 
-movi r4, [fp + 36] ;GET
+movi r4, [fp + 40] ;GET
 addi r5, r0, 5 ;GET
 add r2, r0, r5
 add r1, r0, r4
 sl r1, r1, r2
 add r4, r0, r1 ;LEFT_SHIFT
 
-movi r5, [fp + 40] ;GET
+movi r5, [fp + 44] ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
@@ -4249,75 +4379,32 @@ add r1, r0, r4
 sr r1, r1, r2
 add r4, r0, r1 ;RIGHT_SHIFT
 
-movi [fp + 60], r4 ;SET
+movi [fp + 64], r4 ;SET
 
-movi r4, [fp + 48] ;GET
-movi r5, [fp + 60] ;GET
+movi r4, [fp + 52] ;GET
+movi r5, [fp + 64] ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD
 
-movi [fp + 52], r4 ;SET
+movi [fp + 56], r4 ;SET
 
 addi r4, r0, string_32
 lui r4, _string_hi_adrs ;GET_32
-movi [fp + 64], r4 ;SET
+movi [fp + 68], r4 ;SET
 
 addi r4, r0, string_33
 lui r4, _string_hi_adrs ;GET_32
-movi [fp + 68], r4 ;SET
+movi [fp + 72], r4 ;SET
 
 addi r4, r0, string_34
 lui r4, _string_hi_adrs ;GET_32
-movi [fp + 72], r4 ;SET
+movi [fp + 76], r4 ;SET
 
 addi r4, r0, string_35
 lui r4, _string_hi_adrs ;GET_32
-movi [fp + 76], r4 ;SET
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi r4, [fp + 64] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _printString
-addi sp, sp, 4
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi r4, [fp + 44] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _print_bcd
-addi sp, sp, 4
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-jal _cr
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
+movi [fp + 80], r4 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -4426,7 +4513,7 @@ movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 16] ;GET_MEMORY
+movi r4, [fp + 56] ;GET_MEMORY
 movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END_A
 jal _print_bcd
@@ -4448,8 +4535,51 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-movi r4, [fp + 44] ;GET
-movi r5, [fp + 48] ;GET
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 80] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _printString
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _print_bcd
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+jal _cr
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+movi r4, [fp + 48] ;GET
+movi r5, [fp + 52] ;GET
 addi r6, r0, 8 ;GET
 add r2, r0, r6
 add r1, r0, r5
@@ -4461,7 +4591,7 @@ add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD
 
-movi r5, [fp + 52] ;GET
+movi r5, [fp + 56] ;GET
 addi r6, r0, 16 ;GET
 add r2, r0, r6
 add r1, r0, r5
@@ -4473,14 +4603,14 @@ add r1, r0, r4
 add r1, r1, r2
 add r4, r0, r1 ;ADD
 
-movi [fp + 80], r4 ;SET
+movi [fp + 84], r4 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 80] ;GET_MEMORY
+movi r4, [fp + 84] ;GET_MEMORY
 movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END_A
 jal _setMountValues
@@ -4491,16 +4621,16 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-movi r5, [fp + 80] ;GET
+movi r5, [fp + 84] ;GET
 add r1, r0, r5
-addi sp, sp, 84
+addi sp, sp, 88
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]
 addi sp, sp, 4
 jr ra
 
-addi sp, sp, 84
+addi sp, sp, 88
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]
@@ -7012,26 +7142,50 @@ addi sp, sp, 4
 add r5, r0, r1 ;RETURN_SET
 movi [fp + 0], r5 ;SET
 
+movi r5, [fp + 16] ;GET
+addi r6, r0, 240 ;GET
+sub r1, r6, r5
+jc 98_true
+jz 98_false
+addi r5, r0, 1
+jmp 98_end
+98_true:
+addi r5, r0, 0
+jmp 98_end
+98_end:
+sub r5, r5, r0
+jz 98_false
+addi r5, r0, 1 ;GET
+add r1, r0, r5
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+98_false:
+
 
 ;for_init
 addi r3, r0, 0 ;GET
 movi [fp + 4], r3 ;SET
-98_start:
+99_start:
 
 ;for_condition
 movi r3, [fp + 4] ;GET
 addi r4, r0, 16 ;GET
 sub r1, r3, r4
-jc 98_true
-jz 98_false
+jc 99_true
+jz 99_false
 addi r3, r0, 1
-jmp 98_end
-98_true:
+jmp 99_end
+99_true:
 addi r3, r0, 0
-jmp 98_end
-98_end:
+jmp 99_end
+99_end:
 sub r1, r1, r0
-jz 98_false
+jz 99_false
 
 ;for_body
 addi r4, r0, 0 ;GET
@@ -7060,10 +7214,660 @@ add r1, r1, r2
 add r4, r0, r1 ;ADD
 
 movi [fp + 4], r4 ;SET
-jmp 98_start
-98_false:
+jmp 99_start
+99_false:
+
+addi r4, r0, 0 ;GET
+add r1, r0, r4
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
 
 addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_isFileOpen:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+subi sp, sp, 4
+add fp, r0, sp
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _getFileInstanceTable
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 0], r5 ;SET
+
+movi r5, [fp + 0] ;GET
+movi r6, [fp + 12] ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+addi r6, r0, 10 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD
+
+mvbi r5, [r5 + 0] ;GET
+add r1, r0, r5
+addi sp, sp, 4
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+addi sp, sp, 4
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_checkFileHandleValid:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+subi sp, sp, 8
+add fp, r0, sp
+movi r6, [fp + 16] ;GET
+addi r7, r0, 240 ;GET
+sub r1, r7, r6
+jc 100_true
+jz 100_false
+addi r6, r0, 1
+jmp 100_end
+100_true:
+addi r6, r0, 0
+jmp 100_end
+100_end:
+sub r6, r6, r0
+jz 100_false
+addi r6, r0, string_43
+lui r6, _string_hi_adrs ;GET_32
+movi [fp + 0], r6 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r6, [fp + 0] ;GET_MEMORY
+movi [sp + 0], r6 ;SET
+;CALL_PARAM_END_A
+jal _printString
+addi sp, sp, 4
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r6, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+jal _exit
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r6, r0, r1 ;RETURN_SET
+
+100_false:
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r6, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r6 ;SET
+;CALL_PARAM_END_A
+jal _isFileOpen
+addi sp, sp, 4
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r6, r0, r1 ;RETURN_SET
+addi r7, r0, 0 ;GET
+sub r1, r6, r7
+jz 101_true
+addi r6, r0, 0
+jmp 101_end
+101_true:
+addi r6, r0, 1
+jmp 101_end
+101_end:
+sub r6, r6, r0
+jz 101_false
+addi r6, r0, string_44
+lui r6, _string_hi_adrs ;GET_32
+movi [fp + 4], r6 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r6, [fp + 4] ;GET_MEMORY
+movi [sp + 0], r6 ;SET
+;CALL_PARAM_END_A
+jal _printString
+addi sp, sp, 4
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r6, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+jal _exit
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r6, r0, r1 ;RETURN_SET
+
+101_false:
+
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_getFileSeek:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+subi sp, sp, 8
+add fp, r0, sp
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r6, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r6 ;SET
+;CALL_PARAM_END_A
+jal _checkFileHandleValid
+addi sp, sp, 4
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r6, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r6 ;REGISTER_SAVE_PUSH
+jal _getFileInstanceTable
+movi r6, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r6, r0, r1 ;RETURN_SET
+movi [fp + 0], r6 ;SET
+
+addi r6, r0, 0 ;GET
+movi [fp + 4], r6 ;SET
+
+addi r4, r0, 0 ;GET
+movi r4, [fp + 0] ;GET
+movi r5, [fp + 16] ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD_POINTER
+
+addi r5, r0, 4 ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+mvbi r4, [r4 + 0] ;GET
+movi [fp + 4], r4 ;SET
+
+movi r4, [fp + 4] ;GET
+movi r5, [fp + 0] ;GET
+movi r6, [fp + 16] ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+addi r6, r0, 5 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 8 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi [fp + 4], r4 ;SET
+
+movi r4, [fp + 4] ;GET
+movi r5, [fp + 0] ;GET
+movi r6, [fp + 16] ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+addi r6, r0, 6 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 16 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi [fp + 4], r4 ;SET
+
+movi r4, [fp + 4] ;GET
+movi r5, [fp + 0] ;GET
+movi r6, [fp + 16] ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+addi r6, r0, 7 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 24 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi [fp + 4], r4 ;SET
+
+movi r4, [fp + 4] ;GET
+add r1, r0, r4
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_setFileSeek:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+add fp, r0, sp
+addi sp, sp, 0
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_getCurrentFileCluster:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+subi sp, sp, 8
+add fp, r0, sp
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _checkFileHandleValid
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _getFileInstanceTable
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 0], r5 ;SET
+
+addi r5, r0, 0 ;GET
+movi [fp + 4], r5 ;SET
+
+movi r4, [fp + 0] ;GET
+addi r5, r0, 8 ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD_POINTER
+
+mvbi r4, [r4 + 0] ;GET
+movi r5, [fp + 0] ;GET
+addi r6, r0, 9 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 8 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi [fp + 4], r4 ;SET
+
+movi r4, [fp + 4] ;GET
+add r1, r0, r4
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_setCurrentFileCluster:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+add fp, r0, sp
+addi sp, sp, 0
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_getFileHandleSize:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+subi sp, sp, 8
+add fp, r0, sp
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _checkFileHandleValid
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _getFileInstanceTable
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 0], r5 ;SET
+
+addi r5, r0, 0 ;GET
+movi [fp + 4], r5 ;SET
+
+movi r4, [fp + 0] ;GET
+addi r5, r0, 0 ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD_POINTER
+
+mvbi r4, [r4 + 0] ;GET
+movi r5, [fp + 0] ;GET
+addi r6, r0, 1 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 8 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi r5, [fp + 0] ;GET
+addi r6, r0, 2 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 16 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi r5, [fp + 0] ;GET
+addi r6, r0, 3 ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+mvbi r5, [r5 + 0] ;GET
+addi r6, r0, 24 ;GET
+add r2, r0, r6
+add r1, r0, r5
+sl r1, r1, r2
+add r5, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD
+
+movi [fp + 4], r4 ;SET
+
+movi r4, [fp + 4] ;GET
+add r1, r0, r4
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+addi sp, sp, 8
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_setFileHandleSize:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+add fp, r0, sp
+addi sp, sp, 0
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]
@@ -7075,8 +7879,386 @@ subi sp, sp, 4
 movi [sp + 0], fp
 subi sp, sp, 4
 movi [sp + 0], ra
+subi sp, sp, 32
 add fp, r0, sp
-addi sp, sp, 0
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 48] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _checkFileHandleValid
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 48] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _getFileSeek
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 0], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 48] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _getCurrentFileCluster
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 4], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 48] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _getFileHandleSize
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 8], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _getDiskBufferBase
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 12], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _getMountValues
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 16], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _getDataStart
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 20], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _getSectorsPerCluster
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 24], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 24] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _print_bcd
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _cr
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 0] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _print_bcd
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _cr
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 4] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _print_hex
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _cr
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 8] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _print_bcd
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _cr
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+movi r5, [fp + 20] ;GET
+movi r6, [fp + 4] ;GET
+addi r7, r0, 2 ;GET
+add r2, r0, r7
+add r1, r0, r6
+sub r1, r1, r2
+add r6, r0, r1 ;SUB
+
+addi r7, r0, 6 ;GET
+add r2, r0, r7
+add r1, r0, r6
+sl r1, r1, r2
+add r6, r0, r1 ;LEFT_SHIFT
+
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD
+
+movi [fp + 28], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 28] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _print_int_hex
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+jal _cr
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 28] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r5, [fp + 12] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _diskRead
+addi sp, sp, 8
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+addi sp, sp, 32
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]
@@ -7108,50 +8290,62 @@ movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 12] ;GET
-movi r5, [fp + 16] ;GET
-add r2, r0, r5
-add r1, r0, r4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 12] ;GET
+movi r6, [fp + 16] ;GET
+add r2, r0, r6
+add r1, r0, r5
 add r1, r1, r2
-add r4, r0, r1 ;ADD_POINTER
+add r5, r0, r1 ;ADD_POINTER
 
-movi [sp + 0], r4 ;SET
+movi [sp + 0], r5 ;SET
 ;CALL_PARAM_END
 jal _openFile
 addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-movi [fp + 0], r4 ;SET
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 0], r5 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 0] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 0] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
 ;CALL_PARAM_END_A
 jal _print_hex
 addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
+add r5, r0, r1 ;RETURN_SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
 jal _cr
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
+add r5, r0, r1 ;RETURN_SET
 
 addi sp, sp, 4
 movi ra, [sp + 0]
@@ -7172,8 +8366,90 @@ movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 12] ;GET
-movi r5, [fp + 16] ;GET
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 12] ;GET
+movi r6, [fp + 16] ;GET
+add r2, r0, r6
+add r1, r0, r5
+add r1, r1, r2
+add r5, r0, r1 ;ADD_POINTER
+
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END
+jal _get_int
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+movi [fp + 0], r5 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r5 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r5, [fp + 0] ;GET_MEMORY
+movi [sp + 0], r5 ;SET
+;CALL_PARAM_END_A
+jal _closeFile
+addi sp, sp, 4
+movi r5, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r5, r0, r1 ;RETURN_SET
+
+addi sp, sp, 4
+movi ra, [sp + 0]
+addi sp, sp, 4
+movi fp, [sp + 0]
+addi sp, sp, 4
+jr ra
+
+_filerd_command:
+subi sp, sp, 4
+movi [sp + 0], fp
+subi sp, sp, 4
+movi [sp + 0], ra
+subi sp, sp, 12
+add fp, r0, sp
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 24] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _skip_space
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 24], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET
+movi r5, [fp + 24] ;GET
 add r2, r0, r5
 add r1, r0, r4
 add r1, r1, r2
@@ -7195,31 +8471,156 @@ movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 0] ;GET_MEMORY
+movi r4, [fp + 24] ;GET_MEMORY
 movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END_A
-jal _closeFile
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _skip_non_space
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 24], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 24] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _skip_space
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 24], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET
+movi r5, [fp + 24] ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD_POINTER
+
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END
+jal _get_int
 addi sp, sp, 4
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
+movi [fp + 4], r4 ;SET
 
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 24] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _skip_non_space
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-movi ra, [sp + 0]
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
-movi fp, [sp + 0]
-addi sp, sp, 4
-jr ra
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 24], r4 ;SET
 
-_filerd_command:
 subi sp, sp, 4
-movi [sp + 0], fp
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi [sp + 0], ra
-add fp, r0, sp
-addi sp, sp, 0
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 24] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _skip_space
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 24], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET
+movi r5, [fp + 24] ;GET
+add r2, r0, r5
+add r1, r0, r4
+add r1, r1, r2
+add r4, r0, r1 ;ADD_POINTER
+
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END
+jal _get_int
+addi sp, sp, 4
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 8], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 8] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 4] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 0] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _readFile
+addi sp, sp, 12
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+addi sp, sp, 12
 movi ra, [sp + 0]
 addi sp, sp, 4
 movi fp, [sp + 0]
@@ -7249,18 +8650,18 @@ add fp, r0, sp
 movi r5, [fp + 16] ;GET
 movi [fp + 0], r5 ;SET
 
-99_start:
+102_start:
 movi r5, [fp + 0] ;GET
 addi r6, r0, 256 ;GET
 sub r1, r5, r6
-jc 99_true
-jz 99_false
+jc 102_true
+jz 102_false
 addi r5, r0, 1
-jmp 99_end
-99_true:
+jmp 102_end
+102_true:
 addi r5, r0, 0
-jmp 99_end
-99_end:
+jmp 102_end
+102_end:
 movi r6, [fp + 12] ;GET
 movi r7, [fp + 0] ;GET
 add r2, r0, r7
@@ -7271,20 +8672,20 @@ add r6, r0, r1 ;ADD_POINTER
 mvbi r6, [r6 + 0] ;GET
 addi r7, r0, 32 ;GET
 sub r1, r6, r7
-jz 100_true
+jz 103_true
 addi r6, r0, 0
-jmp 100_end
-100_true:
+jmp 103_end
+103_true:
 addi r6, r0, 1
-jmp 100_end
-100_end:
+jmp 103_end
+103_end:
 add r2, r0, r6
 add r1, r0, r5
 and r1, r1, r2
 add r5, r0, r1 ;LOGICAL_AND
 
 sub r5, r5, r0
-jz 99_false
+jz 102_false
 movi r4, [fp + 0] ;GET
 addi r5, r0, 1 ;GET
 add r2, r0, r5
@@ -7294,8 +8695,8 @@ add r4, r0, r1 ;ADD
 
 movi [fp + 0], r4 ;SET
 
-jmp 99_start
-99_false:
+jmp 102_start
+102_false:
 
 movi r4, [fp + 0] ;GET
 add r1, r0, r4
@@ -7328,23 +8729,23 @@ movi [fp + 0], r5 ;SET
 ;for_init
 addi r3, r0, 0 ;GET
 movi [fp + 4], r3 ;SET
-101_start:
+104_start:
 
 ;for_condition
 movi r3, [fp + 4] ;GET
 addi r4, r0, 0 ;GET_32
 lui r4, 1 ;GET_32
 sub r1, r3, r4
-jc 101_true
-jz 101_false
+jc 104_true
+jz 104_false
 addi r3, r0, 1
-jmp 101_end
-101_true:
+jmp 104_end
+104_true:
 addi r3, r0, 0
-jmp 101_end
-101_end:
+jmp 104_end
+104_end:
 sub r1, r1, r0
-jz 101_false
+jz 104_false
 
 ;for_body
 addi r4, r0, 0 ;GET
@@ -7367,8 +8768,8 @@ add r1, r1, r2
 add r4, r0, r1 ;ADD
 
 movi [fp + 4], r4 ;SET
-jmp 101_start
-101_false:
+jmp 104_start
+104_false:
 
 addi sp, sp, 8
 movi ra, [sp + 0]
@@ -7384,58 +8785,58 @@ subi sp, sp, 4
 movi [sp + 0], ra
 subi sp, sp, 100
 add fp, r0, sp
-addi r4, r0, string_43
+addi r4, r0, string_45
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 0], r4 ;SET
 
-addi r4, r0, string_44
+addi r4, r0, string_46
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 4], r4 ;SET
 
-addi r4, r0, string_45
+addi r4, r0, string_47
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 8], r4 ;SET
 
-addi r4, r0, string_46
+addi r4, r0, string_48
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 12], r4 ;SET
 
-addi r4, r0, string_47
+addi r4, r0, string_49
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 16], r4 ;SET
 
-addi r4, r0, string_48
+addi r4, r0, string_50
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 20], r4 ;SET
 
-addi r4, r0, string_49
+addi r4, r0, string_51
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 24], r4 ;SET
 
-addi r4, r0, string_50
+addi r4, r0, string_52
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 28], r4 ;SET
 
-addi r4, r0, string_51
+addi r4, r0, string_53
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 32], r4 ;SET
 
-addi r4, r0, string_52
+addi r4, r0, string_54
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 36], r4 ;SET
 
 addi r4, r0, 0 ;GET
 movi [fp + 40], r4 ;SET
 
-addi r4, r0, string_53
+addi r4, r0, string_55
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 44], r4 ;SET
 
-addi r4, r0, string_54
+addi r4, r0, string_56
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 48], r4 ;SET
 
-addi r4, r0, string_55
+addi r4, r0, string_57
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 52], r4 ;SET
 
@@ -7443,7 +8844,7 @@ addi r4, r0, 6784 ;GET_32
 lui r4, 6 ;GET_32
 movi [fp + 56], r4 ;SET
 
-addi r4, r0, string_56
+addi r4, r0, string_58
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 60], r4 ;SET
 
@@ -7478,19 +8879,19 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-102_start:
+105_start:
 movi r4, [fp + 80] ;GET
 addi r5, r0, 1 ;GET
 sub r1, r4, r5
-jz 102_true
+jz 105_true
 addi r4, r0, 0
-jmp 102_end
-102_true:
+jmp 105_end
+105_true:
 addi r4, r0, 1
-jmp 102_end
-102_end:
+jmp 105_end
+105_end:
 sub r4, r4, r0
-jz 102_false
+jz 105_false
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
@@ -7506,16 +8907,16 @@ mvbi [fp + 84], r4 ;SET
 mvbi r4, [fp + 84] ;/GET
 addi r5, r0, 31 ;GET
 sub r1, r5, r4
-jc 103_true
-jz 103_false
+jc 106_true
+jz 106_false
 addi r4, r0, 1
-jmp 103_end
-103_true:
+jmp 106_end
+106_true:
 addi r4, r0, 0
-jmp 103_end
-103_end:
+jmp 106_end
+106_end:
 sub r4, r4, r0
-jz 103_false
+jz 106_false
 mvbi r4, [fp + 84] ;/GET
 movi r5, [fp + 56] ;GET
 movi r6, [fp + 76] ;GET
@@ -7551,51 +8952,51 @@ add r4, r0, r1 ;ADD
 
 movi [fp + 76], r4 ;SET
 
-103_false:
+106_false:
 
 movi r4, [fp + 76] ;GET
 addi r5, r0, 255 ;GET
 sub r1, r5, r4
-jc 104_true
-jz 104_false
+jc 107_true
+jz 107_false
 addi r4, r0, 1
-jmp 104_end
-104_true:
+jmp 107_end
+107_true:
 addi r4, r0, 0
-jmp 104_end
-104_end:
+jmp 107_end
+107_end:
 sub r4, r4, r0
-jz 104_false
+jz 107_false
 addi r4, r0, 0 ;GET
 movi [fp + 76], r4 ;SET
 
-104_false:
+107_false:
 
 mvbi r4, [fp + 84] ;/GET
 addi r5, r0, 8 ;GET
 sub r1, r4, r5
-jz 105_true
+jz 108_true
 addi r4, r0, 0
-jmp 105_end
-105_true:
+jmp 108_end
+108_true:
 addi r4, r0, 1
-jmp 105_end
-105_end:
+jmp 108_end
+108_end:
 sub r4, r4, r0
-jz 105_false
+jz 108_false
 movi r4, [fp + 76] ;GET
 addi r5, r0, 0 ;GET
 sub r1, r5, r4
-jc 106_true
-jz 106_false
+jc 109_true
+jz 109_false
 addi r4, r0, 1
-jmp 106_end
-106_true:
+jmp 109_end
+109_true:
 addi r4, r0, 0
-jmp 106_end
-106_end:
+jmp 109_end
+109_end:
 sub r4, r4, r0
-jz 106_false
+jz 109_false
 movi r4, [fp + 76] ;GET
 addi r5, r0, 1 ;GET
 add r2, r0, r5
@@ -7663,22 +9064,22 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-106_false:
+109_false:
 
-105_false:
+108_false:
 
 mvbi r4, [fp + 84] ;/GET
 addi r5, r0, 13 ;GET
 sub r1, r4, r5
-jz 107_true
+jz 110_true
 addi r4, r0, 0
-jmp 107_end
-107_true:
+jmp 110_end
+110_true:
 addi r4, r0, 1
-jmp 107_end
-107_end:
+jmp 110_end
+110_end:
 sub r4, r4, r0
-jz 107_false
+jz 110_false
 addi r4, r0, 0 ;GET
 movi [fp + 88], r4 ;SET
 
@@ -7708,196 +9109,22 @@ add r4, r0, r1 ;RETURN_SET
 movi r4, [fp + 76] ;GET
 addi r5, r0, 0 ;GET
 sub r1, r5, r4
-jc 108_true
-jz 108_false
+jc 111_true
+jz 111_false
 addi r4, r0, 1
-jmp 108_end
-108_true:
+jmp 111_end
+111_true:
 addi r4, r0, 0
-jmp 108_end
-108_end:
+jmp 111_end
+111_end:
 sub r4, r4, r0
-jz 108_false
+jz 111_false
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi r4, [fp + 0] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-subi sp, sp, 4
-movi r4, [fp + 56] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _compare_string
-addi sp, sp, 8
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-movi [fp + 88], r4 ;SET
-
-movi r4, [fp + 88] ;GET
-addi r5, r0, 1 ;GET
-sub r1, r4, r5
-jz 109_true
-addi r4, r0, 0
-jmp 109_end
-109_true:
-addi r4, r0, 1
-jmp 109_end
-109_end:
-sub r4, r4, r0
-jz 109_false
-addi r4, r0, 4 ;GET
-movi [fp + 76], r4 ;SET
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi r4, [fp + 76] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-subi sp, sp, 4
-movi r4, [fp + 56] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _dump_command
-addi sp, sp, 8
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-
-addi r4, r0, 1 ;GET
-movi [fp + 92], r4 ;SET
-
-109_false:
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi r4, [fp + 4] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-subi sp, sp, 4
-movi r4, [fp + 56] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _compare_string
-addi sp, sp, 8
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-movi [fp + 88], r4 ;SET
-
-movi r4, [fp + 88] ;GET
-addi r5, r0, 1 ;GET
-sub r1, r4, r5
-jz 110_true
-addi r4, r0, 0
-jmp 110_end
-110_true:
-addi r4, r0, 1
-jmp 110_end
-110_end:
-sub r4, r4, r0
-jz 110_false
-addi r4, r0, 5 ;GET
-movi [fp + 76], r4 ;SET
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi r4, [fp + 76] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-subi sp, sp, 4
-movi r4, [fp + 56] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _write_command
-addi sp, sp, 8
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-
-addi r4, r0, 1 ;GET
-movi [fp + 92], r4 ;SET
-
-110_false:
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi r4, [fp + 8] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-subi sp, sp, 4
-movi r4, [fp + 56] ;GET_MEMORY
-movi [sp + 0], r4 ;SET
-;CALL_PARAM_END_A
-jal _compare_string
-addi sp, sp, 8
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-movi [fp + 88], r4 ;SET
-
-movi r4, [fp + 88] ;GET
-addi r5, r0, 1 ;GET
-sub r1, r4, r5
-jz 111_true
-addi r4, r0, 0
-jmp 111_end
-111_true:
-addi r4, r0, 1
-jmp 111_end
-111_end:
-sub r4, r4, r0
-jz 111_false
-addi r4, r0, 3 ;GET
-movi [fp + 76], r4 ;SET
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-jal _run_command
-movi r4, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-movi r3, [sp + 0] ;REGISTER_SAVE_POP
-addi sp, sp, 4
-add r4, r0, r1 ;RETURN_SET
-
-addi r4, r0, 1 ;GET
-movi [fp + 92], r4 ;SET
-
-111_false:
-
-subi sp, sp, 4
-movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-subi sp, sp, 4
-movi r4, [fp + 12] ;GET_MEMORY
 movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END_A
 subi sp, sp, 4
@@ -7925,14 +9152,23 @@ jmp 112_end
 112_end:
 sub r4, r4, r0
 jz 112_false
-addi r4, r0, 3 ;GET
+addi r4, r0, 4 ;GET
 movi [fp + 76], r4 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-jal _mount_command
+subi sp, sp, 4
+movi r4, [fp + 76] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _dump_command
+addi sp, sp, 8
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
@@ -7949,7 +9185,7 @@ movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 16] ;GET_MEMORY
+movi r4, [fp + 4] ;GET_MEMORY
 movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END_A
 subi sp, sp, 4
@@ -7977,14 +9213,23 @@ jmp 113_end
 113_end:
 sub r4, r4, r0
 jz 113_false
-addi r4, r0, 3 ;GET
+addi r4, r0, 5 ;GET
 movi [fp + 76], r4 ;SET
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
-jal _dir_command
+subi sp, sp, 4
+movi r4, [fp + 76] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _write_command
+addi sp, sp, 8
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
@@ -8001,7 +9246,7 @@ movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
-movi r4, [fp + 20] ;GET_MEMORY
+movi r4, [fp + 8] ;GET_MEMORY
 movi [sp + 0], r4 ;SET
 ;CALL_PARAM_END_A
 subi sp, sp, 4
@@ -8029,6 +9274,162 @@ jmp 114_end
 114_end:
 sub r4, r4, r0
 jz 114_false
+addi r4, r0, 3 ;GET
+movi [fp + 76], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+jal _run_command
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+addi r4, r0, 1 ;GET
+movi [fp + 92], r4 ;SET
+
+114_false:
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 12] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _compare_string
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 88], r4 ;SET
+
+movi r4, [fp + 88] ;GET
+addi r5, r0, 1 ;GET
+sub r1, r4, r5
+jz 115_true
+addi r4, r0, 0
+jmp 115_end
+115_true:
+addi r4, r0, 1
+jmp 115_end
+115_end:
+sub r4, r4, r0
+jz 115_false
+addi r4, r0, 3 ;GET
+movi [fp + 76], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+jal _mount_command
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+addi r4, r0, 1 ;GET
+movi [fp + 92], r4 ;SET
+
+115_false:
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 16] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _compare_string
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 88], r4 ;SET
+
+movi r4, [fp + 88] ;GET
+addi r5, r0, 1 ;GET
+sub r1, r4, r5
+jz 116_true
+addi r4, r0, 0
+jmp 116_end
+116_true:
+addi r4, r0, 1
+jmp 116_end
+116_end:
+sub r4, r4, r0
+jz 116_false
+addi r4, r0, 3 ;GET
+movi [fp + 76], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+jal _dir_command
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+addi r4, r0, 1 ;GET
+movi [fp + 92], r4 ;SET
+
+116_false:
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 20] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _compare_string
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 88], r4 ;SET
+
+movi r4, [fp + 88] ;GET
+addi r5, r0, 1 ;GET
+sub r1, r4, r5
+jz 117_true
+addi r4, r0, 0
+jmp 117_end
+117_true:
+addi r4, r0, 1
+jmp 117_end
+117_end:
+sub r4, r4, r0
+jz 117_false
 addi r4, r0, 4 ;GET
 movi [fp + 76], r4 ;SET
 
@@ -8076,7 +9477,7 @@ add r4, r0, r1 ;RETURN_SET
 addi r4, r0, 1 ;GET
 movi [fp + 92], r4 ;SET
 
-114_false:
+117_false:
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -8102,15 +9503,15 @@ movi [fp + 88], r4 ;SET
 movi r4, [fp + 88] ;GET
 addi r5, r0, 1 ;GET
 sub r1, r4, r5
-jz 115_true
+jz 118_true
 addi r4, r0, 0
-jmp 115_end
-115_true:
+jmp 118_end
+118_true:
 addi r4, r0, 1
-jmp 115_end
-115_end:
+jmp 118_end
+118_end:
 sub r4, r4, r0
-jz 115_false
+jz 118_false
 addi r4, r0, 5 ;GET
 movi [fp + 76], r4 ;SET
 
@@ -8158,7 +9559,7 @@ add r4, r0, r1 ;RETURN_SET
 addi r4, r0, 1 ;GET
 movi [fp + 92], r4 ;SET
 
-115_false:
+118_false:
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -8184,15 +9585,15 @@ movi [fp + 88], r4 ;SET
 movi r4, [fp + 88] ;GET
 addi r5, r0, 1 ;GET
 sub r1, r4, r5
-jz 116_true
+jz 119_true
 addi r4, r0, 0
-jmp 116_end
-116_true:
+jmp 119_end
+119_true:
 addi r4, r0, 1
-jmp 116_end
-116_end:
+jmp 119_end
+119_end:
 sub r4, r4, r0
-jz 116_false
+jz 119_false
 addi r4, r0, 6 ;GET
 movi [fp + 76], r4 ;SET
 
@@ -8221,7 +9622,16 @@ subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
 movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 76] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
 jal _filerd_command
+addi sp, sp, 8
 movi r4, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 movi r3, [sp + 0] ;REGISTER_SAVE_POP
@@ -8231,7 +9641,89 @@ add r4, r0, r1 ;RETURN_SET
 addi r4, r0, 1 ;GET
 movi [fp + 92], r4 ;SET
 
-116_false:
+119_false:
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 32] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _compare_string
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 88], r4 ;SET
+
+movi r4, [fp + 88] ;GET
+addi r5, r0, 1 ;GET
+sub r1, r4, r5
+jz 120_true
+addi r4, r0, 0
+jmp 120_end
+120_true:
+addi r4, r0, 1
+jmp 120_end
+120_end:
+sub r4, r4, r0
+jz 120_false
+addi r4, r0, 6 ;GET
+movi [fp + 76], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 76] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _skip_space
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+movi [fp + 76], r4 ;SET
+
+subi sp, sp, 4
+movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi [sp + 0], r4 ;REGISTER_SAVE_PUSH
+subi sp, sp, 4
+movi r4, [fp + 76] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+subi sp, sp, 4
+movi r4, [fp + 56] ;GET_MEMORY
+movi [sp + 0], r4 ;SET
+;CALL_PARAM_END_A
+jal _filewr_command
+addi sp, sp, 8
+movi r4, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+movi r3, [sp + 0] ;REGISTER_SAVE_POP
+addi sp, sp, 4
+add r4, r0, r1 ;RETURN_SET
+
+addi r4, r0, 1 ;GET
+movi [fp + 92], r4 ;SET
+
+120_false:
 
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
@@ -8257,15 +9749,15 @@ movi [fp + 88], r4 ;SET
 movi r4, [fp + 88] ;GET
 addi r5, r0, 1 ;GET
 sub r1, r4, r5
-jz 117_true
+jz 121_true
 addi r4, r0, 0
-jmp 117_end
-117_true:
+jmp 121_end
+121_true:
 addi r4, r0, 1
-jmp 117_end
-117_end:
+jmp 121_end
+121_end:
 sub r4, r4, r0
-jz 117_false
+jz 121_false
 addi r4, r0, 6 ;GET
 movi [fp + 76], r4 ;SET
 
@@ -8313,20 +9805,20 @@ add r4, r0, r1 ;RETURN_SET
 addi r4, r0, 1 ;GET
 movi [fp + 92], r4 ;SET
 
-117_false:
+121_false:
 
 movi r4, [fp + 92] ;GET
 addi r5, r0, 0 ;GET
 sub r1, r4, r5
-jz 118_true
+jz 122_true
 addi r4, r0, 0
-jmp 118_end
-118_true:
+jmp 122_end
+122_true:
 addi r4, r0, 1
-jmp 118_end
-118_end:
+jmp 122_end
+122_end:
 sub r4, r4, r0
-jz 118_false
+jz 122_false
 subi sp, sp, 4
 movi [sp + 0], r3 ;REGISTER_SAVE_PUSH
 subi sp, sp, 4
@@ -8343,9 +9835,9 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-118_false:
+122_false:
 
-108_false:
+111_false:
 
 addi r4, r0, 0 ;GET
 movi [fp + 76], r4 ;SET
@@ -8366,12 +9858,12 @@ movi r3, [sp + 0] ;REGISTER_SAVE_POP
 addi sp, sp, 4
 add r4, r0, r1 ;RETURN_SET
 
-107_false:
+110_false:
 
-jmp 102_start
-102_false:
+jmp 105_start
+105_false:
 
-addi r4, r0, string_57
+addi r4, r0, string_59
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 96], r4 ;SET
 
@@ -8403,7 +9895,7 @@ subi sp, sp, 4
 add fp, r0, sp
 addi sys, r0, _system_call
 
-addi r4, r0, string_59
+addi r4, r0, string_61
 lui r4, _string_hi_adrs ;GET_32
 movi [fp + 0], r4 ;SET
 
@@ -8484,20 +9976,22 @@ halt
 .asciiz string_40 = "        "
 .asciiz string_41 = "   "
 .asciiz string_42 = "           "
-.asciiz string_43 = "dump"
-.asciiz string_44 = "write"
-.asciiz string_45 = "run"
-.asciiz string_46 = "mount"
-.asciiz string_47 = "dir"
-.asciiz string_48 = "open"
-.asciiz string_49 = "close"
-.asciiz string_50 = "filerd"
-.asciiz string_51 = "filewr"
-.asciiz string_52 = "search"
-.asciiz string_53 = "Typed string is: "
-.asciiz string_54 = "Invalid command\n"
-.asciiz string_55 = "\ncarriage return\n"
-.asciiz string_56 = "\n"
-.asciiz string_57 = "end\n"
-.asciiz string_59 = "\nZaC-3 OS\n"
+.asciiz string_43 = "Invalid filehandle\n"
+.asciiz string_44 = "File not open!\n"
+.asciiz string_45 = "dump"
+.asciiz string_46 = "write"
+.asciiz string_47 = "run"
+.asciiz string_48 = "mount"
+.asciiz string_49 = "dir"
+.asciiz string_50 = "open"
+.asciiz string_51 = "close"
+.asciiz string_52 = "filerd"
+.asciiz string_53 = "filewr"
+.asciiz string_54 = "search"
+.asciiz string_55 = "Typed string is: "
+.asciiz string_56 = "Invalid command\n"
+.asciiz string_57 = "\ncarriage return\n"
+.asciiz string_58 = "\n"
+.asciiz string_59 = "end\n"
+.asciiz string_61 = "\nZaC-3 OS\n"
 halt
