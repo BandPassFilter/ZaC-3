@@ -752,23 +752,66 @@ int readFile(char *buffer, int count, int filehandle) {
     int size = getFileHandleSize(filehandle);
     char *disk_buffer = getDiskBufferBase();
     int mount_values = getMountValues();
+    char *FAT_region = getFATStart(mount_values);
     int data_region = getDataStart(mount_values);
     int sectors_per_cluster = getSectorsPerCluster(mount_values);
 
-    print_bcd(sectors_per_cluster);
-    cr();
+    //print_bcd(sectors_per_cluster);
+    //cr();
 
-    print_bcd(seek);
-    cr();
-    print_hex(current_cluster);
-    cr();
-    print_bcd(size);
-    cr();
+    //print_bcd(seek);
+    //cr();
+    //print_hex(current_cluster);
+    //cr();
+    //print_bcd(size);
+    //cr();
 
     int current_cluster_sector = data_region + ((current_cluster - 2) << 6);
-    print_int_hex(current_cluster_sector);
-    cr();
-    diskRead(disk_buffer, current_cluster_sector);
+    //print_int_hex(current_cluster_sector);
+    //cr();
+
+    int byte_count = 0;
+    int cluster_count = 0;
+
+    //print_bcd(count);
+    //cr();
+
+    while (byte_count < count) {
+        if (count - byte_count < 512) {
+            // manual copying when less than 512 bytes to read
+            //print_char(42);
+            diskRead(disk_buffer, current_cluster_sector);
+            for (int i = 0; i < count - byte_count; i = i + 1) {
+                *(buffer + byte_count + i) = *(disk_buffer + i);
+            }
+            byte_count = byte_count + 512;
+            return 0;
+        }
+
+        if (count - byte_count > 511) {
+            // fast direct sector read
+            //print_char(43);
+            diskRead(buffer + byte_count, current_cluster_sector);
+            byte_count = byte_count + 512;
+            cluster_count = cluster_count + 1;
+            current_cluster_sector = current_cluster_sector + 1;
+        }
+
+        if (cluster_count > sectors_per_cluster) {
+            // fetch next FAT cluster
+            cluster_count = 0;
+            
+            if (current_cluster == 65536) {
+                return 0;
+            }
+            current_cluster = *(FAT_region + (current_cluster << 1)) + (*(FAT_region + (current_cluster << 1) + 1) << 8);
+            current_cluster_sector = data_region + ((current_cluster - 2) << 6);
+
+
+            // todo
+            return 0;
+        }
+    }
 }
 
 int writeFile(char *buffer, int count, int filehandle) {

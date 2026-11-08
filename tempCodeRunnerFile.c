@@ -1,2 +1,1 @@
-
-    fclose(disk_file);
+0

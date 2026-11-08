@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define LABEL_STRING_SIZE 50
-#define LABELS_SIZE 512
+#define LABELS_SIZE 1024
 #define PARSE_LENGTH 64
 
 /*
