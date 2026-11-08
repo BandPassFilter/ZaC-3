@@ -297,8 +297,25 @@ void system_call() {
     asm("movi r17, [dp + system_call_return_value]"); // return int goes into r17
 }
 
+int setMountValues(int mount_values) {
+    // mount_values: xxxxxxxxAAAAAAAABBBBBBBBCCCCCCCC, A = data_start, B = root_start, C = FAT_start
+    int *mount_values_ptr = 459008;
+    *mount_values_ptr = mount_values;
+}
+
+int getMountValues() {
+    // mount_values: xxxxxxxxAAAAAAAABBBBBBBBCCCCCCCC, A = data_start, B = root_start, C = FAT_start
+    int *mount_values_ptr = 459008;
+    int mount_values = *mount_values_ptr;
+    return mount_values;
+}
+
+int getFileInstaceTable() {
+    return 458752;
+}
 
 int mount_command() {
+    // 0x00070100: Mount variables
     int *disk_io = 1245440;
     int *disk_test_buffer_int = 65536;
     char *disk_test_buffer = disk_test_buffer_int;
@@ -350,10 +367,19 @@ int mount_command() {
     cr();
 
     int return_value = FAT_start + (root_start << 8) + (data_start << 16); // hacky way to return 3 8-bit integers, just store them in a 32-bit word shifted accross.
+
+    setMountValues(return_value);
+
+
     return return_value;
 }
 
-int dir_command(int mount_values) {
+
+
+int dir_command() {
+    int mount_values = getMountValues();
+
+
     int *disk_io = 1245440;
     int *disk_test_buffer_int = 65536;
     char *disk_test_buffer = disk_test_buffer_int;
@@ -367,7 +393,7 @@ int dir_command(int mount_values) {
     root_start = (mount_values >> 8) & 255;
     data_start = (mount_values >> 16) & 255;
 
-    if (FAT_start != 2) {
+    if (mount_values == 0) {
         char *error = "Disk not mounted!\n";
         printString(error);
         return 0;
@@ -398,6 +424,7 @@ int dir_command(int mount_values) {
                 }
 
                 if (dir_attrib == 8) {
+                    
                     char *volume_msg = "Volume name: ";
                     printString(volume_msg);
                 }
@@ -408,25 +435,100 @@ int dir_command(int mount_values) {
                     printChar(*(disk_test_buffer + i + j));
                 }
                 if (dir_attrib == 8) {
-                    cr();
+                    //cr();
                     cr();
                 }
             } 
         }
     }
     cr();
-    char *number_of_files_str = "file(s)\n";
+    char *number_of_files_str = " file(s)\n";
+    printChar(9);
+    print_bcd(number_of_files);
+    printString(number_of_files_str);
     cr();
     return 0;
 }
 
+
+
+int searchFile(char *filename_str) {
+    // Search file
+    // inputs: char *filename_str: filename string
+    // returns: 0-0xFFFE = File index in root, 0xFFFFFFFF = File not found
+
+    // filename_str requires dot separator and filename extension (e.g. "filename.txt")
+    int mount_vales = getMountValues();
+    char *filename_main = "        ";
+    char *filename_ext  = "   ";
+
+    int i = 0;
+    while ((i < 8) && (*(filename_str + i) != 46)) {
+        *(filename_main + i) = *(filename_str + i);
+    }
+    i = i + 1;
+    int j = 0;
+    while ((i < 11) && ((*(filename_str + i) != 0) || (*(filename_str + i) != 32))) {
+        *(filename_ext + j) = *(filename_str + i);
+    }
+
+
+
+}
+
+int open_command(char *filename_str) {
+    // open_command
+    // opens a file instance
+    // inputs: char *filename_str = filename string
+    // returns: file handle
+
+    // 0x00070000 - 0x000700FF: Open file instance list
+    // 0x00070100: Mount variables
+    // Byte offset (0:F)
+    // 0:3 = 32-bit filesize
+    // 4:7 = 32-bit file seek offset
+    // 8:9 = current FAT16 cluster number
+    // A = Open file valid (0 = closed, 1 = open)
+    // B:F = reserved
+
+    char *file_instance_list = getFileInstaceTable();
+    int mount_values = getMountValues();
+    int root_start = (mount_values >> 8) & 255;
+
+    searchFile(filename_str);
+
+}
+
+void close_command() {
+    
+}
+
+void filerd_command(char *buffer, int byte_count, int filehandle) {
+    
+}
+
+void filewr_command(char *buffer, int byte_count, int filehandle) {
+    
+}
+
+void reset() {
+    char *reset_start = 458752;
+    for (int i = 0; i < 65536; i = i + 1) {
+        *(reset_start + i) = 0;
+    }
+}
+
 void shell() {
-	char *dump = "dump";
-    char *write = "write";
-    char *run = "run";
-    char *mount = "mount";
-    char *dir = "dir";
-    int mount_values;
+	char *dump_str = "dump";
+    char *write_str = "write";
+    char *run_str = "run";
+    char *mount_str = "mount";
+    char *dir_str = "dir";
+    char *open_str = "open";
+    char *close_str = "close";
+    char *filerd_str = "filerd";
+    char *filewr_str = "filewr";
+    int mount_values = 0;
 
     char *output_str = "Typed string is: ";
     char *invalid_command_str = "Invalid command\n";
@@ -469,35 +571,59 @@ void shell() {
             printString(cr);
             if (shell_buf_offset > 0) {
                 
-                result = compare_string(shell_buf, dump);
+                result = compare_string(shell_buf, dump_str);
                 if (result == 1) {
                     shell_buf_offset = 4;
                     dump_command(shell_buf, shell_buf_offset);
                     command_success = 1;
                 }
-                result = compare_string(shell_buf, write);
+                result = compare_string(shell_buf, write_str);
                 if (result == 1) {
                     shell_buf_offset = 5;
                     write_command(shell_buf, shell_buf_offset);
                     command_success = 1;
                 }
-                result = compare_string(shell_buf, run);
+                result = compare_string(shell_buf, run_str);
                 if (result == 1) {
                     shell_buf_offset = 3;
                     run_command();
                     command_success = 1;
                 }
-                result = compare_string(shell_buf, mount);
+                result = compare_string(shell_buf, mount_str);
                 if (result == 1) {
                     shell_buf_offset = 3;
                     
-                    mount_values = mount_command();
+                    mount_command();
                     command_success = 1;
                 }
-                result = compare_string(shell_buf, dir);
+                result = compare_string(shell_buf, dir_str);
                 if (result == 1) {
                     shell_buf_offset = 3;
-                    dir_command(mount_values);
+                    dir_command();
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, open_str);
+                if (result == 1) {
+                    shell_buf_offset = 3;
+                    open_command();
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, close_str);
+                if (result == 1) {
+                    shell_buf_offset = 3;
+                    close_command();
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, filerd_str);
+                if (result == 1) {
+                    shell_buf_offset = 3;
+                    filerd_command();
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, filewr_str);
+                if (result == 1) {
+                    shell_buf_offset = 3;
+                    filewr_command();
                     command_success = 1;
                 }
                 if (command_success == 0) {
@@ -517,5 +643,6 @@ void main() {
     asm("addi sys, r0, _system_call");
     char *x = "\nZaC-3 OS\n";
     printString(x);
+    reset();
 	shell();
 }

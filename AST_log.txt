@@ -13,7 +13,7 @@
 						* Operator ~* Dereference
 							* Identifier print_char_uart
 						* Literal32 1245184
-				* SetVariable
+				* SetVariable Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier print_char_uart
@@ -27,7 +27,7 @@
 						* Identifier get_char_uart Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier get_char_uart
+							* Identifier get_char_uart Local
 						* Literal32 1245184
 				* Return
 					* Operator ~* Dereference
@@ -40,9 +40,9 @@
 						* Identifier diskRead_buffer Local
 				* Declaration int
 					* Identifier diskRead_LBA_address Local
-			* Body
+			* Body Local
 				* Declaration int
-					* Operator ~* Dereference Local
+					* Operator ~* Dereference
 						* Identifier diskRead_disk_io Local
 					* Operator =
 						* Operator ~* Dereference
@@ -58,31 +58,31 @@
 				* SetVariable
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier diskRead_disk_io Local
-						* Identifier diskRead_LBA_address Local
+							* Identifier diskRead_disk_io
+						* Identifier diskRead_LBA_address
 				* SetVariable
 					* Operator =
 						* Operator ~* Dereference
 							* Operator +
 								* Identifier diskRead_disk_io
-								* Literal 2
+								* Literal 2 Local
 						* Literal 1
 				* For
-					* Declaration int
+					* Declaration int Local
 						* Identifier diskRead_i Local
 						* Operator =
 							* Identifier diskRead_i
 							* Literal 0
-					* Operator <
+					* Operator < Local
 						* Identifier diskRead_i
 						* Literal 128
 					* Operator =
 						* Identifier diskRead_i
 						* Operator +
 							* Identifier diskRead_i
-							* Literal 1 Local
+							* Literal 1
 					* Body
-						* SetVariable
+						* SetVariable Local
 							* Operator =
 								* Operator ~* Dereference
 									* Operator +
@@ -108,54 +108,54 @@
 						* Operator ~* Dereference
 							* Identifier diskWrite_disk_io
 						* Literal32 1245440
-				* Declaration char
+				* Declaration char Local
 					* Operator ~* Dereference
 						* Identifier diskWrite_output_str Local
 					* Operator =
-						* Operator ~* Dereference Local
+						* Operator ~* Dereference
 							* Identifier diskWrite_output_str Local
 						* String string_1: "DiskWrite test\n" Static
 				* SetVariable
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier diskWrite_disk_io
-						* Identifier diskWrite_LBA_address Local
+						* Identifier diskWrite_LBA_address
 				* SetVariable
 					* Operator =
 						* Operator ~* Dereference
 							* Operator +
-								* Identifier diskWrite_disk_io
+								* Identifier diskWrite_disk_io Local
 								* Literal 3
-						* Literal 1
-				* For Local
+						* Literal 1 Local
+				* For
 					* Declaration int
 						* Identifier diskWrite_i Local
-						* Operator =
+						* Operator = Local
 							* Identifier diskWrite_i
 							* Literal 0
 					* Operator <
 						* Identifier diskWrite_i
-						* Literal 128
+						* Literal 128 Local
 					* Operator =
 						* Identifier diskWrite_i
-						* Operator +
+						* Operator + Local
 							* Identifier diskWrite_i
-							* Literal 1 Local
+							* Literal 1
 					* Body
 						* SetVariable
 							* Operator =
 								* Operator ~* Dereference
-									* Operator + Local
-										* Identifier diskWrite_disk_io Local
+									* Operator +
+										* Identifier diskWrite_disk_io
 										* Literal 4
 								* Operator ~* Dereference
 									* Operator +
 										* Identifier diskWrite_buffer
-										* Identifier diskWrite_i
+										* Identifier diskWrite_i Local
 	* FunctionDeclaration int
 		* Function syscall_execute
 			* Parameters
-				* Declaration int Local
+				* Declaration int
 					* Identifier syscall_execute_func_number Local
 				* Declaration int
 					* Identifier syscall_execute_arg0 Local
@@ -163,24 +163,24 @@
 					* Identifier syscall_execute_arg1 Local
 				* Declaration int
 					* Identifier syscall_execute_arg2 Local
-				* Declaration int Local
+				* Declaration int
 					* Identifier syscall_execute_arg3 Local
 			* Body
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier syscall_execute_debug Local
 					* Operator =
-						* Operator ~* Dereference
+						* Operator ~* Dereference Local
 							* Identifier syscall_execute_debug
 						* Literal32 9000000
 				* Declaration int
 					* Identifier syscall_execute_sfunc Static
 					* Operator =
 						* Identifier syscall_execute_sfunc
-						* Identifier syscall_execute_func_number Local
+						* Identifier syscall_execute_func_number
 				* Declaration int
 					* Identifier syscall_execute_sarg0 Static
-					* Operator = Local
+					* Operator =
 						* Identifier syscall_execute_sarg0
 						* Identifier syscall_execute_arg0
 				* Declaration int
@@ -196,39 +196,39 @@
 				* Declaration int
 					* Identifier syscall_execute_sarg3 Static
 					* Operator =
-						* Identifier syscall_execute_sarg3
+						* Identifier syscall_execute_sarg3 Local
 						* Identifier syscall_execute_arg3
 				* Declaration int
 					* Identifier syscall_execute_return_value Static
 					* Operator = Local
 						* Identifier syscall_execute_return_value
-						* Literal 0 Local
-				* Asm
-					* String string_2: "movi r16, [dp + syscall_execute_sfunc] ;GET" Static
+						* Literal 0
 				*  LocalAsm
+					* String string_2: "movi r16, [dp + syscall_execute_sfunc] ;GET" Static
+				* Asm
 					* String string_3: "movi r17, [dp + syscall_execute_sarg0] ;GET" Static
 				* Asm
 					* String string_4: "movi r18, [dp + syscall_execute_sarg1] ;GET" Static
 				* Asm
 					* String string_5: "movi r19, [dp + syscall_execute_sarg2] ;GET" Static
-				* Asm
+				*  LocalAsm
 					* String string_6: "movi r20, [dp + syscall_execute_sarg3] ;GET" Static
 				* Asm
 					* String string_7: "syscall" Static
 				* Asm
 					* String string_8: "movi [dp + syscall_execute_return_value], r17 ;GET" Static
-				* Return
+				* Return Local
 					* Identifier syscall_execute_return_value
 	* FunctionDeclaration void
-		* Function printChar Local
+		* Function printChar
 			* Parameters
 				* Declaration char
 					* Identifier printChar_value Local
 			* Body
-				* FunctionCall syscall_execute
+				* FunctionCall syscall_execute Local
 					* CallParameters
 						* Literal 0
-						* Identifier printChar_value Local
+						* Identifier printChar_value
 						* Literal 0
 						* Literal 0
 						* Literal 0
@@ -253,42 +253,42 @@
 			* Body
 				* FunctionCall syscall_execute
 					* CallParameters
-						* Literal 2
+						* Literal 2 Local
 						* Identifier _printString_str
 						* Literal 0
 						* Literal 0
 						* Literal 0
-	* FunctionDeclaration void
+	* FunctionDeclaration void Local
 		* Function exit
 			* Parameters
 			* Body
-				* FunctionCall syscall_execute Local
+				* FunctionCall syscall_execute
 					* CallParameters
 						* Literal 10
-						* Literal 0
-						* Literal 0
-						* Literal 0
 						* Literal 0 Local
+						* Literal 0
+						* Literal 0
+						* Literal 0
 	* FunctionDeclaration int
-		* Function get_hex_int Local
+		* Function get_hex_int
 			* Parameters
 				* Declaration char
 					* Identifier get_hex_int_c Local
 			* Body
 				* Declaration char
-					* Operator ~* Dereference
+					* Operator ~* Dereference Local
 						* Identifier get_hex_int_hex_to_dec Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier get_hex_int_hex_to_dec Local
+							* Identifier get_hex_int_hex_to_dec
 						* String string_9: "0123456789       :;<=>?" Static
-				* Declaration int Local
+				* Declaration int
 					* Identifier get_hex_int_number Local
 					* Operator =
 						* Identifier get_hex_int_number
 						* Operator -
 							* Operator ~* Dereference
-								* Operator -
+								* Operator - Local
 									* Operator +
 										* Identifier get_hex_int_hex_to_dec
 										* Identifier get_hex_int_c
@@ -299,23 +299,23 @@
 	* FunctionDeclaration void
 		* Function cr
 			* Parameters
-			* Body Local
+			* Body
 				* Declaration char
 					* Identifier cr_temp Local
-					* Operator =
-						* Identifier cr_temp Local
+					* Operator = Local
+						* Identifier cr_temp
 						* Literal 10
 				* FunctionCall printChar
-					* CallParameters
+					* CallParameters Local
 						* Identifier cr_temp
 				* SetVariable
 					* Operator =
 						* Identifier cr_temp
 						* Literal 13
-				* FunctionCall printChar Local
+				* FunctionCall printChar
 					* CallParameters
 						* Identifier cr_temp
-	* FunctionDeclaration void Local
+	* FunctionDeclaration void
 		* Function printString
 			* Parameters
 				* Declaration char
@@ -328,7 +328,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier printString_uart
-						* Literal32 1245184 Local
+						* Literal32 1245184
 				* Declaration char
 					* Identifier printString_current_char Local
 				* While
@@ -1819,6 +1819,49 @@
 				* Asm
 					* String string_29: "movi r17, [dp + system_call_return_value]" Static
 	* FunctionDeclaration int
+		* Function setMountValues
+			* Parameters
+				* Declaration int
+					* Identifier setMountValues_mount_values Local
+			* Body
+				* Declaration int
+					* Operator ~* Dereference
+						* Identifier setMountValues_mount_values_ptr Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier setMountValues_mount_values_ptr
+						* Literal32 459008
+				* SetVariable
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier setMountValues_mount_values_ptr
+						* Identifier setMountValues_mount_values
+	* FunctionDeclaration int
+		* Function getMountValues
+			* Parameters
+			* Body
+				* Declaration int
+					* Operator ~* Dereference
+						* Identifier getMountValues_mount_values_ptr Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier getMountValues_mount_values_ptr
+						* Literal32 459008
+				* Declaration int
+					* Identifier getMountValues_mount_values Local
+					* Operator =
+						* Identifier getMountValues_mount_values
+						* Operator ~* Dereference
+							* Identifier getMountValues_mount_values_ptr
+				* Return
+					* Identifier getMountValues_mount_values
+	* FunctionDeclaration int
+		* Function getFileInstaceTable
+			* Parameters
+			* Body
+				* Return
+					* Literal32 458752
+	* FunctionDeclaration int
 		* Function mount_command
 			* Parameters
 			* Body
@@ -2019,14 +2062,22 @@
 							* Operator <<
 								* Identifier mount_command_data_start
 								* Literal 16
+				* FunctionCall setMountValues
+					* CallParameters
+						* Identifier mount_command_return_value
 				* Return
 					* Identifier mount_command_return_value
 	* FunctionDeclaration int
 		* Function dir_command
 			* Parameters
+			* Body
 				* Declaration int
 					* Identifier dir_command_mount_values Local
-			* Body
+					* Operator =
+						* Identifier dir_command_mount_values
+						* FunctionCall getMountValues
+							* CallParameters
+								* Void
 				* Declaration int
 					* Operator ~* Dereference
 						* Identifier dir_command_disk_io Local
@@ -2084,9 +2135,9 @@
 								* Literal 16
 							* Literal 255
 				* If
-					* Operator !=
-						* Identifier dir_command_FAT_start
-						* Literal 2
+					* Operator ==
+						* Identifier dir_command_mount_values
+						* Literal 0
 					* Body
 						* Declaration char
 							* Operator ~* Dereference
@@ -2256,9 +2307,6 @@
 												* FunctionCall cr
 													* CallParameters
 														* Void
-												* FunctionCall cr
-													* CallParameters
-														* Void
 				* FunctionCall cr
 					* CallParameters
 						* Void
@@ -2268,74 +2316,303 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier dir_command_number_of_files_str
-						* String string_34: "file(s)\n" Static
+						* String string_34: " file(s)\n" Static
+				* FunctionCall printChar
+					* CallParameters
+						* Literal 9
+				* FunctionCall print_bcd
+					* CallParameters
+						* Identifier dir_command_number_of_files
+				* FunctionCall printString
+					* CallParameters
+						* Identifier dir_command_number_of_files_str
 				* FunctionCall cr
 					* CallParameters
 						* Void
 				* Return
 					* Literal 0
+	* FunctionDeclaration int
+		* Function searchFile
+			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier searchFile_filename_str Local
+			* Body
+				* Declaration int
+					* Identifier searchFile_mount_vales Local
+					* Operator =
+						* Identifier searchFile_mount_vales
+						* FunctionCall getMountValues
+							* CallParameters
+								* Void
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier searchFile_filename_main Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier searchFile_filename_main
+						* String string_35: "        " Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier searchFile_filename_ext Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier searchFile_filename_ext
+						* String string_36: "   " Static
+				* Declaration int
+					* Identifier searchFile_i Local
+					* Operator =
+						* Identifier searchFile_i
+						* Literal 0
+				* While
+					* Operator &&
+						* Operator <
+							* Identifier searchFile_i
+							* Literal 8
+						* Operator !=
+							* Operator ~* Dereference
+								* Operator +
+									* Identifier searchFile_filename_str
+									* Identifier searchFile_i
+							* Literal 46
+					* Body
+						* SetVariable
+							* Operator =
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier searchFile_filename_main
+										* Identifier searchFile_i
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier searchFile_filename_str
+										* Identifier searchFile_i
+				* SetVariable
+					* Operator =
+						* Identifier searchFile_i
+						* Operator +
+							* Identifier searchFile_i
+							* Literal 1
+				* Declaration int
+					* Identifier searchFile_j Local
+					* Operator =
+						* Identifier searchFile_j
+						* Literal 0
+				* While
+					* Operator &&
+						* Operator <
+							* Identifier searchFile_i
+							* Literal 11
+						* Operator ||
+							* Operator !=
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier searchFile_filename_str
+										* Identifier searchFile_i
+								* Literal 0
+							* Operator !=
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier searchFile_filename_str
+										* Identifier searchFile_i
+								* Literal 32
+					* Body
+						* SetVariable
+							* Operator =
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier searchFile_filename_ext
+										* Identifier searchFile_j
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier searchFile_filename_str
+										* Identifier searchFile_i
+	* FunctionDeclaration int
+		* Function open_command
+			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier open_command_filename_str Local
+			* Body
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier open_command_file_instance_list Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier open_command_file_instance_list
+						* FunctionCall getFileInstaceTable
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier open_command_mount_values Local
+					* Operator =
+						* Identifier open_command_mount_values
+						* FunctionCall getMountValues
+							* CallParameters
+								* Void
+				* Declaration int
+					* Identifier open_command_root_start Local
+					* Operator =
+						* Identifier open_command_root_start
+						* Operator &
+							* Operator >>
+								* Identifier open_command_mount_values
+								* Literal 8
+							* Literal 255
+				* FunctionCall searchFile
+					* CallParameters
+						* Identifier open_command_filename_str
+	* FunctionDeclaration void
+		* Function close_command
+			* Parameters
+			* Body
+	* FunctionDeclaration void
+		* Function filerd_command
+			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier filerd_command_buffer Local
+				* Declaration int
+					* Identifier filerd_command_byte_count Local
+				* Declaration int
+					* Identifier filerd_command_filehandle Local
+			* Body
+	* FunctionDeclaration void
+		* Function filewr_command
+			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier filewr_command_buffer Local
+				* Declaration int
+					* Identifier filewr_command_byte_count Local
+				* Declaration int
+					* Identifier filewr_command_filehandle Local
+			* Body
+	* FunctionDeclaration void
+		* Function reset
+			* Parameters
+			* Body
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier reset_reset_start Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier reset_reset_start
+						* Literal32 458752
+				* For
+					* Declaration int
+						* Identifier reset_i Local
+						* Operator =
+							* Identifier reset_i
+							* Literal 0
+					* Operator <
+						* Identifier reset_i
+						* Literal32 65536
+					* Operator =
+						* Identifier reset_i
+						* Operator +
+							* Identifier reset_i
+							* Literal 1
+					* Body
+						* SetVariable
+							* Operator =
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier reset_reset_start
+										* Identifier reset_i
+								* Literal 0
 	* FunctionDeclaration void
 		* Function shell
 			* Parameters
 			* Body
 				* Declaration char
 					* Operator ~* Dereference
-						* Identifier shell_dump Local
+						* Identifier shell_dump_str Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier shell_dump
-						* String string_35: "dump" Static
+							* Identifier shell_dump_str
+						* String string_37: "dump" Static
 				* Declaration char
 					* Operator ~* Dereference
-						* Identifier shell_write Local
+						* Identifier shell_write_str Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier shell_write
-						* String string_36: "write" Static
+							* Identifier shell_write_str
+						* String string_38: "write" Static
 				* Declaration char
 					* Operator ~* Dereference
-						* Identifier shell_run Local
+						* Identifier shell_run_str Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier shell_run
-						* String string_37: "run" Static
+							* Identifier shell_run_str
+						* String string_39: "run" Static
 				* Declaration char
 					* Operator ~* Dereference
-						* Identifier shell_mount Local
+						* Identifier shell_mount_str Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier shell_mount
-						* String string_38: "mount" Static
+							* Identifier shell_mount_str
+						* String string_40: "mount" Static
 				* Declaration char
 					* Operator ~* Dereference
-						* Identifier shell_dir Local
+						* Identifier shell_dir_str Local
 					* Operator =
 						* Operator ~* Dereference
-							* Identifier shell_dir
-						* String string_39: "dir" Static
+							* Identifier shell_dir_str
+						* String string_41: "dir" Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier shell_open_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier shell_open_str
+						* String string_42: "open" Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier shell_close_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier shell_close_str
+						* String string_43: "close" Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier shell_filerd_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier shell_filerd_str
+						* String string_44: "filerd" Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier shell_filewr_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier shell_filewr_str
+						* String string_45: "filewr" Static
 				* Declaration int
 					* Identifier shell_mount_values Local
+					* Operator =
+						* Identifier shell_mount_values
+						* Literal 0
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_output_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_output_str
-						* String string_40: "Typed string is: " Static
+						* String string_46: "Typed string is: " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_invalid_command_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_invalid_command_str
-						* String string_41: "Invalid command\n" Static
+						* String string_47: "Invalid command\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_cr_string Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_cr_string
-						* String string_42: "\ncarriage return\n" Static
+						* String string_48: "\ncarriage return\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_shell_buf Local
@@ -2349,7 +2626,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_cr
-						* String string_43: "\n" Static
+						* String string_49: "\n" Static
 				* Declaration char
 					* Identifier shell_space Local
 					* Operator =
@@ -2485,7 +2762,7 @@
 												* FunctionCall compare_string
 													* CallParameters
 														* Identifier shell_shell_buf
-														* Identifier shell_dump
+														* Identifier shell_dump_str
 										* If
 											* Operator ==
 												* Identifier shell_result
@@ -2509,7 +2786,7 @@
 												* FunctionCall compare_string
 													* CallParameters
 														* Identifier shell_shell_buf
-														* Identifier shell_write
+														* Identifier shell_write_str
 										* If
 											* Operator ==
 												* Identifier shell_result
@@ -2533,7 +2810,7 @@
 												* FunctionCall compare_string
 													* CallParameters
 														* Identifier shell_shell_buf
-														* Identifier shell_run
+														* Identifier shell_run_str
 										* If
 											* Operator ==
 												* Identifier shell_result
@@ -2556,7 +2833,7 @@
 												* FunctionCall compare_string
 													* CallParameters
 														* Identifier shell_shell_buf
-														* Identifier shell_mount
+														* Identifier shell_mount_str
 										* If
 											* Operator ==
 												* Identifier shell_result
@@ -2566,12 +2843,9 @@
 													* Operator =
 														* Identifier shell_shell_buf_offset
 														* Literal 3
-												* SetVariable
-													* Operator =
-														* Identifier shell_mount_values
-														* FunctionCall mount_command
-															* CallParameters
-																* Void
+												* FunctionCall mount_command
+													* CallParameters
+														* Void
 												* SetVariable
 													* Operator =
 														* Identifier shell_command_success
@@ -2582,7 +2856,7 @@
 												* FunctionCall compare_string
 													* CallParameters
 														* Identifier shell_shell_buf
-														* Identifier shell_dir
+														* Identifier shell_dir_str
 										* If
 											* Operator ==
 												* Identifier shell_result
@@ -2594,7 +2868,99 @@
 														* Literal 3
 												* FunctionCall dir_command
 													* CallParameters
-														* Identifier shell_mount_values
+														* Void
+												* SetVariable
+													* Operator =
+														* Identifier shell_command_success
+														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier shell_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_open_str
+										* If
+											* Operator ==
+												* Identifier shell_result
+												* Literal 1
+											* Body
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* Literal 3
+												* FunctionCall open_command
+													* CallParameters
+														* Void
+												* SetVariable
+													* Operator =
+														* Identifier shell_command_success
+														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier shell_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_close_str
+										* If
+											* Operator ==
+												* Identifier shell_result
+												* Literal 1
+											* Body
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* Literal 3
+												* FunctionCall close_command
+													* CallParameters
+														* Void
+												* SetVariable
+													* Operator =
+														* Identifier shell_command_success
+														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier shell_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_filerd_str
+										* If
+											* Operator ==
+												* Identifier shell_result
+												* Literal 1
+											* Body
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* Literal 3
+												* FunctionCall filerd_command
+													* CallParameters
+														* Void
+												* SetVariable
+													* Operator =
+														* Identifier shell_command_success
+														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier shell_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_filewr_str
+										* If
+											* Operator ==
+												* Identifier shell_result
+												* Literal 1
+											* Body
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* Literal 3
+												* FunctionCall filewr_command
+													* CallParameters
+														* Void
 												* SetVariable
 													* Operator =
 														* Identifier shell_command_success
@@ -2620,7 +2986,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_end
-						* String string_44: "end\n" Static
+						* String string_50: "end\n" Static
 				* FunctionCall printString
 					* CallParameters
 						* Identifier shell_end
@@ -2629,17 +2995,20 @@
 			* Parameters
 			* Body
 				* Asm
-					* String string_45: "addi sys, r0, _system_call" Static
+					* String string_51: "addi sys, r0, _system_call" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_x Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_x
-						* String string_46: "\nZaC-3 OS\n" Static
+						* String string_52: "\nZaC-3 OS\n" Static
 				* FunctionCall printString
 					* CallParameters
 						* Identifier main_x
+				* FunctionCall reset
+					* CallParameters
+						* Void
 				* FunctionCall shell
 					* CallParameters
 						* Void

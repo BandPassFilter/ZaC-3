@@ -24,7 +24,9 @@ void _CharAppendList_build(CharAppendList *self) {
         printf("CharAppendList Allocation Error!\n");
         exit(1);
     }
+    new_array[0] = (char)0;
     self->array = new_array;
+
 }
 
 void _CharAppendList_append_char(CharAppendList *self, char character) {
