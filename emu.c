@@ -119,6 +119,35 @@ uint8_t ReadSerialPort() {
     }
 }
 
+uint8_t ReadSerialPortInstant() {
+    if (!serial_port_mode) {
+        if (_kbhit()) {
+            char input = (char)_getch();
+            if (input == 0x03) {
+                exit(1);
+            }
+            return input;
+        }
+    }
+    if (serial_port_mode) {
+        ReadFile(hSerial, szBuff, n, &dwBytesRead, NULL);
+        return szBuff[0];
+    }
+}
+
+uint8_t KeyboardHit() {
+    if (!serial_port_mode) {
+        if (_kbhit()) {
+            return 1;
+        }
+        return 0;
+    }
+    if (serial_port_mode) {
+        ReadFile(hSerial, szBuff, n, &dwBytesRead, NULL);
+        return szBuff[0];
+    }
+}
+
 void WriteSerialPort(uint8_t c) {
     if (!serial_port_mode) {
         printf("%c", c);
@@ -213,6 +242,12 @@ void io_out(int address, uint32_t value) {
 uint32_t io_in(int address) {
     if (address == 0x130000) {
         return (uint32_t)ReadSerialPort();
+    }
+    if (address == 0x130001) {
+        return (uint32_t)ReadSerialPortInstant();
+    }
+    if (address == 0x130002) {
+        return (uint32_t)KeyboardHit();
     }
     if ((address & 0xFFFFFFFF00) == IO_BASE + 0x0100) {
         HardDisk_Read(address & 0x0000FFFF);

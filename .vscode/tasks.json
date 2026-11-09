@@ -9,7 +9,10 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-IC:/SDL3/include",
+                "-LC:/SDL3/lib",
+                "-lSDL3"
             ],
             "options": {
                 "cwd": "${fileDirname}"

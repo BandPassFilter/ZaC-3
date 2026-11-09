@@ -5534,8 +5534,9 @@ int main(int argc, char* argv[]) {
     // Part 1 - Pre-processor
     // Evalulates macros, defines, includes and removes comments
     //printf("Preprocessing... ");
-    input_file_buf = pre_processor(input_file_buf, &fsize);
-    input_file_buf = pre_processor(input_file_buf, &fsize); // pre-processor second time to remove comments with all the includes inside
+    for (int i = 0; i < 10; i++) {
+        input_file_buf = pre_processor(input_file_buf, &fsize); // iterate 10 times so you can have #includes 10 files deep.
+    }
     //printf("Done\n");
 
     // Part 2 and 3 - Lexer and tokenList modifier

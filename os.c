@@ -11,7 +11,7 @@
 //   method instead of just making my own special keywords.
 
 #include "bios.h"
-#include "stdio.h"
+#include "stdio_os.h"
 
 int get_int(char *shell_buf) {
     int shell_buf_offset = 0;
@@ -295,7 +295,15 @@ void system_call() {
         print_char(arg0);
     }
     if (func_number == 1) {
-        return_value = get_char();
+        if (arg0 == 0) {
+            return_value = get_char();
+        }
+        if (arg0 == 1) {
+            return_value = get_char_instant();
+        }
+        if (arg0 == 2) {
+            return_value = keyboardhit();
+        }
     }
     if (func_number == 2) {
         printString(arg0);
@@ -1046,5 +1054,6 @@ void main() {
     char *x = "\nZaC-3 OS\n";
     printString(x);
     reset();
+    mount_command();
 	shell();
 }

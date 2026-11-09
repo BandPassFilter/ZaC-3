@@ -10,7 +10,15 @@ char get_char() {
     return *uart;
 }
 
+char get_char_instant() {
+    char *uart = 1245184;
+    return *(uart + 1);
+}
 
+int keyboardhit() {
+    char *uart = 1245184;
+    return *(uart + 2);
+}
 
 void diskRead(int *buffer, int LBA_address) {
     int *disk_io = 1245440;
