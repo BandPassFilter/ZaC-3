@@ -3196,7 +3196,7 @@ void asm_generator_code_gen(AST_Node *current_node, CharAppendList *asm_list, Di
     } else if (current_node->type == AST_VOID) {
         // do nothing
     } else {
-        printf("Invalid AST node in asm generation\n");
+        printf("Invalid Standard AST node: \"%s\" in asm generation\n", current_node->ast_string);
         exit(1);
     }
 }
@@ -3825,6 +3825,29 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
 
         
         asm_list->append(asm_list, buffer);
+    } else if (current_node->type == AST_LITERAL_32) {
+        char buffer[300] = {0};
+        
+        if (status == ASM_GET) {
+            //sprintf(buffer, "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+            sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
+            sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n", extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
+            
+            //sprintf(buffer+strlen(buffer), "add r%d, r0, r1 ;GET\n", extra_stuff->operator_stack_offset);
+            extra_stuff->operator_stack_offset += 1;
+        } else if (status == ASM_GET_MEMORY) {
+            //sprintf(buffer, "addi r1, r0, %s\n", current_node->ast_string);
+            //sprintf(buffer+strlen(buffer), "addi r%d, r0, 0 ;GET_32\n",  extra_stuff->operator_stack_offset);
+            sprintf(buffer+strlen(buffer), "addi r%d, r0, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) % 65536);
+            sprintf(buffer+strlen(buffer), "lui r%d, %d ;GET_32\n",  extra_stuff->operator_stack_offset, atoi(current_node->ast_string) / 65536);
+            
+            extra_stuff->operator_stack_offset += 1;
+        } else if (status == ASM_SET) {
+            extra_stuff->operator_stack_offset += -1;
+            sprintf(buffer+strlen(buffer), "movi [sp + %d], r%d ;SET\n", 0, extra_stuff->operator_stack_offset);
+        }
+        
+        asm_list->append(asm_list, buffer);
     } else if (current_node->type == AST_IF) {
         ////printf("If\n");
         char buffer[300] = {0};
@@ -4054,7 +4077,7 @@ void set_stack_param(AST_Node *current_node, CharAppendList *asm_list, Dictionar
     } else if (current_node->type == AST_VOID) {
         // do nothing
     } else {
-        printf("Invalid AST node in asm generation\n");
+        printf("Invalid Stack AST node: \"%s\" in asm generation\n", current_node->ast_string);
         exit(1);
     }
 }
@@ -4661,7 +4684,7 @@ void asm_generator_code_gen_call_params(AST_Node *current_node, CharAppendList *
         sprintf(buffer+strlen(buffer), "addi r%d, r0, %s\n", register_select, current_node->ast_string_name);
         asm_list->append(asm_list, buffer);
     } else {
-        printf("Invalid AST node in asm generation\n");
+        printf("Invalid Call Params AST node: \"%s\" in asm generation\n", current_node->ast_string);
         exit(1);
     }
 }

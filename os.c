@@ -324,8 +324,9 @@ int getMountValues() {
     char *error = "Disk not mounted!\n";
 
     if (mount_values == 0) {
-        printString(error);
-        exit();
+        //printString(error);
+        mount_values = mount_command();
+        //exit();
     }
 
     return mount_values;
@@ -352,7 +353,7 @@ int mount_command() {
     int *disk_test_buffer_int = getDiskBufferBase();
     char *disk_test_buffer = disk_test_buffer_int;
     char *output_str = "Disk test\n";
-    printString(output_str);
+    //printString(output_str);
 
 
     diskRead(disk_test_buffer_int, 0);
@@ -364,6 +365,7 @@ int mount_command() {
     int BPB_ResvdSecCnt;
     int BPB_RootEntCnt;
     int BPB_BytsPerSec = 512;
+    int signature;
 
     sectors_per_cluster = *(disk_test_buffer + 13);
     BPB_number_of_fats = *(disk_test_buffer + 16);
@@ -371,6 +373,13 @@ int mount_command() {
     BPB_FATSz = *(disk_test_buffer + 22) + (*(disk_test_buffer + 23) << 8);
     BPB_ResvdSecCnt = *(disk_test_buffer + 14) + (*(disk_test_buffer + 15) << 8);
     BPB_RootEntCnt = *(disk_test_buffer + 17) + (*(disk_test_buffer + 18) << 8);
+    signature = *(disk_test_buffer + 510) + (*(disk_test_buffer + 511) << 8);
+
+    if (signature != 43605) {
+        char *error = "Invalid FAT16 filesystem\n";
+        printString(error);
+        exit();
+    }
 
     *(mount_values_base+4) = sectors_per_cluster;
     
@@ -445,8 +454,8 @@ int dir_command() {
 
     if (mount_values == 0) {
         char *error = "Disk not mounted!\n";
-        printString(error);
-        return 0;
+        //printString(error);
+        //return 0;
     }
 
     
@@ -755,7 +764,7 @@ int readFile(char *buffer, int count, int filehandle) {
     char *FAT_region = getFATStart(mount_values);
     int data_region = getDataStart(mount_values);
     int sectors_per_cluster = getSectorsPerCluster(mount_values);
-
+    char *current_FAT_region = FAT_region;
     //print_bcd(sectors_per_cluster);
     //cr();
 
@@ -775,6 +784,10 @@ int readFile(char *buffer, int count, int filehandle) {
 
     //print_bcd(count);
     //cr();
+
+    if (seek + count > size - 1) {
+        count = size - seek;
+    }
 
     while (byte_count < count) {
         if (count - byte_count < 512) {
@@ -804,7 +817,10 @@ int readFile(char *buffer, int count, int filehandle) {
             if (current_cluster == 65536) {
                 return 0;
             }
-            current_cluster = *(FAT_region + (current_cluster << 1)) + (*(FAT_region + (current_cluster << 1) + 1) << 8);
+
+            current_FAT_region = FAT_region + (current_cluster >> 8);
+            diskRead(buffer, current_FAT_region);
+            current_cluster = *(buffer + ((current_cluster << 1) & 511)) + (*(buffer + ((current_cluster << 1) & 511) + 1) << 8);
             current_cluster_sector = data_region + ((current_cluster - 2) << 6);
 
 
@@ -858,6 +874,17 @@ void filewr_command(char *shell_buf, int shell_buf_offset) {
     
 }
 
+void runfile_command(char *shell_buf, int shell_buf_offset) {
+    shell_buf_offset = skip_space(shell_buf, shell_buf_offset);
+    int filehandle = openFile(shell_buf + shell_buf_offset);
+    char *buffer = 131072;
+    readFile(buffer, 100000, filehandle);
+    asm("addi r1, r0, 0");
+    asm("lui r1, 2");
+    asm("jr r1");
+
+}
+
 int skip_space(char *shell_buf, int shell_buf_offset) {
     int i = shell_buf_offset;
     while ((i < 256) && ((*(shell_buf + i)) == 32)) {
@@ -884,6 +911,7 @@ void shell() {
     char *filerd_str = "filerd";
     char *filewr_str = "filewr";
     char *searchfile_str = "search";
+    char *run_prg_str = "./";
     int mount_values = 0;
 
     char *output_str = "Typed string is: ";
@@ -991,6 +1019,13 @@ void shell() {
                     shell_buf_offset = 6;
                     shell_buf_offset = skip_space(shell_buf, shell_buf_offset);
                     searchfile_command(shell_buf, shell_buf_offset);
+                    command_success = 1;
+                }
+                result = compare_string(shell_buf, run_prg_str);
+                if (result == 1) {
+                    shell_buf_offset = 2;
+                    shell_buf_offset = skip_space(shell_buf, shell_buf_offset);
+                    runfile_command(shell_buf, shell_buf_offset);
                     command_success = 1;
                 }
                 if (command_success == 0) {

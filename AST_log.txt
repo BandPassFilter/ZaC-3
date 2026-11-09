@@ -1911,12 +1911,12 @@
 						* Identifier getMountValues_mount_values
 						* Literal 0
 					* Body
-						* FunctionCall printString
-							* CallParameters
-								* Identifier getMountValues_error
-						* FunctionCall exit
-							* CallParameters
-								* Void
+						* SetVariable
+							* Operator =
+								* Identifier getMountValues_mount_values
+								* FunctionCall mount_command
+									* CallParameters
+										* Void
 				* Return
 					* Identifier getMountValues_mount_values
 	* FunctionDeclaration int
@@ -1997,9 +1997,6 @@
 						* Operator ~* Dereference
 							* Identifier mount_command_output_str
 						* String string_31: "Disk test\n" Static
-				* FunctionCall printString
-					* CallParameters
-						* Identifier mount_command_output_str
 				* FunctionCall diskRead
 					* CallParameters
 						* Identifier mount_command_disk_test_buffer_int
@@ -2021,6 +2018,8 @@
 					* Operator =
 						* Identifier mount_command_BPB_BytsPerSec
 						* Literal 512
+				* Declaration int
+					* Identifier mount_command_signature Local
 				* SetVariable
 					* Operator =
 						* Identifier mount_command_sectors_per_cluster
@@ -2093,6 +2092,38 @@
 								* Literal 8
 				* SetVariable
 					* Operator =
+						* Identifier mount_command_signature
+						* Operator +
+							* Operator ~* Dereference
+								* Operator +
+									* Identifier mount_command_disk_test_buffer
+									* Literal 510
+							* Operator <<
+								* Operator ~* Dereference
+									* Operator +
+										* Identifier mount_command_disk_test_buffer
+										* Literal 511
+								* Literal 8
+				* If
+					* Operator !=
+						* Identifier mount_command_signature
+						* Literal 43605
+					* Body
+						* Declaration char
+							* Operator ~* Dereference
+								* Identifier mount_command_error Local
+							* Operator =
+								* Operator ~* Dereference
+									* Identifier mount_command_error
+								* String string_32: "Invalid FAT16 filesystem\n" Static
+						* FunctionCall printString
+							* CallParameters
+								* Identifier mount_command_error
+						* FunctionCall exit
+							* CallParameters
+								* Void
+				* SetVariable
+					* Operator =
 						* Operator ~* Dereference
 							* Operator +
 								* Identifier mount_command_mount_values_base
@@ -2148,28 +2179,28 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier mount_command_FAT_str
-						* String string_32: "FAT offset: " Static
+						* String string_33: "FAT offset: " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier mount_command_root_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier mount_command_root_str
-						* String string_33: "Root offset: " Static
+						* String string_34: "Root offset: " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier mount_command_data_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier mount_command_data_str
-						* String string_34: "Data offset: " Static
+						* String string_35: "Data offset: " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier mount_command_sectors_per_cluster_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier mount_command_sectors_per_cluster_str
-						* String string_35: "Sectors per cluster: " Static
+						* String string_36: "Sectors per cluster: " Static
 				* FunctionCall printString
 					* CallParameters
 						* Identifier mount_command_FAT_str
@@ -2276,7 +2307,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier dir_command_output_str
-						* String string_36: "Disk test\n" Static
+						* String string_37: "Disk test\n" Static
 				* Declaration int
 					* Identifier dir_command_FAT_start Local
 				* Declaration int
@@ -2316,12 +2347,7 @@
 							* Operator =
 								* Operator ~* Dereference
 									* Identifier dir_command_error
-								* String string_37: "Disk not mounted!\n" Static
-						* FunctionCall printString
-							* CallParameters
-								* Identifier dir_command_error
-						* Return
-							* Literal 0
+								* String string_38: "Disk not mounted!\n" Static
 				* Declaration int
 					* Identifier dir_command_number_of_files Local
 					* Operator =
@@ -2432,7 +2458,7 @@
 													* Operator =
 														* Operator ~* Dereference
 															* Identifier dir_command_volume_msg
-														* String string_38: "Volume name: " Static
+														* String string_39: "Volume name: " Static
 												* FunctionCall printString
 													* CallParameters
 														* Identifier dir_command_volume_msg
@@ -2487,7 +2513,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier dir_command_number_of_files_str
-						* String string_39: " file(s)\n" Static
+						* String string_40: " file(s)\n" Static
 				* FunctionCall printChar
 					* CallParameters
 						* Literal 9
@@ -2671,21 +2697,21 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier searchFile_filename_main
-						* String string_40: "        " Static
+						* String string_41: "        " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier searchFile_filename_ext Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier searchFile_filename_ext
-						* String string_41: "   " Static
+						* String string_42: "   " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier searchFile_filename_total Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier searchFile_filename_total
-						* String string_42: "           " Static
+						* String string_43: "           " Static
 				* FunctionCall makeUppercase
 					* CallParameters
 						* Identifier searchFile_filename_str
@@ -3382,7 +3408,7 @@
 							* Operator =
 								* Operator ~* Dereference
 									* Identifier checkFileHandleValid_error_1
-								* String string_43: "Invalid filehandle\n" Static
+								* String string_44: "Invalid filehandle\n" Static
 						* FunctionCall printString
 							* CallParameters
 								* Identifier checkFileHandleValid_error_1
@@ -3402,7 +3428,7 @@
 							* Operator =
 								* Operator ~* Dereference
 									* Identifier checkFileHandleValid_error
-								* String string_44: "File not open!\n" Static
+								* String string_45: "File not open!\n" Static
 						* FunctionCall printString
 							* CallParameters
 								* Identifier checkFileHandleValid_error
@@ -3672,6 +3698,13 @@
 						* FunctionCall getSectorsPerCluster
 							* CallParameters
 								* Identifier readFile_mount_values
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier readFile_current_FAT_region Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier readFile_current_FAT_region
+						* Identifier readFile_FAT_region
 				* Declaration int
 					* Identifier readFile_current_cluster_sector Local
 					* Operator =
@@ -3693,6 +3726,21 @@
 					* Operator =
 						* Identifier readFile_cluster_count
 						* Literal 0
+				* If
+					* Operator >
+						* Operator +
+							* Identifier readFile_seek
+							* Identifier readFile_count
+						* Operator -
+							* Identifier readFile_size
+							* Literal 1
+					* Body
+						* SetVariable
+							* Operator =
+								* Identifier readFile_count
+								* Operator -
+									* Identifier readFile_size
+									* Identifier readFile_seek
 				* While
 					* Operator <
 						* Identifier readFile_byte_count
@@ -3795,22 +3843,38 @@
 											* Literal 0
 								* SetVariable
 									* Operator =
+										* Identifier readFile_current_FAT_region
+										* Operator +
+											* Identifier readFile_FAT_region
+											* Operator >>
+												* Identifier readFile_current_cluster
+												* Literal 8
+								* FunctionCall diskRead
+									* CallParameters
+										* Identifier readFile_buffer
+										* Identifier readFile_current_FAT_region
+								* SetVariable
+									* Operator =
 										* Identifier readFile_current_cluster
 										* Operator +
 											* Operator ~* Dereference
 												* Operator +
-													* Identifier readFile_FAT_region
-													* Operator <<
-														* Identifier readFile_current_cluster
-														* Literal 1
+													* Identifier readFile_buffer
+													* Operator &
+														* Operator <<
+															* Identifier readFile_current_cluster
+															* Literal 1
+														* Literal 511
 											* Operator <<
 												* Operator ~* Dereference
 													* Operator +
 														* Operator +
-															* Identifier readFile_FAT_region
-															* Operator <<
-																* Identifier readFile_current_cluster
-																* Literal 1
+															* Identifier readFile_buffer
+															* Operator &
+																* Operator <<
+																	* Identifier readFile_current_cluster
+																	* Literal 1
+																* Literal 511
 														* Literal 1
 												* Literal 8
 								* SetVariable
@@ -3966,6 +4030,49 @@
 				* Declaration int
 					* Identifier filewr_command_shell_buf_offset Local
 			* Body
+	* FunctionDeclaration void
+		* Function runfile_command
+			* Parameters
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier runfile_command_shell_buf Local
+				* Declaration int
+					* Identifier runfile_command_shell_buf_offset Local
+			* Body
+				* SetVariable
+					* Operator =
+						* Identifier runfile_command_shell_buf_offset
+						* FunctionCall skip_space
+							* CallParameters
+								* Identifier runfile_command_shell_buf
+								* Identifier runfile_command_shell_buf_offset
+				* Declaration int
+					* Identifier runfile_command_filehandle Local
+					* Operator =
+						* Identifier runfile_command_filehandle
+						* FunctionCall openFile
+							* CallParameters
+								* Operator +
+									* Identifier runfile_command_shell_buf
+									* Identifier runfile_command_shell_buf_offset
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier runfile_command_buffer Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier runfile_command_buffer
+						* Literal32 131072
+				* FunctionCall readFile
+					* CallParameters
+						* Identifier runfile_command_buffer
+						* Literal32 100000
+						* Identifier runfile_command_filehandle
+				* Asm
+					* String string_46: "addi r1, r0, 0" Static
+				* Asm
+					* String string_47: "lui r1, 2" Static
+				* Asm
+					* String string_48: "jr r1" Static
 	* FunctionDeclaration int
 		* Function skip_space
 			* Parameters
@@ -4043,70 +4150,77 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_dump_str
-						* String string_45: "dump" Static
+						* String string_49: "dump" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_write_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_write_str
-						* String string_46: "write" Static
+						* String string_50: "write" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_run_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_run_str
-						* String string_47: "run" Static
+						* String string_51: "run" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_mount_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_mount_str
-						* String string_48: "mount" Static
+						* String string_52: "mount" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_dir_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_dir_str
-						* String string_49: "dir" Static
+						* String string_53: "dir" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_open_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_open_str
-						* String string_50: "open" Static
+						* String string_54: "open" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_close_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_close_str
-						* String string_51: "close" Static
+						* String string_55: "close" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_filerd_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_filerd_str
-						* String string_52: "filerd" Static
+						* String string_56: "filerd" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_filewr_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_filewr_str
-						* String string_53: "filewr" Static
+						* String string_57: "filewr" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_searchfile_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_searchfile_str
-						* String string_54: "search" Static
+						* String string_58: "search" Static
+				* Declaration char
+					* Operator ~* Dereference
+						* Identifier shell_run_prg_str Local
+					* Operator =
+						* Operator ~* Dereference
+							* Identifier shell_run_prg_str
+						* String string_59: "./" Static
 				* Declaration int
 					* Identifier shell_mount_values Local
 					* Operator =
@@ -4118,21 +4232,21 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_output_str
-						* String string_55: "Typed string is: " Static
+						* String string_60: "Typed string is: " Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_invalid_command_str Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_invalid_command_str
-						* String string_56: "Invalid command\n" Static
+						* String string_61: "Invalid command\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_cr_string Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_cr_string
-						* String string_57: "\ncarriage return\n" Static
+						* String string_62: "\ncarriage return\n" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier shell_shell_buf Local
@@ -4146,7 +4260,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_cr
-						* String string_58: "\n" Static
+						* String string_63: "\n" Static
 				* Declaration char
 					* Identifier shell_space Local
 					* Operator =
@@ -4511,7 +4625,7 @@
 																* Identifier shell_shell_buf_offset
 												* FunctionCall filewr_command
 													* CallParameters
-														* Identifier shell_shell_buf
+														* Identifier shell_shell_buf Local
 														* Identifier shell_shell_buf_offset
 												* SetVariable
 													* Operator =
@@ -4548,6 +4662,37 @@
 													* Operator =
 														* Identifier shell_command_success
 														* Literal 1
+										* SetVariable
+											* Operator =
+												* Identifier shell_result
+												* FunctionCall compare_string
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_run_prg_str
+										* If
+											* Operator ==
+												* Identifier shell_result
+												* Literal 1
+											* Body
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* Literal 2
+												* SetVariable
+													* Operator =
+														* Identifier shell_shell_buf_offset
+														* FunctionCall skip_space
+															* CallParameters
+																* Identifier shell_shell_buf
+																* Identifier shell_shell_buf_offset
+												* FunctionCall runfile_command
+													* CallParameters
+														* Identifier shell_shell_buf
+														* Identifier shell_shell_buf_offset
+												* SetVariable
+													* Operator =
+														* Identifier shell_command_success
+														* Literal 1
 										* If
 											* Operator ==
 												* Identifier shell_command_success
@@ -4569,7 +4714,7 @@
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier shell_end
-						* String string_59: "end\n" Static
+						* String string_64: "end\n" Static
 				* FunctionCall printString
 					* CallParameters
 						* Identifier shell_end
@@ -4578,14 +4723,14 @@
 			* Parameters
 			* Body
 				* Asm
-					* String string_60: "addi sys, r0, _system_call" Static
+					* String string_65: "addi sys, r0, _system_call" Static
 				* Declaration char
 					* Operator ~* Dereference
 						* Identifier main_x Local
 					* Operator =
 						* Operator ~* Dereference
 							* Identifier main_x
-						* String string_61: "\nZaC-3 OS\n" Static
+						* String string_66: "\nZaC-3 OS\n" Static
 				* FunctionCall printString
 					* CallParameters
 						* Identifier main_x
