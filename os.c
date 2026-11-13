@@ -62,7 +62,24 @@ int compare_string(char *str_a, char *str_b) {
     return 0;
 }
 
+void cls() {
+    char *esc_vt100 = "[2J";
+    printChar(27);
+    printString(esc_vt100);
+    printChar(27);
+    printChar(72);
+}
+
+
+void show_cursor() {
+    char *clear = "[?25h";
+    printChar(27);
+    printString(clear);
+}
+
 void reset_shell(char *shell_buf) {
+    
+    show_cursor();
     int shell_buf_offset = 0;
     while (shell_buf_offset < 256) {
         *(shell_buf + shell_buf_offset) = 0;
@@ -479,15 +496,22 @@ int dir_command() {
             if ((dir_attrib != 15) && (first_dir_char < 128) && (first_dir_char > 0)) {
                 
                 if (number_of_files > 0) {
-                if (dir_attrib != 8) {
-                        printChar(32);
-                        printChar(58);
-                        printChar(32);
+                    if (dir_attrib != 8) {
+                            printChar(32);
+                            printChar(58);
+                            printChar(32);
+                    }
                 }
+
+                if (mod(number_of_files, 5) == 0) {
+                    cr();
                 }
 
                 if ((dir_attrib & 16) == 16) {
                     printChar(42);
+                }
+                if ((dir_attrib & 16) != 16) {
+                    printChar(32);
                 }
 
                 if (dir_attrib == 8) {
@@ -505,11 +529,13 @@ int dir_command() {
                     //cr();
                     cr();
                 }
+
             } 
         }
     }
     cr();
     char *number_of_files_str = " file(s)\n";
+    printChar(9);
     printChar(9);
     print_bcd(number_of_files);
     printString(number_of_files_str);
@@ -1052,6 +1078,7 @@ void shell() {
 void main() {
     asm("addi sys, r0, _system_call");
     char *x = "\nZaC-3 OS\n";
+    cls();
     printString(x);
     reset();
     mount_command();

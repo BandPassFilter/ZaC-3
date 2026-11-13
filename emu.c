@@ -101,7 +101,7 @@ int InitialiseSerialPort() {
     }
 }
 
-int serial_port_mode = 0;
+int serial_port_mode = 1;
 
 uint8_t ReadSerialPort() {
     if (!serial_port_mode) {
@@ -131,7 +131,10 @@ uint8_t ReadSerialPortInstant() {
     }
     if (serial_port_mode) {
         ReadFile(hSerial, szBuff, n, &dwBytesRead, NULL);
-        return szBuff[0];
+        if (dwBytesRead > 0) {
+            return szBuff[0];
+        }
+        return 0;
     }
 }
 
@@ -144,7 +147,10 @@ uint8_t KeyboardHit() {
     }
     if (serial_port_mode) {
         ReadFile(hSerial, szBuff, n, &dwBytesRead, NULL);
-        return szBuff[0];
+        if (dwBytesRead > 0) {
+            return 1;
+        }
+        return 0;
     }
 }
 
@@ -254,7 +260,7 @@ uint32_t io_in(int address) {
     }
 }
 
-int ALU(uint32_t a, uint32_t b, int opcode, int *flags) {
+uint32_t ALU(uint32_t a, uint32_t b, int opcode, int *flags) {
     uint64_t carry = 0;
     uint64_t zero = 0;
     uint64_t res = 0;
@@ -572,7 +578,7 @@ int main(int argc, char** argv) {
     30 = i1
     31 = pc
     */
-    int registers[64]; // register file
+    uint32_t registers[64]; // register file
 
     //for (int i = 0x40000; i < 0x400FF; i++) {
     //    printf("Memory[%d]: %d  ", i, memory[i]);
@@ -592,20 +598,20 @@ int main(int argc, char** argv) {
 
 
     uint32_t IR, IR_0, IR_1, pre_IR_0, pre_IR_1 = 0; // instruction register 32-bit (16-bit low and high)
-    int ring = 0; // ring counter for control unit
+    uint32_t ring = 0; // ring counter for control unit
 
 
-    int data_bus = 0; // 16-bit
-    int address_bus = 0; // 24-bit
-    int address_calc = 0;
+    uint32_t data_bus = 0; // 16-bit
+    uint32_t address_bus = 0; // 24-bit
+    uint32_t address_calc = 0;
 
     int run = 1; // CPU run state
-    int seg_eval = 0;
-    int reg_a_eval = 0; // R0-R3
-    int reg_b_eval = 0;
-    int reg_c_eval = 0;
-    int offset_eval = 0;
-    int imm_eval = 0;
+    uint32_t seg_eval = 0;
+    uint32_t reg_a_eval = 0; // R0-R3
+    uint32_t reg_b_eval = 0;
+    uint32_t reg_c_eval = 0;
+    uint32_t offset_eval = 0;
+    uint32_t imm_eval = 0;
 
     
     
